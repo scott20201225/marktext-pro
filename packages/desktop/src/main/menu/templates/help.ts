@@ -7,7 +7,7 @@ import { t } from '../../i18n'
 import { withTopLevelMenuMnemonic } from './mnemonics'
 
 const REPO_URL = 'https://github.com/scott20201225/marktext-pro'
-const REPO_BRANCH = 'scott/marktext'
+const REPO_BRANCH = 'main'
 const END_USER_DOCS_URL = `${REPO_URL}/blob/${REPO_BRANCH}/packages/website/content/docs/end-user`
 
 /// Check whether the package is updatable at runtime.

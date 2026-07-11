@@ -133,7 +133,7 @@ linux:
   artifactName: 'marktextpro-linux-${arch}-${version}.${ext}'
   executableName: 'marktextpro'
   description: 'MarkTextPro is a fast, open-source Markdown editor focused on speed and usability.'
-  maintainer: 'Scott Cheng'
+  maintainer: 'ScottCheng'
   category: 'Office;TextEditor;Utility'
   mimeTypes:
     - 'text/markdown'

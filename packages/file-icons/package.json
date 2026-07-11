@@ -35,7 +35,7 @@
   "dependencies": {
     "file-icons": "github:file-icons/atom"
   },
-  "author": "Scott Cheng",
+  "author": "ScottCheng",
   "license": "MIT",
   "bugs": {
     "url": "https://github.com/scott20201225/marktext-pro/issues"

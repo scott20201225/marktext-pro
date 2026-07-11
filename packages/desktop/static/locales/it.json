@@ -760,7 +760,7 @@
     }
   },
   "about": {
-    "copyright": "MarkTextPro © Scott Cheng {year}",
+    "copyright": "MarkTextPro © ScottCheng {year}",
     "copyrightContributors": "Includes preserved third-party attribution and license notices."
   },
   "commands": {

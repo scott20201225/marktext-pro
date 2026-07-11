@@ -42,8 +42,8 @@ export const metadata: Metadata = {
     'Windows',
     'Linux'
   ],
-  authors: [{ name: 'Ran Luo', url: 'https://github.com/Jocs' }],
-  creator: 'Ran Luo',
+  authors: [{ name: 'ScottCheng', url: 'https://github.com/scott20201225' }],
+  creator: 'ScottCheng',
   alternates: { canonical: '/' },
   icons: { icon: '/favicon.png' },
   openGraph: {
@@ -79,7 +79,7 @@ const jsonLd = {
   description: DESCRIPTION,
   url: SITE_URL,
   license: 'https://github.com/scott20201225/marktext-pro/blob/main/LICENSE',
-  author: { '@type': 'Person', name: 'Ran Luo', url: 'https://github.com/Jocs' },
+  author: { '@type': 'Person', name: 'ScottCheng', url: 'https://github.com/scott20201225' },
   offers: { '@type': 'Offer', price: '0', priceCurrency: 'USD' },
   downloadUrl: 'https://github.com/scott20201225/marktext-pro/releases/latest',
   softwareVersion: 'latest'

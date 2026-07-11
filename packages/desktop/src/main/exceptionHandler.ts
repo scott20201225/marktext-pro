@@ -127,7 +127,7 @@ const setupExceptionHandler = (): void => {
 
   // start crashReporter to save core dumps to temporary folder
   crashReporter.start({
-    companyName: 'Scott Cheng',
+    companyName: 'ScottCheng',
     productName: 'MarkTextPro',
     submitURL: 'http://0.0.0.0/',
     uploadToServer: false,

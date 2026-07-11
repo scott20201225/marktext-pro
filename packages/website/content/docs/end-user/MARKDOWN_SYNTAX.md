@@ -235,18 +235,18 @@ Note that placement of achors is arbitrary, you can put them anywhere you want, 
 Images have a similar syntax to links but include a preceding exclamation point.
 
 ```markdown
-![MarkTextPro](https://raw.githubusercontent.com/scott20201225/marktext-pro/main/resources/icons/256x256/marktextpro.png)
+![MarkTextPro](https://raw.githubusercontent.com/scott20201225/marktext-pro/main/packages/website/public/docs/assets/marktextpro.png)
 ```
 
-![MarkTextPro](https://raw.githubusercontent.com/scott20201225/marktext-pro/main/resources/icons/256x256/marktextpro.png)
+![MarkTextPro](https://raw.githubusercontent.com/scott20201225/marktext-pro/main/packages/website/public/docs/assets/marktextpro.png)
 
 or
 
 ```markdown
-![Alt text](hhttps://raw.githubusercontent.com/scott20201225/marktext-pro/main/resources/icons/256x256/marktextpro.png "MarkTextPro logo")
+![Alt text](https://raw.githubusercontent.com/scott20201225/marktext-pro/main/packages/website/public/docs/assets/marktextpro.png "MarkTextPro logo")
 ```
 
-![Alt text](https://raw.githubusercontent.com/scott20201225/marktext-pro/main/resources/icons/256x256/marktextpro.png "MarkTextPro logo")
+![Alt text](https://raw.githubusercontent.com/scott20201225/marktext-pro/main/packages/website/public/docs/assets/marktextpro.png "MarkTextPro logo")
 
 Like links, Images also have a footnote style syntax
 
@@ -258,10 +258,10 @@ Like links, Images also have a footnote style syntax
 
 With a reference later in the document defining the URL location:
 
-[id]: https://raw.githubusercontent.com/scott20201225/marktext-pro/main/resources/icons/256x256/marktextpro.png  "MarkTextPro logo"
+[id]: https://raw.githubusercontent.com/scott20201225/marktext-pro/main/packages/website/public/docs/assets/marktextpro.png  "MarkTextPro logo"
 
 ```markdown
-[id]: https://raw.githubusercontent.com/scott20201225/marktext-pro/main/resources/icons/256x256/marktextpro.png  "MarkTextPro logo"
+[id]: https://raw.githubusercontent.com/scott20201225/marktext-pro/main/packages/website/public/docs/assets/marktextpro.png  "MarkTextPro logo"
 ```
 
 <br>

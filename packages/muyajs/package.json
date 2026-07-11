@@ -39,7 +39,7 @@
     "vega-embed": "^7.1.0",
     "webfontloader": "^1.6.28"
   },
-  "author": "Scott Cheng",
+  "author": "ScottCheng",
   "license": "MIT",
   "repository": {
     "type": "git",
