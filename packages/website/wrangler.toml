@@ -12,18 +12,5 @@ preview_urls = true
 directory = ".open-next/assets"
 binding = "ASSETS"
 
-# Bind both apex and www as Worker Custom Domains. The zone lives on the same
-# Cloudflare account as CLOUDFLARE_API_TOKEN (verified 2026-05-29), so wrangler
-# creates the route + DNS record for each automatically. If either hostname has
-# an existing A/AAAA/CNAME record, delete it first or the deploy will refuse to
-# bind. www → apex 301 redirect lives in src/middleware.ts.
-[[routes]]
-pattern = "marktextpro.me"
-custom_domain = true
-
-[[routes]]
-pattern = "www.marktextpro.me"
-custom_domain = true
-
 [observability]
 enabled = true
