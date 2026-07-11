@@ -6,7 +6,7 @@
 [![TypeScript](https://img.shields.io/badge/TypeScript-blue?logo=typescript&logoColor=white)](https://www.typescriptlang.org/)
 [![Vite](https://img.shields.io/badge/Vite-purple?logo=vite&logoColor=white)](https://vitejs.dev/)
 
-The official website for [MarkTextPro](https://github.com/scott20201225/marktext-pro) - A simple and elegant markdown editor.
+This package contains the documentation and promotional site sources for [MarkTextPro](https://github.com/scott20201225/marktext-pro).
 
 ## ✨ Features
 
@@ -38,8 +38,8 @@ npm install -g pnpm
 1. Clone the repository:
 
 ```bash
-git clone https://github.com/marktextpro/website.git
-cd website
+git clone https://github.com/scott20201225/marktext-pro.git
+cd marktext-pro/packages/website
 ```
 
 2. Install dependencies:
@@ -92,34 +92,13 @@ pnpm lint
 
 ## 🚀 Deployment
 
-### Deploy to GitHub Pages
+### Deployment
 
-This project is configured to automatically deploy to GitHub Pages using GitHub Actions.
+This package can be deployed independently if needed, but the canonical public home for the project is the GitHub repository:
 
-#### Setup
-
-1. Go to your repository **Settings** → **Pages**
-2. Under **Source**, select **GitHub Actions**
-3. Push to the `master` branch or manually trigger the workflow
-
-The site will be available at: `https://marktextpro.github.io/website/`
-
-#### Manual Deployment
-
-You can also trigger the deployment manually:
-
-1. Go to **Actions** tab in your GitHub repository
-2. Select **Deploy to GitHub Pages** workflow
-3. Click **Run workflow**
-
-#### Local Preview of Production Build
-
-To preview the production build locally before deploying:
-
-```bash
-pnpm build
-pnpm preview
-```
+- **Main Project**: [MarkTextPro Editor](https://github.com/scott20201225/marktext-pro)
+- **Documentation**: [MarkTextPro Docs](https://github.com/scott20201225/marktext-pro/tree/main/docs)
+- **Releases**: [GitHub Releases](https://github.com/scott20201225/marktext-pro/releases)
 
 ## 📁 Project Structure
 
@@ -237,7 +216,7 @@ This project is licensed under the MIT License - see the [LICENSE](LICENSE) file
 ## 🔗 Links
 
 - **Main Project**: [MarkTextPro Editor](https://github.com/scott20201225/marktext-pro)
-- **Website**: [https://github.com/scott20201225/marktext-pro](https://github.com/scott20201225/marktext-pro)
+- **Repository**: [https://github.com/scott20201225/marktext-pro](https://github.com/scott20201225/marktext-pro)
 - **Documentation**: [MarkTextPro Docs](https://github.com/scott20201225/marktext-pro/tree/main/docs)
 
 ## 💖 Sponsors

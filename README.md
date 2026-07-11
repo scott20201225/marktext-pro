@@ -3,11 +3,6 @@
 <h1 align="center">MarkTextPro</h1>
 
 <div align="center">
-  <a href="https://twitter.com/intent/tweet?via=scott20201225&url=https://github.com/scott20201225/marktext-pro/&text=What%20do%20you%20want%20to%20say%20to%20app?&hashtags=happyMarkTextPro">
-    <img src="https://img.shields.io/twitter/url/https/github.com/scott20201225/marktext-pro.svg?style=for-the-badge" alt="twitter">
-  </a>
-</div>
-<div align="center">
   <strong>:high_brightness: Next generation markdown editor :crescent_moon:</strong><br>
   A simple and elegant open-source markdown editor that focused on speed and usability.<br>
   <sub>Available for Linux, macOS and Windows.</sub>
@@ -28,16 +23,12 @@
   <a href="https://github.com/scott20201225/marktext-pro/releases/latest">
     <img src="https://img.shields.io/github/downloads/scott20201225/marktext-pro/latest/total.svg" alt="latest download">
   </a>
-  <!-- sponsors -->
-  <a href="https://opencollective.com/marktextpro">
-    <img src="https://opencollective.com/marktextpro/tiers/silver-sponsors/badge.svg?label=SilverSponsors&color=brightgreen" alt="sponsors">
-  </a>
 </div>
 
 <div align="center">
   <h3>
     <a href="https://github.com/scott20201225/marktext-pro">
-      Website
+      Repository
     </a>
     <span> | </span>
     <a href="https://github.com/scott20201225/marktext-pro#features">
@@ -90,26 +81,14 @@
 </div>
 
 <div align="center">
-  <sub>This Markdown editor that could. Built with ❤︎ by
-    <a href="https://github.com/Jocs">Jocs</a> and
-    <a href="https://github.com/scott20201225/marktext-pro/graphs/contributors">
-      contributors
-    </a>
-    .
+  <sub>
+    Based on MarkText and further developed as MarkTextPro. See the
+    <a href="LICENSE">license</a>
+    and repository history for attribution details.
   </sub>
 </div>
 
 <br />
-
-<h2 align="center">Sponsors</h2>
-
-MarkTextPro is an open-source Markdown editor powered by the support of its community. If MarkTextPro improves your workflow, please consider [sponsoring the project](https://github.com/scott20201225). Thank you to all the sponsors ❤️
-
-**Special Sponsor**
-
-| [<img src="docs/assets/sponsors/serpapi.png" width="150">](https://serpapi.com/?utm_source=marktextpro) | [Scrape Google and other search engines from our fast, easy, and complete API.](https://serpapi.com/?utm_source=marktextpro) |
-| ------------- |:-------------|
-| [<img src="docs/assets/sponsors/ukey.png" width="150">](https://www.ukey.com) | [Secure hardware wallet made simple.](https://www.ukey.com) |
 
 ## Screenshot
 
@@ -140,29 +119,13 @@ Want to see new features of the latest version? Please refer to [CHANGELOG](http
 
 Requires macOS 11 (Big Sur) or later. Universal builds aren't published — pick the matching `arm64` or `x64` installer.
 
-You can either download the latest `marktextpro-mac-(arm64|x64)-%version%.dmg` from the [release page](https://github.com/scott20201225/marktext-pro/releases/latest) or install MarkTextPro using [**homebrew cask**](https://github.com/caskroom/homebrew-cask). To use Homebrew-Cask you just need to have [Homebrew](https://brew.sh/) installed.
-
-```bash
-brew install --cask marktextpro
-```
+You can download the latest `marktextpro-mac-(arm64|x64)-%version%.dmg` from the [release page](https://github.com/scott20201225/marktext-pro/releases/latest).
 
 #### Windows
 
 Requires Windows 10 or 11. Both x64 and arm64 installers are published — pick the architecture that matches your machine.
 
-Simply download and install MarkTextPro via the setup wizard (`marktextpro-win-(x64|arm64)-%version%-setup.exe`) and choose whether to install per-user or machine wide. Alternatively, install MarkTextPro using a package manager such as [Chocolatey](https://chocolatey.org/) or [Winget](https://docs.microsoft.com/en-us/windows/package-manager/winget/).
-
-To use Chocolatey, you need to have [Chocolatey](https://chocolatey.org/install) installed:
-
-```bash
-choco install marktextpro
-```
-
-To use Winget, you need to have [Winget](https://docs.microsoft.com/en-us/windows/package-manager/winget/#install-winget) installed:
-
-```bash
-winget install marktextpro
-```
+Simply download and install MarkTextPro via the setup wizard (`marktextpro-win-(x64|arm64)-%version%-setup.exe`) and choose whether to install per-user or machine wide.
 
 #### Linux
 
@@ -183,13 +146,11 @@ If you have any questions regarding MarkTextPro, you are welcome to write an iss
 
 ## Contribution
 
-MarkTextPro is in development, please make sure to read the [Contributing Guide](.github/CONTRIBUTING.md) before making a pull request. Want to add some features to MarkTextPro? Refer to our [roadmap](https://github.com/scott20201225/marktext-pro/projects) and open issues.
+MarkTextPro is in development, please make sure to read the [Contributing Guide](.github/CONTRIBUTING.md) before making a pull request. Want to add some features to MarkTextPro? Please open an issue first and describe the use case.
 
 ## Contributors
 
-Thank you to all the people who have already contributed to MarkTextPro[[contributors](https://github.com/scott20201225/marktext-pro/graphs/contributors)].
-
-<a href="https://github.com/scott20201225/marktext-pro/graphs/contributors"><img src="https://opencollective.com/marktextpro/contributors.svg?width=890" /></a>
+Thank you to all the people who have already contributed to MarkTextPro [[contributors](https://github.com/scott20201225/marktext-pro/graphs/contributors)].
 
 ## License
 

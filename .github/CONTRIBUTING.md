@@ -28,7 +28,7 @@ Please search for similar issues before opening an issue and always follow the [
 
 Please make sure the following is done before submitting a PR:
 
-- Submit PRs directly to the `develop` branch.
+- Submit PRs directly to the `main` branch.
 - Reference the related issue in the PR comment.
 - Utilize [JSDoc](https://github.com/jsdoc/jsdoc) for better code documentation.
 - Ensure all tests pass.
@@ -48,7 +48,7 @@ If you fix a bug:
 
 ### Where should I start?
 
-A good way to start is to find an [issue](https://github.com/marktextpro/marktextpro/issues) labeled as `bug`, `help wanted` or `feature request`. The `good first issue` issues are good for newcomers. Please discuss the solution for larger issues first and after the final solution is approved by the MarkTextPro members, you can submit/work on the PR. For small changes you can directly open a PR.
+A good way to start is to find an [issue](https://github.com/scott20201225/marktext-pro/issues) labeled as `bug`, `help wanted` or `feature request`. The `good first issue` issues are good for newcomers. Please discuss the solution for larger issues first and after the final solution is approved by the MarkTextPro members, you can submit/work on the PR. For small changes you can directly open a PR.
 
 Other ways to help:
 
@@ -94,4 +94,4 @@ When writing comments, please follow our [Commenting Guidelines](./COMMENTING-GU
 
 ## Developer Documentation
 
-Please [click here](https://marktextpro.me/docs/dev/overview) for more details.
+Please [click here](https://github.com/scott20201225/marktext-pro/tree/main/docs) for more details.
