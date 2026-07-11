@@ -1,0 +1,16 @@
+node_modules
+.pnpm-store
+
+# Next.js
+.next
+out
+
+# OpenNext + Wrangler
+.open-next
+.wrangler
+
+# Misc
+*.tsbuildinfo
+next-env.d.ts
+.env*.local
+.DS_Store

@@ -1,0 +1,196 @@
+name: PR Build
+
+# Touch commit to force GitHub Actions to rescan workflows on the fork.
+
+on:
+  pull_request:
+    types: [opened, synchronize, reopened]
+    # packages/muya (TS v2) does not affect the electron desktop build.
+    # Skip the multi-platform installer build on muya-only PRs.
+    paths-ignore:
+      - 'packages/muya/**'
+  workflow_dispatch:
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  build-artifacts:
+    permissions:
+      pull-requests: read
+      actions: read
+    runs-on: ${{ matrix.os }}
+    strategy:
+      matrix:
+        include:
+          - name: linux-x64
+            os: ubuntu-24.04
+            platform: linux
+            arch: x64
+          - name: linux-arm64
+            os: ubuntu-24.04-arm
+            platform: linux
+            arch: arm64
+          - name: windows-x64
+            os: windows-latest
+            platform: windows
+            arch: x64
+          - name: windows-arm64
+            os: windows-11-arm
+            platform: windows
+            arch: arm64
+          - name: macos-x64
+            os: macos-15-intel
+            platform: macos
+            arch: x64
+          - name: macos-arm64
+            os: macos-15
+            platform: macos
+            arch: arm64
+
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Enable Git long paths on Windows
+        if: matrix.platform == 'windows'
+        shell: bash
+        run: git config --global core.longpaths true
+
+      - name: Install Linux Build Dependencies
+        if: matrix.platform == 'linux'
+        run: sudo apt-get update && sudo apt-get install -y icnsutils graphicsmagick xz-utils libx11-dev libxkbfile-dev gnome-keyring libsecret-1-dev libfontconfig-dev rpm
+
+      - name: Install Python 3.12
+        uses: actions/setup-python@v5.6.0
+        with:
+          python-version: '3.12'
+
+      - uses: ./.github/actions/setup
+        with:
+          node-version: '24.14.1'
+
+      - name: Cache Electron binary
+        uses: actions/cache@v4.3.0
+        with:
+          path: |
+            ~/.cache/electron
+            ~/Library/Caches/electron
+            ~/AppData/Local/electron/Cache
+          key: electron-${{ matrix.os }}-${{ hashFiles('package.json') }}
+          restore-keys: |
+            electron-${{ matrix.os }}-
+
+      # Must be set before postinstall runs electron-rebuild
+      - name: Set C++20 for MacOS
+        if: matrix.platform == 'macos'
+        run: |
+          echo "CXXFLAGS=-std=gnu++20 -stdlib=libc++" >> $GITHUB_ENV
+
+      # Run the full postinstall: Electron binary download, patch-package,
+      # electron-rebuild, and minify-locales.
+      - name: Run postinstall
+        run: pnpm tsx scripts/postinstall.ts
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          npm_config_user_agent: 'pnpm'
+          USE_ELECTRON_CLANG: ${{ matrix.platform == 'linux' && '0' || '' }}
+
+      - name: build-linux
+        if: matrix.platform == 'linux'
+        run: pnpm run build:linux:${{ matrix.arch }}
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: build-mac
+        if: matrix.platform == 'macos'
+        run: pnpm run build:mac:${{ matrix.arch }}
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: build-win
+        if: matrix.platform == 'windows'
+        run: pnpm run build:win:${{ matrix.arch }}
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Upload artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: marktextpro-${{ matrix.name }}
+          retention-days: 30
+          path: |
+            dist/*.exe
+            dist/*.zip
+            dist/*.dmg
+            dist/*.AppImage
+            dist/*.snap
+            dist/*.deb
+            dist/*.rpm
+            dist/*.tar.gz
+          if-no-files-found: error
+
+  comment-on-pr:
+    name: Comment artifact links on PR
+    needs: build-artifacts
+    if: github.event_name == 'pull_request' && github.event.pull_request.head.repo.full_name == github.repository
+    runs-on: ubuntu-latest
+    permissions:
+      pull-requests: write
+      actions: read
+    steps:
+      - name: Build comment body from artifacts
+        id: build
+        uses: actions/github-script@v7
+        with:
+          github-token: ${{ secrets.GITHUB_TOKEN }}
+          script: |
+            const run_id = context.runId;
+            const pr_number = context.payload.pull_request.number;
+            const { data } = await github.rest.actions.listWorkflowRunArtifacts({
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              run_id,
+              per_page: 100
+            });
+
+            if (!data.artifacts.length) {
+              core.setOutput('body', 'No artifacts were uploaded.');
+            } else {
+              const rows = data.artifacts.map(a => {
+                const artifactPage = `https://github.com/${context.repo.owner}/${context.repo.repo}/actions/runs/${run_id}/artifacts/${a.id}`;
+                const sizeMB = (a.size_in_bytes / 1024 / 1024).toFixed(1);
+                return `| ${a.name} | ${sizeMB} MB | [Download](${artifactPage}) |`;
+              }).join('\n');
+
+              const body = [
+                `Build artifacts for PR #${pr_number}:`,
+                '',
+                `Run: https://github.com/${context.repo.owner}/${context.repo.repo}/actions/runs/${run_id}`,
+                '',
+                '| Artifact | Size | Link |',
+                '|---|---:|---|',
+                rows
+              ].join('\n');
+
+              core.setOutput('body', body);
+            }
+
+      - name: Find existing artifact comment
+        id: find-comment
+        uses: peter-evans/find-comment@v3
+        with:
+          token: ${{ secrets.GITHUB_TOKEN }}
+          issue-number: ${{ github.event.pull_request.number }}
+          body-includes: 'Build artifacts for PR'
+
+      - name: Post or update PR comment
+        uses: peter-evans/create-or-update-comment@v4
+        with:
+          token: ${{ secrets.GITHUB_TOKEN }}
+          issue-number: ${{ github.event.pull_request.number }}
+          comment-id: ${{ steps.find-comment.outputs.comment-id }}
+          body: ${{ steps.build.outputs.body }}
+          edit-mode: replace

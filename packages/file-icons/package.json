@@ -1,0 +1,63 @@
+{
+  "name": "@marktextpro/file-icons",
+  "version": "1.0.6",
+  "description": "MarkTextPro file icons",
+  "main": "./build/index.js",
+  "module": "./build/index.mjs",
+  "exports": {
+    ".": {
+      "import": "./build/index.mjs",
+      "require": "./build/index.js",
+      "default": "./build/index.js"
+    },
+    "./build/index.css": "./build/index.css"
+  },
+  "files": [
+    "build"
+  ],
+  "scripts": {
+    "build": "rollup -c --environment BUILD:production",
+    "dev:sdk": "rollup -c -w",
+    "dev:example": "rollup -c rollup.config.example.js -w",
+    "dev": "npm-run-all --parallel start dev:sdk dev:example",
+    "start": "serve ./",
+    "pub": "npm publish"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/scott20201225/marktext-pro.git",
+    "directory": "packages/file-icons"
+  },
+  "keywords": [
+    "file",
+    "icons"
+  ],
+  "dependencies": {
+    "file-icons": "github:file-icons/atom"
+  },
+  "author": "Scott Cheng",
+  "license": "MIT",
+  "bugs": {
+    "url": "https://github.com/scott20201225/marktext-pro/issues"
+  },
+  "homepage": "https://github.com/scott20201225/marktext-pro#readme",
+  "devDependencies": {
+    "@babel/core": "^7.16.5",
+    "@babel/preset-env": "^7.16.5",
+    "@rollup/plugin-babel": "^5.3.0",
+    "@rollup/plugin-commonjs": "^21.0.1",
+    "@rollup/plugin-node-resolve": "^13.1.1",
+    "@rollup/plugin-url": "^6.1.0",
+    "less": "^4.1.2",
+    "npm-run-all": "^4.1.5",
+    "postcss": "^8.4.5",
+    "postcss-url": "^10.1.3",
+    "rollup": "^2.36.2",
+    "rollup-plugin-postcss": "^4.0.2",
+    "rollup-plugin-terser": "^7.0.2",
+    "serve": "^13.0.2"
+  },
+  "directories": {
+    "lib": "lib"
+  }
+}

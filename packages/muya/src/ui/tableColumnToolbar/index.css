@@ -1,0 +1,88 @@
+.mu-float-wrapper.mu-table-column-tools-container {
+    overflow: visible;
+
+    border-radius: 2px;
+}
+
+.mu-table-column-tools {
+    width: 168px;
+    height: auto;
+}
+
+.mu-table-column-tools ul,
+.mu-table-column-tools li {
+    margin: 0;
+    padding: 0;
+}
+
+.mu-table-column-tools ul {
+    display: grid;
+    grid-template-columns: repeat(5, 24px);
+    gap: 8px 8px;
+    padding: 8px;
+    white-space: normal;
+}
+
+.mu-table-column-tools li.item {
+    position: relative;
+
+    display: flex;
+    align-items: center;
+    justify-content: space-around;
+    width: 24px;
+    height: 24px;
+
+    list-style: none;
+    cursor: pointer;
+    border-radius: 4px;
+}
+
+.mu-table-column-tools li.item:hover {
+    background: var(--float-hover-color);
+}
+
+.mu-table-column-tools li.item.with-divider {
+    margin-left: 0;
+}
+
+.mu-table-column-tools li.item.with-divider::before {
+    display: none;
+}
+
+.mu-table-column-tools li.item .icon-wrapper {
+    display: flex;
+    width: 14px;
+    height: 14px;
+}
+
+.mu-table-column-tools li.item .icon-wrapper i.icon {
+    position: relative;
+
+    display: inline-block;
+    width: 100%;
+    height: 100%;
+    overflow: hidden;
+
+    color: var(--icon-color);
+
+    transition: all 0.25s ease-in-out;
+}
+
+.mu-table-column-tools li.item .icon-wrapper i.icon > i[class^='icon-'] {
+    position: relative;
+    left: -14px;
+
+    display: inline-block;
+    width: 100%;
+    height: 100%;
+
+    filter: drop-shadow(14px 0 currentcolor);
+}
+
+.mu-table-column-tools li.item.active .icon-wrapper i.icon {
+    color: var(--theme-color);
+}
+
+.mu-table-column-tools li.item.delete .icon-wrapper i.icon {
+    color: var(--delete-color);
+}

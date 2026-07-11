@@ -1,0 +1,106 @@
+import AppPaths, { ensureAppDirectoriesSync } from './paths'
+import { patchEnvPath } from './envPath'
+
+let envId = 0
+
+export interface AppEnvironmentOptions {
+  userDataPath?: string
+  debug?: boolean
+  isDevMode?: boolean
+  verbose?: number | boolean
+  safeMode?: boolean
+  disableSpellcheck?: boolean
+}
+
+export class AppEnvironment {
+  private readonly _id: number
+  private readonly _appPaths: AppPaths
+  private readonly _debug: boolean
+  private readonly _isDevMode: boolean
+  private readonly _verbose: boolean
+  private readonly _safeMode: boolean
+  private readonly _disableSpellcheck: boolean
+
+  constructor(options: AppEnvironmentOptions) {
+    this._id = envId++
+    this._appPaths = new AppPaths(options.userDataPath)
+    this._debug = !!options.debug
+    this._isDevMode = !!options.isDevMode
+    this._verbose = !!options.verbose
+    this._safeMode = !!options.safeMode
+    this._disableSpellcheck = !!options.disableSpellcheck
+  }
+
+  /**
+   * Returns an unique identifier that can be used with IPC to identify messages from this environment.
+   */
+  get id(): number {
+    return this._id
+  }
+
+  get paths(): AppPaths {
+    return this._appPaths
+  }
+
+  get debug(): boolean {
+    return this._debug
+  }
+
+  get isDevMode(): boolean {
+    return this._isDevMode
+  }
+
+  get verbose(): boolean {
+    return this._verbose
+  }
+
+  get safeMode(): boolean {
+    return this._safeMode
+  }
+
+  get disableSpellcheck(): boolean {
+    return this._disableSpellcheck
+  }
+}
+
+/**
+ * Create a (global) application environment instance and bootstraps the application.
+ *
+ * @param args The parsed application arguments (an `arg.Result`-shaped object).
+ */
+const setupEnvironment = (args: Record<string, unknown>): AppEnvironment => {
+  patchEnvPath()
+
+  const isDevMode = process.env.NODE_ENV !== 'production'
+  const debug =
+    !!args['--debug'] || !!process.env.MARKTEXTPRO_DEBUG || process.env.NODE_ENV !== 'production'
+  const verbose = (args['--verbose'] as number | undefined) || 0
+  const safeMode = !!args['--safe']
+  const userDataPath = args['--user-data-dir'] as string | undefined // or undefined (= default user data path)
+  const disableSpellcheck = !!args['--disable-spellcheck']
+
+  const appEnvironment = new AppEnvironment({
+    debug,
+    isDevMode,
+    verbose,
+    safeMode,
+    userDataPath,
+    disableSpellcheck
+  })
+
+  ensureAppDirectoriesSync(appEnvironment.paths)
+
+  // Keep this for easier access.
+  const mutableGlobal = global as unknown as {
+    MARKTEXTPRO_DEBUG: boolean
+    MARKTEXTPRO_DEBUG_VERBOSE: number
+    MARKTEXTPRO_SAFE_MODE: boolean
+  }
+  mutableGlobal.MARKTEXTPRO_DEBUG = debug
+  mutableGlobal.MARKTEXTPRO_DEBUG_VERBOSE = verbose
+  mutableGlobal.MARKTEXTPRO_SAFE_MODE = safeMode
+
+  return appEnvironment
+}
+
+export default setupEnvironment

@@ -1,0 +1,49 @@
+.mu-float-wrapper.mu-table-delete-button-container {
+    overflow: visible;
+    z-index: 1002;
+    border-radius: 6px;
+}
+
+.mu-table-delete-button {
+    width: 28px;
+    height: 28px;
+}
+
+.mu-table-delete-button .button {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    box-sizing: border-box;
+    width: 28px;
+    height: 28px;
+    padding: 0;
+    color: var(--delete-color);
+    background: var(--float-bg-color);
+    border: 1px solid var(--editor-color-20);
+    border-radius: 6px;
+    box-shadow: var(--float-shadow);
+    cursor: pointer;
+}
+
+.mu-table-delete-button .button:hover {
+    background: var(--float-hover-color);
+    border-color: var(--delete-color);
+}
+
+.mu-table-delete-button .button .icon {
+    position: relative;
+    display: inline-block;
+    width: 14px;
+    height: 14px;
+    overflow: hidden;
+    color: inherit;
+}
+
+.mu-table-delete-button .button .icon > .icon-inner {
+    position: relative;
+    left: -14px;
+    display: inline-block;
+    width: 100%;
+    height: 100%;
+    filter: drop-shadow(14px 0 currentcolor);
+}

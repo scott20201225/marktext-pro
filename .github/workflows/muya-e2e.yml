@@ -1,0 +1,50 @@
+name: Muya E2E
+
+# Runs the muya Playwright suite (packages/muya/e2e/) against the
+# packages/muya/e2e/host/ SUT page. Phase 1: Chromium only — firefox
+# and webkit are wired in playwright.config.ts but their bundled
+# binaries add ~5 min to CI install and a couple of specs need engine-
+# independent rewrites (triple-click selection, #all-replace) tracked
+# in packages/muya/e2e/BACKLOG.md Phase 3. Add them back to the matrix
+# below once those are landed.
+
+on:
+  pull_request:
+    types: [opened, synchronize, reopened]
+    paths:
+      - 'packages/muya/src/**'
+      - 'packages/muya/e2e/**'
+      - 'packages/muya/examples/**'
+      - 'packages/muya/package.json'
+      - 'pnpm-lock.yaml'
+      - '.github/workflows/muya-e2e.yml'
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  e2e:
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    strategy:
+      fail-fast: false
+      matrix:
+        project: [chromium]
+    steps:
+      - uses: actions/checkout@v4
+      - uses: ./.github/actions/setup
+
+      - name: Install Playwright browser (${{ matrix.project }})
+        run: pnpm -C packages/muya/e2e exec playwright install --with-deps ${{ matrix.project }}
+
+      - name: Run Playwright (${{ matrix.project }})
+        run: pnpm -C packages/muya/e2e exec playwright test --project=${{ matrix.project }}
+
+      - name: Upload report on failure
+        if: failure()
+        uses: actions/upload-artifact@v4
+        with:
+          name: muya-e2e-report-${{ matrix.project }}
+          path: packages/muya/e2e/playwright-report/
+          retention-days: 7

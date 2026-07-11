@@ -1,0 +1,63 @@
+{
+  "name": "marktextpro-monorepo",
+  "version": "0.20.0-scott.20",
+  "description": "MarkTextPro monorepo root",
+  "private": true,
+  "homepage": "https://github.com/scott20201225/marktext-pro",
+  "packageManager": "pnpm@10.33.4",
+  "engines": {
+    "node": ">=20.19.0",
+    "pnpm": ">=10"
+  },
+  "scripts": {
+    "postinstall": "tsx scripts/postinstall.ts",
+    "format": "prettier --write .",
+    "lint": "eslint --cache .",
+    "minify-locales": "tsx scripts/minify-locales.ts",
+    "rebuild-native": "pnpm --filter marktextpro rebuild-native",
+    "start": "pnpm --filter marktextpro start",
+    "dev": "pnpm --filter marktextpro dev",
+    "build": "pnpm --filter marktextpro build",
+    "build:unpack": "pnpm --filter marktextpro build:unpack",
+    "build:win": "pnpm --filter marktextpro build:win",
+    "build:win:x64": "pnpm --filter marktextpro build:win:x64",
+    "build:win:arm64": "pnpm --filter marktextpro build:win:arm64",
+    "build:mac": "pnpm --filter marktextpro build:mac",
+    "build:mac:x64": "pnpm --filter marktextpro build:mac:x64",
+    "build:mac:arm64": "pnpm --filter marktextpro build:mac:arm64",
+    "build:linux": "pnpm --filter marktextpro build:linux",
+    "build:linux:x64": "pnpm --filter marktextpro build:linux:x64",
+    "build:linux:arm64": "pnpm --filter marktextpro build:linux:arm64",
+    "perf:inspect": "pnpm --filter marktextpro perf:inspect",
+    "perf:inspect-brk": "pnpm --filter marktextpro perf:inspect-brk",
+    "test": "pnpm --filter marktextpro test",
+    "test:unit": "pnpm --filter marktextpro test:unit",
+    "test:e2e": "pnpm --filter marktextpro test:e2e",
+    "typecheck": "pnpm --filter marktextpro typecheck",
+    "typecheck:watch": "pnpm --filter marktextpro typecheck:watch",
+    "check": "pnpm lint && pnpm typecheck",
+    "gen-third-party": "tsx scripts/generateThirdPartyLicense.ts",
+    "validate-licenses": "tsx scripts/validateLicenses.ts"
+  },
+  "pnpm": {
+    "overrides": {
+      "postcss": "8.5.15",
+      "esbuild@>=0.27.0 <0.28.1": "0.28.1"
+    }
+  },
+  "devDependencies": {
+    "@babel/eslint-parser": "^7.29.7",
+    "electron": "~42.1.0",
+    "eslint": "^9.39.4",
+    "eslint-plugin-html": "^8.1.4",
+    "eslint-plugin-i18n-json": "^4.0.1",
+    "eslint-plugin-jsonc": "^3.2.0",
+    "eslint-plugin-vue": "^10.9.2",
+    "license-checker": "^25.0.1",
+    "neostandard": "^0.13.0",
+    "prettier": "^3.8.4",
+    "tsx": "^4.22.4",
+    "typescript-eslint": "^8.61.1",
+    "vue-eslint-parser": "^10.4.1"
+  }
+}
