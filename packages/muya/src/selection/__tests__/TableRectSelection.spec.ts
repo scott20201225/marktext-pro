@@ -237,3 +237,30 @@ describe('cross-cell table selection — cut', () => {
         expect(muya.editor.selection.table.hasSelection).toBe(false);
     });
 });
+
+describe('cross-cell table selection — batch edit', () => {
+    it('uses the top-left selected cell as the dialog default text', () => {
+        const muya = bootMuya(TABLE_MD);
+        const table = firstTable(muya);
+        dragSelect(table, 0, 0, 1, 1);
+
+        expect(muya.editor.selection.table.getBatchEditText()).toBe('a1');
+    });
+
+    it('replaces every selected cell text and keeps the rectangle selected', async () => {
+        const muya = bootMuya(TABLE_MD);
+        const table = firstTable(muya);
+        dragSelect(table, 0, 0, 1, 1);
+
+        expect(muya.editor.selection.table.replaceSelectedCellsText('同值')).toBe(true);
+
+        await vi.waitFor(() => {
+            const md = muya.getMarkdown();
+            expect(md).toMatch(/\|\s*同值\s*\|\s*同值\s*\|\s*c1\s*\|/);
+            expect(md).toMatch(/\|\s*同值\s*\|\s*同值\s*\|\s*c2\s*\|/);
+            expect(md).toMatch(/\|\s*a3\s*\|\s*b3\s*\|\s*c3\s*\|/);
+        });
+        expect(selectedCount(table)).toBe(4);
+        expect(muya.editor.selection.table.hasSelection).toBe(true);
+    });
+});

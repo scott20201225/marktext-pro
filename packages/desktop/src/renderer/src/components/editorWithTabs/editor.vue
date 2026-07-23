@@ -72,6 +72,42 @@
         </div>
       </template>
     </el-dialog>
+    <el-dialog
+      v-model="tableBatchEditVisible"
+      :show-close="false"
+      :modal="true"
+      custom-class="ag-dialog-table"
+      class="ag-table-batch-edit-dialog"
+      width="420px"
+      center
+    >
+      <template #header>
+        <div class="dialog-title">
+          {{ t('contextMenu.tableBatchEdit') }}
+        </div>
+      </template>
+      <textarea
+        ref="tableBatchEditInput"
+        v-model="tableBatchEditText"
+        class="table-batch-edit-input"
+        rows="3"
+        @keydown.meta.enter.prevent="handleTableBatchEditConfirm"
+        @keydown.ctrl.enter.prevent="handleTableBatchEditConfirm"
+      />
+      <template #footer>
+        <div class="dialog-footer">
+          <el-button @click="tableBatchEditVisible = false">
+            {{ t('common.cancel') }}
+          </el-button>
+          <el-button
+            type="primary"
+            @click="handleTableBatchEditConfirm"
+          >
+            {{ t('common.ok') }}
+          </el-button>
+        </div>
+      </template>
+    </el-dialog>
     <editor-search v-if="!sourceCode" />
   </div>
 </template>
@@ -280,6 +316,8 @@ const selectionChange = ref<unknown>(null)
 const editor = ref<MuyaInstance>(null)
 const isShowClose = ref(false)
 const dialogTableVisible = ref(false)
+const tableBatchEditVisible = ref(false)
+const tableBatchEditText = ref('')
 const imageViewerVisible = ref<boolean | null>(null)
 const tableChecker = reactive({
   rows: 4,
@@ -290,6 +328,7 @@ const tableChecker = reactive({
 const editorRef = ref<HTMLDivElement | null>(null)
 const imageViewerRef = ref<HTMLDivElement | null>(null)
 const rowInput = ref<InputNumberInstance | null>(null)
+const tableBatchEditInput = ref<HTMLTextAreaElement | null>(null)
 
 const getEditorContextState = (): EditorContextState => ({
   hasTableSelection: !!editor.value?.editor?.selection?.table?.hasSelection
@@ -1135,6 +1174,24 @@ const handleCopyPaste = (type: unknown) => {
   }
 }
 
+const handleTableBatchEdit = () => {
+  if (!editor.value) return
+  tableBatchEditText.value = editor.value.getTableBatchEditText?.() ?? ''
+  tableBatchEditVisible.value = true
+  nextTick(() => {
+    tableBatchEditInput.value?.focus()
+    tableBatchEditInput.value?.select()
+  })
+}
+
+const handleTableBatchEditConfirm = () => {
+  editor.value?.replaceTableSelectionText?.(tableBatchEditText.value)
+  tableBatchEditVisible.value = false
+  nextTick(() => {
+    editor.value?.focus?.()
+  })
+}
+
 const insertImage = (src: unknown) => {
   if (!sourceCode.value) {
     editor.value && editor.value.insertImage({ src })
@@ -1894,6 +1951,7 @@ onMounted(() => {
   bus.on('copyAsRich', handleCopyPaste)
   bus.on('copyAsHtml', handleCopyPaste)
   bus.on('copyAsExcel', handleCopyPaste)
+  bus.on('tableBatchEdit', handleTableBatchEdit)
   bus.on('pasteAsPlainText', handleCopyPaste)
   bus.on('duplicate', handleParagraph)
   bus.on('createParagraph', handleParagraph)
@@ -2053,6 +2111,7 @@ onBeforeUnmount(() => {
   bus.off('copyAsRich', handleCopyPaste)
   bus.off('copyAsHtml', handleCopyPaste)
   bus.off('copyAsExcel', handleCopyPaste)
+  bus.off('tableBatchEdit', handleTableBatchEdit)
   bus.off('pasteAsPlainText', handleCopyPaste)
   bus.off('duplicate', handleParagraph)
   bus.off('createParagraph', handleParagraph)
@@ -2122,6 +2181,33 @@ onBeforeUnmount(() => {
     font-size: 13px;
     width: 70px;
   }
+}
+
+.ag-table-batch-edit-dialog {
+  & .el-button {
+    font-size: 13px;
+    width: 70px;
+  }
+}
+
+.table-batch-edit-input {
+  width: 100%;
+  box-sizing: border-box;
+  resize: vertical;
+  min-height: 84px;
+  max-height: 220px;
+  outline: none;
+  border: 1px solid var(--borderColor);
+  border-radius: 4px;
+  padding: 8px 10px;
+  color: var(--editorColor);
+  background: var(--editorBgColor);
+  font-size: 14px;
+  line-height: 1.6;
+}
+
+.table-batch-edit-input:focus {
+  border-color: var(--themeColor);
 }
 
 .editor-wrapper.source {
