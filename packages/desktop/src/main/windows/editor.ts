@@ -111,13 +111,10 @@ class EditorWindow extends BaseWindow {
     const {
       titleBarStyle,
       theme,
-      sideBarVisibility,
-      restoreLayoutState,
       sourceCodeModeEnabled,
       spellcheckerEnabled,
       spellcheckerLanguage
     } = preferences.getAll()
-    const resolvedSideBarVisibility = restoreLayoutState ? !!sideBarVisibility : false
 
     // Enable native or custom/frameless window and titlebar
     if (!isOsx) {
@@ -174,7 +171,6 @@ class EditorWindow extends BaseWindow {
         addBlankTab,
         markdownList: this.bufferStoreInfo!.filePath ? [] : this._markdownToOpen,
         lineEnding,
-        sideBarVisibility: resolvedSideBarVisibility,
         sourceCodeModeEnabled
       })
 
@@ -420,14 +416,16 @@ class EditorWindow extends BaseWindow {
    */
   changeOpenedFilePath(pathname: string, oldPathname: string): void {
     const { _openedFiles, browserWindow } = this
-    const index = _openedFiles!.findIndex((p) => p === oldPathname)
-    if (index === -1) {
+    const index = _openedFiles!.findIndex((p) => isSamePathSync(p, oldPathname))
+    const oldWatchedPathname = index === -1 ? oldPathname : _openedFiles![index]
+    const existingIndex = _openedFiles!.findIndex((p) => isSamePathSync(p, pathname))
+    if (index === -1 && existingIndex === -1) {
       // The old path was not found but add the new one.
       _openedFiles!.push(pathname)
-    } else {
+    } else if (index !== -1) {
       _openedFiles![index] = pathname
     }
-    ipcMain.emit('watcher-unwatch-file', browserWindow, oldPathname)
+    ipcMain.emit('watcher-unwatch-file', browserWindow, oldWatchedPathname)
     ipcMain.emit('watcher-watch-file', browserWindow, pathname)
   }
 
@@ -484,14 +482,12 @@ class EditorWindow extends BaseWindow {
     browserWindow!.webContents.once('did-finish-load', () => {
       this.lifecycle = WindowLifecycle.READY
       const { preferences } = this._accessor
-      const { sideBarVisibility, restoreLayoutState, sourceCodeModeEnabled } = preferences.getAll()
-      const resolvedSideBarVisibility = restoreLayoutState ? !!sideBarVisibility : false
+      const { sourceCodeModeEnabled } = preferences.getAll()
       const lineEnding = preferences.getPreferredEol()
       browserWindow!.webContents.send('mt::bootstrap-editor', {
         addBlankTab: true,
         markdownList: [],
         lineEnding,
-        sideBarVisibility: resolvedSideBarVisibility,
         sourceCodeModeEnabled
       })
     })

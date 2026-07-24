@@ -149,7 +149,6 @@ export interface BootstrapEditorConfig {
    */
   markdownList: string[]
   lineEnding: LineEnding
-  sideBarVisibility: boolean
   sourceCodeModeEnabled: boolean
   preferences?: unknown
   userKeybindings?: unknown

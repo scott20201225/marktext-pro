@@ -142,7 +142,6 @@
     },
     "view": {
       "view": "View",
-      "toggleSidebar": "Toggle Sidebar",
       "commandPalette": "Command Palette",
       "sourceCodeMode": "Source Code Mode",
       "typewriterMode": "Typewriter Mode",
@@ -271,7 +270,9 @@
       "closeAll": "Close All",
       "emptyProject": "Empty project",
       "createFile": "Create File",
-      "openFolder": "Open Folder"
+      "openFolder": "Open Folder",
+      "enterDirectoryName": "Enter folder name",
+      "enterMarkdownFileName": "Enter .md file name"
     },
     "toc": {
       "title": "Table Of Contents"
@@ -280,7 +281,8 @@
       "files": "Files",
       "search": "Search",
       "toc": "Table of Contents",
-      "settings": "Settings"
+      "settings": "Settings",
+      "git": "Git"
     }
   },
   "commandPalette": {
@@ -868,7 +870,6 @@
       "toggleSourceCodeMode": "Toggle Source Code Mode",
       "toggleTypewriterMode": "Toggle Typewriter Mode",
       "toggleFocusMode": "Toggle Focus Mode",
-      "toggleSidebar": "Toggle Sidebar",
       "toggleToc": "Toggle Table of Contents",
       "toggleDevTools": "Toggle Developer Tools",
       "devReload": "Developer Reload",
@@ -990,6 +991,54 @@
       "languageMissing": "Spellcheck language missing {languageCode}",
       "switchError": "Spellcheck switch error for {languageCode}, {error}",
       "title": "Spellcheck"
+    }
+  },
+  "githubDesktop": {
+    "ui": {
+      "actions": {
+        "note": "Editor",
+        "setWorkspace": "Set current repository as workspace"
+      },
+      "internalText": {
+        "Last fetched": "Last fetched",
+        "menu or": "menu or",
+        "Select your editor in": "Select your editor in",
+        "Open the repository in your external editor": "Open the repository in your external editor",
+        "Always available in the toolbar for local repositories or": "Always available in the toolbar for local repositories or",
+        "Publish your repository to GitHub": "Publish your repository to GitHub",
+        "This repository is currently only available on your local machine. By publishing it on GitHub you can share it, and collaborate with others.": "This repository is currently only available on your local machine. By publishing it on GitHub you can share it, and collaborate with others.",
+        "Always available in the toolbar or": "Always available in the toolbar or",
+        "Always available in the toolbar when there are remote changes or": "Always available in the toolbar when there are remote changes or",
+        "Always available in the toolbar when there are local commits waiting to be pushed or": "Always available in the toolbar when there are local commits waiting to be pushed or",
+        "Switch Repository?": "Switch Repository?",
+        "Switch repository?": "Switch repository?",
+        "Are you sure you want to switch to this repository?": "Are you sure you want to switch to this repository?",
+        "Repository:": "Repository:",
+        "Also switch workspace to this repository": "Also switch workspace to this repository",
+        "Switch": "Switch"
+      }
+    },
+    "menu": {
+      "root": {
+        "GitHub Desktop": "GitHub Desktop",
+        "File": "File",
+        "Edit": "Edit",
+        "View": "View",
+        "Repository": "Repository",
+        "Branch": "Branch",
+        "Window": "Window",
+        "Help": "Help"
+      },
+      "dialogs": {
+        "selectRepositoryFirst": "Please select a Git repository first.",
+        "ok": "OK",
+        "setWorkspaceTitle": "Set workspace",
+        "setWorkspaceDetail": "This will switch the workspace directory. By default it uses the current Git project root; you can also choose a subdirectory inside the project.",
+        "useRepositoryRoot": "Use project root",
+        "selectSubdirectory": "Choose subdirectory",
+        "cancel": "Cancel",
+        "selectRepositorySubdirectory": "Please choose a subdirectory inside the current Git project."
+      }
     }
   }
 }

@@ -78,11 +78,21 @@
           <ArrowRight />
         </el-icon>
         <span
+          v-if="renameCache !== projectTree.pathname"
           class="default-cursor text-overflow"
           @click.stop="toggleDirectories()"
         >{{
           projectTree.name
         }}</span>
+        <input
+          v-else
+          ref="renameInput"
+          v-model="newName"
+          type="text"
+          class="rename"
+          @click.stop="noop"
+          @keypress.enter="renameRoot"
+        >
       </div>
       <div
         v-show="showDirectories"
@@ -98,7 +108,7 @@
           v-show="createCacheDirname === projectTree.pathname"
           ref="input"
           v-model="createName"
-          placeholder="Enter .md file name"
+          :placeholder="createInputPlaceholder"
           type="text"
           class="new-input"
           :style="{ 'margin-left': `${depth * 5 + 15}px` }"
@@ -186,7 +196,9 @@ const readSectionExpanded = (key: string): boolean => localStorage.getItem(key) 
 const showDirectories = ref(readSectionExpanded(SHOW_DIRECTORIES_KEY))
 const showOpenedFiles = ref(readSectionExpanded(SHOW_OPENED_FILES_KEY))
 const createName = ref('')
+const newName = ref('')
 const input = ref<HTMLInputElement | null>(null)
+const renameInput = ref<HTMLInputElement | null>(null)
 
 const projectStore = useProjectStore()
 const editorStore = useEditorStore()
@@ -194,6 +206,7 @@ const preferencesStore = usePreferencesStore()
 
 // Computed properties
 const { createCache } = storeToRefs(projectStore)
+const { renameCache } = storeToRefs(projectStore)
 const { clipboard } = storeToRefs(projectStore)
 const { openedFilesInSidebar } = storeToRefs(preferencesStore)
 
@@ -203,6 +216,13 @@ const { openedFilesInSidebar } = storeToRefs(preferencesStore)
 const createCacheDirname = computed<string | undefined>(() => {
   const cache = createCache.value as { dirname?: string }
   return cache.dirname
+})
+
+const createInputPlaceholder = computed(() => {
+  const cache = createCache.value as { type?: string }
+  return cache.type === 'directory'
+    ? t('sideBar.tree.enterDirectoryName')
+    : t('sideBar.tree.enterMarkdownFileName')
 })
 
 // Methods
@@ -223,6 +243,8 @@ const handleRootContextMenu = (event: MouseEvent): void => {
   projectStore.CHANGE_ACTIVE_ITEM(props.projectTree)
   showContextMenu(event, !!clipboard.value)
 }
+
+const noop = (): void => {}
 
 const toggleOpenedFiles = (): void => {
   showOpenedFiles.value = !showOpenedFiles.value
@@ -248,8 +270,25 @@ const handleInputEnter = (): void => {
   projectStore.CREATE_FILE_DIRECTORY(createName.value)
 }
 
+const focusRenameInput = (): void => {
+  if (!props.projectTree || renameCache.value !== props.projectTree.pathname) return
+  nextTick(() => {
+    if (renameInput.value) {
+      renameInput.value.focus()
+      newName.value = props.projectTree?.name ?? ''
+    }
+  })
+}
+
+const renameRoot = (): void => {
+  if (newName.value) {
+    projectStore.RENAME_IN_SIDEBAR(newName.value)
+  }
+}
+
 onMounted(() => {
   bus.on('SIDEBAR::show-new-input', handleInputFocus)
+  bus.on('SIDEBAR::show-rename-input', focusRenameInput)
 
   // Hide rename / create inputs on outside clicks. Buttons that open these
   // inputs must use @click.stop so their click never reaches this listener.
@@ -447,7 +486,8 @@ onMounted(() => {
   background-color: var(--buttonPrimaryBgColorHover);
   color: var(--buttonPrimaryFontColorHover);
 }
-.new-input {
+.new-input,
+input.rename {
   outline: none;
   height: 22px;
   margin: 5px 0;

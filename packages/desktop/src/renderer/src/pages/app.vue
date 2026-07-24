@@ -1,5 +1,6 @@
 <template>
-  <div class="editor-container">
+  <git-desktop v-if="workbench === 'git'" />
+  <div v-else class="editor-container">
     <side-bar v-if="init" />
 
     <div class="editor-middle">
@@ -14,7 +15,50 @@
       />
 
       <div v-if="!init" class="editor-placeholder" />
-      <tabs v-if="init" />
+      <div
+        v-if="init"
+        class="editor-tab-shell"
+        :class="{ 'has-tab-scroll-controls': tabScrollState.show }"
+      >
+        <button
+          v-if="tabScrollState.show"
+          class="editor-tab-scroll-button editor-tab-scroll-button-left"
+          type="button"
+          :disabled="!tabScrollState.canLeft"
+          @click="scrollEditorTabs('left')"
+        >
+          <el-icon :size="14">
+            <ArrowLeft />
+          </el-icon>
+        </button>
+        <tabs
+          ref="tabsRef"
+          :hide-new-file="tabScrollState.show"
+          @scroll-state-change="updateTabScrollState"
+        />
+        <button
+          v-if="tabScrollState.show"
+          class="editor-tab-new-button"
+          type="button"
+          :title="t('menu.file.newTab')"
+          @click.stop="createNewTab"
+        >
+          <el-icon :size="16">
+            <Plus />
+          </el-icon>
+        </button>
+        <button
+          v-if="tabScrollState.show"
+          class="editor-tab-scroll-button editor-tab-scroll-button-right"
+          type="button"
+          :disabled="!tabScrollState.canRight"
+          @click="scrollEditorTabs('right')"
+        >
+          <el-icon :size="14">
+            <ArrowRight />
+          </el-icon>
+        </button>
+      </div>
       <recent v-if="!hasCurrentFile && init" />
       <editor-with-tabs
         v-if="hasCurrentFile && init"
@@ -35,7 +79,9 @@
 </template>
 
 <script setup lang="ts">
-import { computed, watch, nextTick, onMounted, ref } from 'vue'
+import { computed, watch, nextTick, onMounted, onBeforeUnmount, ref } from 'vue'
+import { ArrowLeft, ArrowRight, Plus } from '@element-plus/icons-vue'
+import { useI18n } from 'vue-i18n'
 import { useMainStore } from '@/store'
 import { storeToRefs } from 'pinia'
 import { addStyles, addThemeStyle, addCustomStyle, type AddStylesOptions } from '@/util/theme'
@@ -49,6 +95,7 @@ import CommandPalette from '@/components/commandPalette/index.vue'
 import ExportSettingDialog from '@/components/exportSettings/index.vue'
 import Rename from '@/components/rename/index.vue'
 import ImportModal from '@/components/import/index.vue'
+import GitDesktop from '@/components/gitDesktop/index.vue'
 import bus from '@/bus'
 import { DEFAULT_STYLE } from '@/config'
 import { useLayoutStore } from '@/store/layout'
@@ -69,8 +116,16 @@ const listenForMainStore = useListenForMainStore()
 const autoUpdateStore = useAutoUpdatesStore()
 const commandCenterStore = useCommandCenterStore()
 const notificationStore = useNotificationStore()
+const { t } = useI18n()
 
 const timer = ref<ReturnType<typeof setTimeout> | null>(null)
+const tabsRef = ref<{ scrollTabs: (direction: 'left' | 'right') => void } | null>(null)
+const tabScrollState = ref({
+  show: false,
+  canLeft: false,
+  canRight: false
+})
+const workbench = ref<'editor' | 'git'>('editor')
 
 const { windowActive, platform, init } = storeToRefs(mainStore)
 const { sourceCode, theme, customCss, textDirection, zoom } = storeToRefs(preferencesStore)
@@ -97,6 +152,18 @@ const hasCurrentFile = computed<boolean>(() => {
   return currentFile.value?.markdown !== undefined
 })
 
+const updateTabScrollState = (state: { show: boolean; canLeft: boolean; canRight: boolean }) => {
+  tabScrollState.value = state
+}
+
+const scrollEditorTabs = (direction: 'left' | 'right') => {
+  tabsRef.value?.scrollTabs(direction)
+}
+
+const createNewTab = () => {
+  editorStore.NEW_UNTITLED_TAB({})
+}
+
 // Watchers
 watch(theme, (value, oldValue) => {
   if (value !== oldValue) {
@@ -115,6 +182,13 @@ watch(customCss, (value, oldValue) => {
 watch(zoom, (zoomValue) => {
   bus.emit('mt::window-zoom', zoomValue)
 })
+
+const handleWorkbenchSwitch = (event: Event): void => {
+  const target = (event as CustomEvent).detail
+  if (target === 'editor' || target === 'git') {
+    workbench.value = target
+  }
+}
 
 const setupDragDropHandler = (): void => {
   window.addEventListener(
@@ -153,6 +227,8 @@ const setupDragDropHandler = (): void => {
   )
 }
 onMounted(() => {
+  window.addEventListener('marktextpro:switch-workbench', handleWorkbenchSwitch)
+
   if (window.marktextpro?.initialState) {
     preferencesStore.SET_USER_PREFERENCE(window.marktextpro.initialState)
   }
@@ -218,6 +294,10 @@ onMounted(() => {
     addStyles(style)
   })
 })
+
+onBeforeUnmount(() => {
+  window.removeEventListener('marktextpro:switch-workbench', handleWorkbenchSwitch)
+})
 </script>
 
 <style scoped>
@@ -246,10 +326,89 @@ onMounted(() => {
   display: flex;
   flex-direction: column;
   flex: 1;
+  min-width: 0;
+  max-width: 100%;
   min-height: 100vh;
   position: relative;
+  overflow: hidden;
   & > .editor {
     flex: 1;
   }
+}
+
+.editor-tab-shell {
+  display: grid;
+  grid-template-columns: 0 minmax(0, 1fr) 0;
+  flex: 0 0 28px;
+  width: 100%;
+  max-width: 100%;
+  min-width: 0;
+  height: 28px;
+  user-select: none;
+  overflow: hidden;
+  box-shadow: 0px 0px 9px 2px rgba(0, 0, 0, 0.1);
+}
+
+.editor-tab-shell.has-tab-scroll-controls {
+  grid-template-columns: 24px minmax(0, 1fr) 28px 24px;
+}
+
+.editor-tab-shell :deep(.editor-tabs) {
+  grid-column: 2;
+  width: 100%;
+  min-width: 0;
+  max-width: 100%;
+  box-shadow: none;
+}
+
+.editor-tab-scroll-button {
+  width: 24px;
+  height: 28px;
+  padding: 0;
+  border: none;
+  background: var(--editorBgColor);
+  color: var(--editorColor50);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  z-index: 2;
+}
+
+.editor-tab-scroll-button-left {
+  grid-column: 1;
+  border-right: 1px solid var(--borderColor);
+}
+
+.editor-tab-scroll-button-right {
+  grid-column: 4;
+  border-left: 1px solid var(--borderColor);
+}
+
+.editor-tab-new-button {
+  grid-column: 3;
+  width: 28px;
+  height: 28px;
+  padding: 0;
+  border: none;
+  border-left: 1px solid var(--borderColor);
+  background: var(--editorBgColor);
+  color: var(--editorColor50);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  z-index: 2;
+}
+
+.editor-tab-scroll-button:hover:not(:disabled),
+.editor-tab-new-button:hover {
+  color: var(--focusColor);
+  background: var(--floatBgColor);
+}
+
+.editor-tab-scroll-button:disabled {
+  color: var(--editorColor10);
+  cursor: default;
 }
 </style>

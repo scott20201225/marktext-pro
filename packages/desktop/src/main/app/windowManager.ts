@@ -376,6 +376,19 @@ class WindowManager extends TypedEmitter<WindowManagerEvents> {
       }
       editor.addToOpenedFiles(filePath)
     })
+    ipcMain.on(
+      'mt::window-change-file-path',
+      (e, windowId: number, pathname: string, oldPathname: string) => {
+        const senderWindow = BrowserWindow.fromWebContents(e.sender)
+        if (!senderWindow || senderWindow.id !== windowId) return
+        const editor = this.get(windowId) as EditorWindow | undefined
+        if (!editor) {
+          log.error(`Cannot find window id "${windowId}" to change file path.`)
+          return
+        }
+        editor.changeOpenedFilePath(pathname, oldPathname)
+      }
+    )
 
     // Force close a BrowserWindow
     ipcMain.on('mt::close-window', (e) => {

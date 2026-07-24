@@ -160,7 +160,6 @@ const COMMAND_KEY_MAP: Record<string, string> = {
   // # View Controls
   // ============================================
   // UI toggles
-  'view.toggle-sidebar': 'commands.view.toggleSidebar',
   'view.toggle-toc': 'commands.view.toggleToc',
 
   // Edit modes

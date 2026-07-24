@@ -625,13 +625,6 @@ const commands: CommandDescriptor[] = [
     }
   },
   {
-    id: 'view.toggle-sidebar',
-    execute: async () => {
-      bus.emit('view:toggle-layout-entry', 'showSideBar')
-    }
-  },
-
-  {
     id: 'view.text-direction',
     subcommands: [
       {

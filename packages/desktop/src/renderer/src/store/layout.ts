@@ -1,12 +1,10 @@
 import { computed, ref } from 'vue'
 import { defineStore } from 'pinia'
 import bus from '../bus'
-import { usePreferencesStore } from './preferences'
 import { debouncedSendBufferedState } from './bufferedState'
 
 interface LayoutPartial {
   rightColumn?: string
-  showSideBar?: boolean
   sideBarWidth?: number | string
 }
 
@@ -21,7 +19,6 @@ const normalizeSideBarWidth = (width: unknown): number => {
 
 interface BufferedLayout {
   rightColumn: string | undefined
-  showSideBar: boolean
   sideBarWidth: number
 }
 
@@ -34,7 +31,6 @@ const createBufferedLayoutState = (state: unknown): BufferedLayout | null => {
   // SET_LAYOUT which only assigns when the key is defined.
   return {
     rightColumn: s.rightColumn,
-    showSideBar: !!s.showSideBar,
     sideBarWidth: normalizeSideBarWidth(s.sideBarWidth)
   }
 }
@@ -44,7 +40,7 @@ const initialSideBarWidth = normalizeSideBarWidth(initialWidth)
 
 export const useLayoutStore = defineStore('layout', () => {
   const rightColumn = ref<string>('files')
-  const showSideBar = ref(false)
+  const showSideBar = ref(true)
   const sideBarWidth = ref<number>(initialSideBarWidth)
 
   // Actual rendered sidebar width. `sideBarWidth` is the right-column width
@@ -52,7 +48,6 @@ export const useLayoutStore = defineStore('layout', () => {
   // the sidebar collapses to its 45px icon strip. Consumers that need to
   // subtract the sidebar from viewport space must use this, not the raw ref.
   const effectiveSideBarWidth = computed<number>(() => {
-    if (!showSideBar.value) return 0
     if (!rightColumn.value) return 45
     return Number(sideBarWidth.value)
   })
@@ -61,24 +56,10 @@ export const useLayoutStore = defineStore('layout', () => {
     layout: LayoutPartial,
     { scheduleBufferUpdate = true }: SetLayoutOptions = {}
   ): void {
-    if (layout.showSideBar !== undefined) {
-      const { windowId } = window.marktextpro?.env ?? {}
-      window.electron.ipcRenderer.send(
-        'mt::update-sidebar-menu',
-        Number(windowId),
-        !!layout.showSideBar
-      )
-      const preferencesStore = usePreferencesStore()
-      preferencesStore.SET_SINGLE_PREFERENCE({
-        type: 'sideBarVisibility',
-        value: !!layout.showSideBar
-      })
-    }
     // Match the pre-migration `Object.assign(this, layout)` semantics: assign
     // each known field as-is (no normalization here; SET_SIDE_BAR_WIDTH owns
     // sideBarWidth's normalization), and skip unknown keys silently.
     if (layout.rightColumn !== undefined) rightColumn.value = layout.rightColumn
-    if (layout.showSideBar !== undefined) showSideBar.value = !!layout.showSideBar
     if (layout.sideBarWidth !== undefined) sideBarWidth.value = layout.sideBarWidth as number
     if (scheduleBufferUpdate) {
       debouncedSendBufferedState()
@@ -88,7 +69,6 @@ export const useLayoutStore = defineStore('layout', () => {
   function CREATE_BUFFERED_STATE(): BufferedLayout | null {
     return createBufferedLayoutState({
       rightColumn: rightColumn.value,
-      showSideBar: showSideBar.value,
       sideBarWidth: sideBarWidth.value
     })
   }
@@ -100,8 +80,7 @@ export const useLayoutStore = defineStore('layout', () => {
     SET_SIDE_BAR_WIDTH(layout.sideBarWidth, { scheduleBufferUpdate: false })
     SET_LAYOUT(
       {
-        rightColumn: layout.rightColumn,
-        showSideBar: layout.showSideBar
+        rightColumn: layout.rightColumn
       },
       { scheduleBufferUpdate: false }
     )
@@ -110,16 +89,8 @@ export const useLayoutStore = defineStore('layout', () => {
 
   function TOGGLE_LAYOUT_ENTRY(entryName: string): void {
     if (entryName === 'showSideBar') {
-      showSideBar.value = !showSideBar.value
-      const preferencesStore = usePreferencesStore()
-      preferencesStore.SET_SINGLE_PREFERENCE({
-        type: 'sideBarVisibility',
-        value: !!showSideBar.value
-      })
-    } else {
       return
     }
-    debouncedSendBufferedState()
   }
 
   function SET_SIDE_BAR_WIDTH(
@@ -140,8 +111,7 @@ export const useLayoutStore = defineStore('layout', () => {
       if (l.rightColumn) {
         SET_LAYOUT({
           ...l,
-          rightColumn: l.rightColumn === rightColumn.value ? '' : l.rightColumn,
-          showSideBar: true
+          rightColumn: l.rightColumn === rightColumn.value ? '' : l.rightColumn
         })
       } else {
         SET_LAYOUT(l)
@@ -157,19 +127,11 @@ export const useLayoutStore = defineStore('layout', () => {
     bus.on('view:toggle-layout-entry', (entryName: unknown) => {
       const name = String(entryName)
       TOGGLE_LAYOUT_ENTRY(name)
-      if (name !== 'showSideBar') return
-      const { windowId } = window.marktextpro?.env ?? {}
-      window.electron.ipcRenderer.send('mt::view-layout-changed', Number(windowId), {
-        showSideBar: showSideBar.value
-      })
     })
   }
 
   function DISPATCH_LAYOUT_MENU_ITEMS(): void {
-    const { windowId } = window.marktextpro?.env ?? {}
-    window.electron.ipcRenderer.send('mt::view-layout-changed', Number(windowId), {
-      showSideBar: showSideBar.value
-    })
+    // Sidebar visibility is no longer user-configurable.
   }
 
   function CHANGE_SIDE_BAR_WIDTH(width: number | string): void {

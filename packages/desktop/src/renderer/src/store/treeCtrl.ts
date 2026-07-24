@@ -75,11 +75,12 @@ export const addFile = (tree: TreeFolder, file: AddFileInput, sortBy: string = '
   let currentFolder: TreeFolder = tree
   let currentSubFolders: TreeFolder[] = tree.folders
   for (const directoryName of subDirectories) {
-    let childFolder = currentSubFolders.find((f) => f.name === directoryName)
+    const childPath = `${currentPath}${PATH_SEPARATOR}${directoryName}`
+    let childFolder = currentSubFolders.find((f) => window.fileUtils.isSamePathSync(f.pathname, childPath))
     if (!childFolder) {
       childFolder = {
         id: getUniqueId(),
-        pathname: `${currentPath}${PATH_SEPARATOR}${directoryName}`,
+        pathname: childPath,
         name: directoryName,
         isCollapsed: true,
         isDirectory: true,
@@ -96,13 +97,13 @@ export const addFile = (tree: TreeFolder, file: AddFileInput, sortBy: string = '
       }
     }
 
-    currentPath = `${currentPath}${PATH_SEPARATOR}${directoryName}`
+    currentPath = childPath
     currentFolder = childFolder
     currentSubFolders = childFolder.folders
   }
 
   // Add file to related directory.
-  if (!currentFolder.files.find((f) => f.name === name)) {
+  if (!currentFolder.files.find((f) => window.fileUtils.isSamePathSync(f.pathname, pathname))) {
     // Remove file content from object.
     const fileCopy: TreeFile = {
       id: getUniqueId(),
@@ -134,11 +135,12 @@ export const addDirectory = (tree: TreeFolder, dir: { pathname: string }): void 
   let currentPath = tree.pathname
   let currentSubFolders: TreeFolder[] = tree.folders
   for (const directoryName of subDirectories) {
-    let childFolder = currentSubFolders.find((f) => f.name === directoryName)
+    const childPath = `${currentPath}${PATH_SEPARATOR}${directoryName}`
+    let childFolder = currentSubFolders.find((f) => window.fileUtils.isSamePathSync(f.pathname, childPath))
     if (!childFolder) {
       childFolder = {
         id: getUniqueId(),
-        pathname: `${currentPath}${PATH_SEPARATOR}${directoryName}`,
+        pathname: childPath,
         name: directoryName,
         isCollapsed: true,
         isDirectory: true,
@@ -155,7 +157,7 @@ export const addDirectory = (tree: TreeFolder, dir: { pathname: string }): void 
       }
     }
 
-    currentPath = `${currentPath}${PATH_SEPARATOR}${directoryName}`
+    currentPath = childPath
     currentSubFolders = childFolder.folders
   }
 }
@@ -175,14 +177,17 @@ export const updateFileMtime = (
 
   let currentFolder: TreeFolder = tree
   let currentSubFolders: TreeFolder[] = tree.folders
+  let currentPath = tree.pathname
   for (const directoryName of subDirectories) {
-    const childFolder = currentSubFolders.find((f) => f.name === directoryName)
+    const childPath = `${currentPath}${PATH_SEPARATOR}${directoryName}`
+    const childFolder = currentSubFolders.find((f) => window.fileUtils.isSamePathSync(f.pathname, childPath))
     if (!childFolder) return
+    currentPath = childPath
     currentFolder = childFolder
     currentSubFolders = childFolder.folders
   }
 
-  const index = currentFolder.files.findIndex((f) => f.pathname === file.pathname)
+  const index = currentFolder.files.findIndex((f) => window.fileUtils.isSamePathSync(f.pathname, file.pathname))
   if (index === -1) return
 
   const entry = currentFolder.files[index]
@@ -222,14 +227,17 @@ export const unlinkFile = (tree: TreeFolder, file: { pathname: string }): void =
 
   let currentFolder: TreeFolder = tree
   let currentSubFolders: TreeFolder[] = tree.folders
+  let currentPath = tree.pathname
   for (const directoryName of subDirectories) {
-    const childFolder = currentSubFolders.find((f) => f.name === directoryName)
+    const childPath = `${currentPath}${PATH_SEPARATOR}${directoryName}`
+    const childFolder = currentSubFolders.find((f) => window.fileUtils.isSamePathSync(f.pathname, childPath))
     if (!childFolder) return
+    currentPath = childPath
     currentFolder = childFolder
     currentSubFolders = childFolder.folders
   }
 
-  const index = currentFolder.files.findIndex((f) => f.pathname === pathname)
+  const index = currentFolder.files.findIndex((f) => window.fileUtils.isSamePathSync(f.pathname, pathname))
   if (index !== -1) {
     currentFolder.files.splice(index, 1)
   }
@@ -244,13 +252,16 @@ export const unlinkDirectory = (tree: TreeFolder, dir: { pathname: string }): vo
 
   subDirectories.pop()
   let currentFolder: TreeFolder[] = tree.folders
+  let currentPath = tree.pathname
   for (const directoryName of subDirectories) {
-    const childFolder = currentFolder.find((f) => f.name === directoryName)
+    const childPath = `${currentPath}${PATH_SEPARATOR}${directoryName}`
+    const childFolder = currentFolder.find((f) => window.fileUtils.isSamePathSync(f.pathname, childPath))
     if (!childFolder) return
+    currentPath = childPath
     currentFolder = childFolder.folders
   }
 
-  const index = currentFolder.findIndex((f) => f.pathname === pathname)
+  const index = currentFolder.findIndex((f) => window.fileUtils.isSamePathSync(f.pathname, pathname))
   if (index !== -1) {
     currentFolder.splice(index, 1)
   }

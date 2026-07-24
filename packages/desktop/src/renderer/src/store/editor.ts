@@ -76,6 +76,17 @@ interface FileChangePayload {
   }
 }
 
+interface PathMoveSnapshot {
+  id: string
+  isSaved: boolean
+}
+
+interface PathMovePayload {
+  src: string
+  dest: string
+  snapshot?: PathMoveSnapshot[]
+}
+
 interface FormatLinkClickPayload {
   // muya's getLinkInfo yields `href: null` when the rendered link carries no
   // usable href (e.g. an unsupported protocol stripped by sanitizeHyperlink).
@@ -809,19 +820,81 @@ export const useEditorStore = defineStore('editor', {
      * Invoked from the sidebar rename flow (project.ts:RENAME_IN_SIDEBAR).
      */
     RENAME_IF_NEEDED({ src, dest }: { src: string; dest: string }): void {
-      this.tabs.forEach((tab) => {
-        if (tab.pathname === src) {
-          tab.pathname = dest
-          tab.filename = window.path.basename(dest)
-        }
-      })
-      // Keep DIRNAME in sync when the active tab is the one being renamed,
-      // so link resolution / dirname-based lookups don't keep using the old
-      // folder until the user switches tabs.
-      if (this.currentFile != null && this.currentFile.pathname === dest) {
-        window.DIRNAME = window.path.dirname(dest)
+      this.UPDATE_PATHS_AFTER_MOVE({ src, dest })
+    },
+
+    SNAPSHOT_PATH_MOVE_STATE(src: string): PathMoveSnapshot[] {
+      return this.tabs
+        .filter((tab) => this.isPathAffectedByMove(tab.pathname, src))
+        .map((tab) => ({ id: tab.id, isSaved: tab.isSaved }))
+    },
+
+    isPathAffectedByMove(pathname: string, src: string): boolean {
+      if (!pathname || !src) return false
+      return window.fileUtils.isSamePathSync(pathname, src) || window.fileUtils.isChildOfDirectory(src, pathname)
+    },
+
+    getPathAfterMove(pathname: string, src: string, dest: string): string | null {
+      if (window.fileUtils.isSamePathSync(pathname, src)) {
+        return dest
       }
-      debouncedSendBufferedState()
+      if (!window.fileUtils.isChildOfDirectory(src, pathname)) {
+        return null
+      }
+      const relativePath = window.path.relative(src, pathname)
+      return relativePath ? window.path.join(dest, relativePath) : dest
+    },
+
+    /**
+     * Update all opened tabs after a sidebar cut/paste or directory rename.
+     * Directory moves must rewrite every descendant tab, otherwise the editor
+     * keeps saving/watching the old location even though the file tree moved.
+     */
+    UPDATE_PATHS_AFTER_MOVE({ src, dest, snapshot = [] }: PathMovePayload): void {
+      if (!src || !dest || window.fileUtils.isSamePathSync(src, dest)) return
+
+      const savedStateById = new Map(snapshot.map((item) => [item.id, item.isSaved]))
+      let didUpdatePath = false
+
+      this.tabs.forEach((tab) => {
+        const oldPathname = tab.pathname
+        const nextPathname = this.getPathAfterMove(oldPathname, src, dest)
+        if (!nextPathname || window.fileUtils.isSamePathSync(oldPathname, nextPathname)) return
+
+        tab.pathname = nextPathname
+        tab.filename = window.path.basename(nextPathname)
+        if (savedStateById.has(tab.id)) {
+          tab.isSaved = savedStateById.get(tab.id)!
+        }
+        didUpdatePath = true
+
+        const { windowId } = window.marktextpro?.env ?? {}
+        window.electron.ipcRenderer.send(
+          'mt::window-change-file-path',
+          Number(windowId),
+          nextPathname,
+          oldPathname
+        )
+      })
+
+      // Keep DIRNAME in sync when the active tab is one of the moved paths, so
+      // relative links and image paths resolve from the new location immediately.
+      if (this.currentFile?.pathname) {
+        window.DIRNAME = window.path.dirname(this.currentFile.pathname)
+      }
+
+      if (didUpdatePath) {
+        debouncedSendBufferedState()
+      }
+    },
+
+    CLOSE_TABS_BY_PATH(pathname: string): void {
+      if (!pathname) return
+
+      const affectedTabs = this.tabs.filter((tab) => this.isPathAffectedByMove(tab.pathname, pathname))
+      affectedTabs.forEach((tab) => {
+        this.FORCE_CLOSE_TAB(tab)
+      })
     },
 
     UPDATE_CURRENT_FILE(currentFile: IFileState): void {
@@ -869,15 +942,13 @@ export const useEditorStore = defineStore('editor', {
       const projectStore = useProjectStore()
       const mainStore = useMainStore()
       const applyBootstrapConfig = (config: BootstrapEditorConfig): void => {
-        const { addBlankTab, markdownList, lineEnding, sideBarVisibility, sourceCodeModeEnabled } =
-          config
+        const { addBlankTab, markdownList, lineEnding, sourceCodeModeEnabled } = config
 
         window.electron.ipcRenderer.send('mt::window-initialized')
         mainStore.SET_INITIALIZED()
         preferencesStore.SET_USER_PREFERENCE({ endOfLine: lineEnding })
         layoutStore.SET_LAYOUT({
-          rightColumn: 'files',
-          showSideBar: !!sideBarVisibility
+          rightColumn: 'files'
         })
         layoutStore.DISPATCH_LAYOUT_MENU_ITEMS()
         preferencesStore.SET_MODE({
@@ -929,7 +1000,6 @@ export const useEditorStore = defineStore('editor', {
             addBlankTab: true,
             markdownList: [],
             lineEnding: 'lf',
-            sideBarVisibility: true,
             sourceCodeModeEnabled: false
           })
         }, 0)

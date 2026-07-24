@@ -29,7 +29,22 @@ export default defineConfig({
     },
     define: {
       MARKTEXTPRO_VERSION: JSON.stringify(packageJson.version),
-      MARKTEXTPRO_VERSION_STRING: JSON.stringify(`v${packageJson.version}`)
+      MARKTEXTPRO_VERSION_STRING: JSON.stringify(`v${packageJson.version}`),
+      __APP_NAME__: JSON.stringify(packageJson.productName ?? packageJson.name),
+      __APP_VERSION__: JSON.stringify(packageJson.version),
+      __DARWIN__: String(process.platform === 'darwin'),
+      __DEV__: String(process.env.NODE_ENV === 'development'),
+      __DEV_SECRETS__: String(process.env.NODE_ENV === 'development'),
+      __ERROR_REPORTING_ENDPOINT__: 'undefined',
+      __LINUX__: String(process.platform === 'linux'),
+      __NON_FATAL_ERROR_REPORTING_ENDPOINT__: 'undefined',
+      __OAUTH_CLIENT_ID__: JSON.stringify(process.env.DESKTOP_OAUTH_CLIENT_ID ?? ''),
+      __OAUTH_SECRET__: JSON.stringify(process.env.DESKTOP_OAUTH_CLIENT_SECRET ?? ''),
+      __PROCESS_KIND__: JSON.stringify('main'),
+      __RELEASE_CHANNEL__: JSON.stringify(process.env.RELEASE_CHANNEL ?? 'production'),
+      __SHA__: JSON.stringify(process.env.CIRCLE_SHA1 ?? 'marktextpro'),
+      __UPDATES_URL__: 'null',
+      __WIN32__: String(process.platform === 'win32')
     },
     resolve: {
       alias: {
