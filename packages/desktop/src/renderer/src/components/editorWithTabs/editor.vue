@@ -160,7 +160,7 @@ import Printer from '@/services/printService'
 import { SpellcheckerLanguageCommand } from '@/commands'
 import { SpellChecker } from '@/spellchecker'
 import { isOsx, animatedScrollTo } from '@/util'
-import { moveImageToFolder, uploadImage } from '@/util/fileSystem'
+import { copyImageToFolder, NOTE_ATTACHMENTS_DIRECTORY, uploadImage } from '@/util/fileSystem'
 import { guessClipboardFilePath } from '@/util/clipboard'
 import { getCssForOptions, getHtmlToc, type PdfCssOptions, type HtmlTocOptions } from '@/util/pdf'
 import { patchMuyaSoftBreakIme } from '@/util/softBreakIme'
@@ -953,7 +953,68 @@ const imageAction = async (
   const resolvedImageRelativeFullDirectoryPath = relativeBasePath
     ? window.path.join(relativeBasePath, resolvedImageRelativeDirectoryName)
     : null // /root/dir/assets
+  const workspaceRootPath = projectTree.value?.pathname ?? null
+  const isCurrentFileInWorkspace = !!workspaceRootPath && !!currentPathname && (
+    window.fileUtils.isSamePathSync(workspaceRootPath, currentPathname) ||
+    window.fileUtils.isChildOfDirectory(workspaceRootPath, currentPathname)
+  )
+  const attachmentDirectoryPath = workspaceRootPath
+    ? window.path.join(workspaceRootPath, NOTE_ATTACHMENTS_DIRECTORY)
+    : null
+  const isAbsoluteLocalImage = typeof image === 'string' && window.path.isAbsolute(image)
+  const shouldUseWorkspaceAttachments = isCurrentFileInWorkspace &&
+    !!attachmentDirectoryPath &&
+    (image instanceof File || isAbsoluteLocalImage)
   let destImagePath = ''
+
+  if (shouldUseWorkspaceAttachments) {
+    destImagePath = (await copyImageToFolder(
+      currentPathname,
+      image,
+      attachmentDirectoryPath,
+      true,
+      currentPathname
+    )) as string
+
+    if (id && sourceCode.value) {
+      bus.emit('image-action', {
+        id,
+        result: destImagePath,
+        alt
+      })
+    }
+    return destImagePath
+  }
+
+  if (!isCurrentFileInWorkspace && isAbsoluteLocalImage) {
+    destImagePath = image
+
+    if (id && sourceCode.value) {
+      bus.emit('image-action', {
+        id,
+        result: destImagePath,
+        alt
+      })
+    }
+    return destImagePath
+  }
+
+  if (!isCurrentFileInWorkspace && image instanceof File) {
+    const localFilePath = window.electron.webUtils.getPathForFile(image)
+    if (localFilePath && window.path.isAbsolute(localFilePath)) {
+      destImagePath = localFilePath
+
+      if (id && sourceCode.value) {
+        bus.emit('image-action', {
+          id,
+          result: destImagePath,
+          alt
+        })
+      }
+      return destImagePath
+    }
+  }
+
   switch (imageInsertAction.value) {
     case 'upload': {
       try {
@@ -969,7 +1030,7 @@ const imageAction = async (
           type: 'warning',
           message: err as string
         })
-        destImagePath = (await moveImageToFolder(
+        destImagePath = (await copyImageToFolder(
           currentPathname,
           image,
           resolvedGlobalImageFolderPath
@@ -980,9 +1041,9 @@ const imageAction = async (
     case 'folder': {
       if (isTabSavedOnDisk && imagePreferRelativeDirectory.value) {
         // `image` may be a path string (paste/drag/image-selector) — pass
-        // `currentPathname` so moveImageToFolder can resolve relative paths
+        // `currentPathname` so copyImageToFolder can resolve relative paths
         // via `path.dirname(pathname)` instead of crashing on `dirname(null)`.
-        destImagePath = (await moveImageToFolder(
+        destImagePath = (await copyImageToFolder(
           currentPathname,
           image,
           resolvedImageRelativeFullDirectoryPath as string,
@@ -990,7 +1051,7 @@ const imageAction = async (
           currentPathname
         )) as string
       } else {
-        destImagePath = (await moveImageToFolder(
+        destImagePath = (await copyImageToFolder(
           currentPathname,
           image,
           resolvedGlobalImageFolderPath
@@ -1007,7 +1068,7 @@ const imageAction = async (
 
         // Respect user preferences if tab exists on disk.
         if (isTabSavedOnDisk && imagePreferRelativeDirectory.value) {
-          destImagePath = (await moveImageToFolder(
+          destImagePath = (await copyImageToFolder(
             null as unknown as string,
             image,
             resolvedImageRelativeFullDirectoryPath as string,
@@ -1015,7 +1076,7 @@ const imageAction = async (
             currentPathname
           )) as string
         } else {
-          destImagePath = (await moveImageToFolder(
+          destImagePath = (await copyImageToFolder(
             currentPathname,
             image,
             resolvedGlobalImageFolderPath
