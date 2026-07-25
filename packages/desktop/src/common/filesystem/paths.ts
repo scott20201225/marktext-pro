@@ -23,6 +23,23 @@ export const MARKDOWN_INCLUSIONS: readonly string[] = Object.freeze(
   MARKDOWN_EXTENSIONS.map((x) => '*.' + x)
 )
 
+const PROJECT_TREE_HIDDEN_DIRECTORY_NAMES = new Set([
+  '.git',
+  '.claude',
+  '.codex',
+  '.cursor',
+  '.fleet',
+  '.hg',
+  '.idea',
+  '.metadata',
+  '.settings',
+  '.svn',
+  '.vs',
+  '.vscode',
+  '.zed',
+  'attachments'
+])
+
 export const IMAGE_EXTENSIONS: readonly string[] = Object.freeze([
   'jpeg',
   'jpg',
@@ -190,4 +207,19 @@ export const checkPathExcludePattern = (pathname: string, patterns: readonly str
     }
   }
   return false
+}
+
+/**
+ * Returns true for internal folders that must not appear in the sidebar tree.
+ */
+export const isHiddenProjectTreePath = (pathname: string, rootPath?: string): boolean => {
+  if (!pathname || typeof pathname !== 'string') return false
+
+  const normalized = rootPath ? path.relative(rootPath, pathname) : path.normalize(pathname)
+  if (!normalized) return false
+
+  const segments = normalized.split(/[\\/]+/).filter(Boolean)
+  return segments.some((segment) =>
+    PROJECT_TREE_HIDDEN_DIRECTORY_NAMES.has(segment.toLowerCase())
+  )
 }

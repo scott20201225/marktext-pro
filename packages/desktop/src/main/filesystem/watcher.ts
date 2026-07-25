@@ -3,7 +3,11 @@ import fsPromises from 'fs/promises'
 import log from 'electron-log'
 import chokidar, { type FSWatcher } from 'chokidar'
 import { exists } from 'common/filesystem'
-import { hasMarkdownExtension, checkPathExcludePattern } from 'common/filesystem/paths'
+import {
+  hasMarkdownExtension,
+  checkPathExcludePattern,
+  isHiddenProjectTreePath
+} from 'common/filesystem/paths'
 import { getUniqueId } from '../utils'
 import { loadMarkdownFile } from '../filesystem/markdown'
 import { isLinux, isOsx } from '../config'
@@ -201,6 +205,10 @@ class Watcher {
 
     const watcher = chokidar.watch(watchPath, {
       ignored: (pathname: string, fileInfo?: { isDirectory: () => boolean }) => {
+        if (type === 'dir' && isHiddenProjectTreePath(pathname, watchPath)) {
+          return true
+        }
+
         if (!fileInfo) {
           return /(?:^|[/\\])(?:node_modules|(?:.+\.asar))/.test(pathname)
         }
