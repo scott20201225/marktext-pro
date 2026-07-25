@@ -252,6 +252,7 @@ export interface IpcSendChannels {
   'mt::workspace-path-renamed': [payload: { src: string; dest: string }]
   'mt::window-tab-closed': [pathname: string]
   'mt::window-toggle-always-on-top': []
+  'mt::window-zoom-delta': [direction: 'in' | 'out']
   'mt::window::drop': [payload: unknown]
   'screen-capture': [payload: unknown]
   'set-image-folder-path': [path: string]

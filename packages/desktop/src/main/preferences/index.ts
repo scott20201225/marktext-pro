@@ -6,6 +6,7 @@ import log from 'electron-log'
 import { isWindows } from '../config'
 import { hasSameKeys } from '../utils'
 import { onInternalChannel } from '../utils/internalIpc'
+import { setWindowZoomFactor } from '../windows/utils'
 import { DEFAULT_LANGUAGE, getSupportedLanguages, isLanguageSupported } from 'common/i18n'
 import { normalizeAppTheme } from 'common/theme'
 import { TypedEmitter } from '@shared/types/typedEmitter'
@@ -227,6 +228,11 @@ class Preference extends TypedEmitter<PreferenceEvents> {
     })
     ipcMain.on('mt::set-user-preference', (_e, settings: Record<string, unknown>) => {
       this.setItems(settings)
+      if (typeof settings.zoom === 'number') {
+        for (const win of BrowserWindow.getAllWindows()) {
+          setWindowZoomFactor(win, settings.zoom)
+        }
+      }
     })
     ipcMain.on('mt::cmd-toggle-autosave', () => {
       this.setItem('autoSave', !this.getItem('autoSave'))

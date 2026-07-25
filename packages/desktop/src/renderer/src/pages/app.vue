@@ -126,9 +126,10 @@ const tabScrollState = ref({
   canRight: false
 })
 const workbench = ref<'editor' | 'git'>('editor')
+const lastGestureScale = ref(1)
 
 const { windowActive, platform, init } = storeToRefs(mainStore)
-const { sourceCode, theme, customCss, textDirection, zoom } = storeToRefs(preferencesStore)
+const { sourceCode, theme, customCss, textDirection } = storeToRefs(preferencesStore)
 const { projectTree } = storeToRefs(projectStore)
 const { currentFile } = storeToRefs(editorStore)
 
@@ -164,6 +165,37 @@ const createNewTab = () => {
   editorStore.NEW_UNTITLED_TAB({})
 }
 
+const applyWindowZoomDelta = (direction: 'in' | 'out'): void => {
+  window.electron.ipcRenderer.send('mt::window-zoom-delta', direction)
+}
+
+const hasZoomModifier = (event: KeyboardEvent | WheelEvent): boolean => {
+  return platform.value === 'darwin' ? event.metaKey : event.ctrlKey
+}
+
+const handleWindowZoomWheel = (event: WheelEvent): void => {
+  if (!hasZoomModifier(event) && !event.ctrlKey) return
+
+  event.preventDefault()
+  applyWindowZoomDelta(event.deltaY < 0 ? 'in' : 'out')
+}
+
+const handleWindowZoomGestureStart = (event: Event): void => {
+  const gestureEvent = event as Event & { scale?: number }
+  lastGestureScale.value = gestureEvent.scale ?? 1
+}
+
+const handleWindowZoomGestureChange = (event: Event): void => {
+  const gestureEvent = event as Event & { scale?: number }
+  const scale = gestureEvent.scale ?? 1
+  const diff = scale - lastGestureScale.value
+  if (Math.abs(diff) < 0.03) return
+
+  event.preventDefault()
+  applyWindowZoomDelta(diff > 0 ? 'in' : 'out')
+  lastGestureScale.value = scale
+}
+
 // Watchers
 watch(theme, (value, oldValue) => {
   if (value !== oldValue) {
@@ -177,10 +209,6 @@ watch(customCss, (value, oldValue) => {
       customCss: value
     })
   }
-})
-
-watch(zoom, (zoomValue) => {
-  bus.emit('mt::window-zoom', zoomValue)
 })
 
 const handleWorkbenchSwitch = (event: Event): void => {
@@ -228,6 +256,9 @@ const setupDragDropHandler = (): void => {
 }
 onMounted(() => {
   window.addEventListener('marktextpro:switch-workbench', handleWorkbenchSwitch)
+  window.addEventListener('wheel', handleWindowZoomWheel, { capture: true, passive: false })
+  window.addEventListener('gesturestart', handleWindowZoomGestureStart)
+  window.addEventListener('gesturechange', handleWindowZoomGestureChange)
 
   if (window.marktextpro?.initialState) {
     preferencesStore.SET_USER_PREFERENCE(window.marktextpro.initialState)
@@ -297,6 +328,9 @@ onMounted(() => {
 
 onBeforeUnmount(() => {
   window.removeEventListener('marktextpro:switch-workbench', handleWorkbenchSwitch)
+  window.removeEventListener('wheel', handleWindowZoomWheel, true)
+  window.removeEventListener('gesturestart', handleWindowZoomGestureStart)
+  window.removeEventListener('gesturechange', handleWindowZoomGestureChange)
 })
 </script>
 

@@ -184,6 +184,7 @@ export const installStandaloneBridge = (): void => {
       guessFilePath: async() => null
     },
     webFrame: {
+      getZoomFactor: () => 1,
       setZoomFactor: () => {},
       setZoomLevel: () => {}
     },
