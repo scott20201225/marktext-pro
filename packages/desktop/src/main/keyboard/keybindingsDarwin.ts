@@ -96,7 +96,6 @@ const keybindings: Map<string, string> = new Map([
   ['view.source-code-mode', 'Command+Option+S'],
   ['view.typewriter-mode', 'Command+Option+T'],
   ['view.focus-mode', 'Command+Shift+J'],
-  ['view.toggle-sidebar', 'Command+J'],
   ['view.toggle-toc', 'Command+K'],
   ['view.toggle-dev-tools', 'Command+Option+I'],
   ['view.dev-reload', 'Command+Option+R'],

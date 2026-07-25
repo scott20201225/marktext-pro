@@ -33,6 +33,34 @@ import type {
 import type { BufferedState as BufferedStateType } from './bufferedState'
 import type { MenuTemplate, MenuPopupPosition } from './menu'
 
+export interface GitHubDesktopThemePayload {
+  theme: string
+  isDark: boolean
+  colors: Record<string, string>
+}
+
+export interface GitHubDesktopActionTranslations {
+  note: string
+  setWorkspace: string
+}
+
+export interface GitHubDesktopDialogTranslations {
+  selectRepositoryFirst: string
+  ok: string
+  setWorkspaceTitle: string
+  setWorkspaceDetail: string
+  useRepositoryRoot: string
+  selectSubdirectory: string
+  cancel: string
+  selectRepositorySubdirectory: string
+}
+
+export interface GitHubDesktopLocalePayload {
+  language: string
+  actions?: GitHubDesktopActionTranslations
+  internalText?: Record<string, string>
+}
+
 // =================================================================
 // Invoke channels (renderer → main, returns Promise<T>)
 // =================================================================
@@ -44,6 +72,31 @@ export interface IpcInvokeChannels {
   'mt::clipboard::read-text': { args: []; ret: string }
   'mt::cmd::exists': { args: [name: string]; ret: boolean }
   'mt::fonts::list': { args: []; ret: string[] }
+  'mt::github-desktop::show': {
+    args: [bounds: { x: number; y: number; width: number; height: number }]
+    ret: void
+  }
+  'mt::github-desktop::get-selected-repository-path': { args: []; ret: string | null }
+  'mt::github-desktop::select-workspace-directory': {
+    args: [defaultPath: string]
+    ret: string | null
+  }
+  'mt::github-desktop::choose-workspace-from-current-repository': {
+    args: []
+    ret: string | null
+  }
+  'mt::github-desktop::keytar-delete-password': {
+    args: [service: string, account: string]
+    ret: boolean
+  }
+  'mt::github-desktop::keytar-get-password': {
+    args: [service: string, account: string]
+    ret: string | null
+  }
+  'mt::github-desktop::keytar-set-password': {
+    args: [service: string, account: string, password: string]
+    ret: boolean
+  }
   'mt::fs-trash-item': { args: [pathname: string]; ret: void }
   'mt::fs::copy': { args: [src: string, dest: string]; ret: void }
   'mt::fs::empty-dir': { args: [path: string]; ret: void }
@@ -92,7 +145,7 @@ export interface IpcInvokeChannels {
 export interface IpcSendChannels {
   'app-create-editor-window': [config?: unknown]
   'app-create-settings-window': []
-  'app-open-directory-by-id': [windowId: number, dirPath: string]
+  'app-open-directory-by-id': [windowId: number, dirPath: string, openInSameWindow?: boolean]
   'app-open-file-by-id': [windowId: number, filePath: string, options?: unknown]
   'app-open-files-by-id': [windowId: number, filePaths: string[], options?: unknown]
   'app-open-markdown-by-id': [windowId: number, markdown: string, options?: unknown]
@@ -122,11 +175,22 @@ export interface IpcSendChannels {
   'mt::format-link-click': [payload: { data: unknown; dirname: string }]
   'mt::get-current-language': []
   'mt::handle-renderer-error': [error: unknown]
+  'mt::github-desktop::hide': []
+  'mt::github-desktop::set-bounds': [
+    bounds: { x: number; y: number; width: number; height: number }
+  ]
+  'mt::github-desktop::switch-to-editor': []
+  'mt::github-desktop::workspace-selected': [workspacePath: string]
+  'mt::github-desktop::workspace-selected-silent': [workspacePath: string]
+  'mt::github-desktop::workspace-path-renamed': [payload: { src: string; dest: string }]
+  'mt::github-desktop::theme-update': [payload: GitHubDesktopThemePayload]
+  'mt::github-desktop::locale-update': [payload: GitHubDesktopLocalePayload]
   'mt::keybinding-debug-dump-keyboard-info': []
   'mt::make-screenshot': []
   'mt::menu::popup': [template: MenuTemplate, position?: MenuPopupPosition]
   'mt::menu::popup-application': [position?: MenuPopupPosition]
   'mt::open-file': [filePath: string, options?: unknown]
+  'mt::open-directory-in-window': [windowId: number, pathname: string]
   'mt::open-file-by-window-id': [windowId: number, filePath: string, options?: unknown]
   'mt::open-keybindings-config': []
   'mt::open-setting-window': []
@@ -172,7 +236,6 @@ export interface IpcSendChannels {
   'mt::shell::show-item': [fullPath: string]
   'mt::update-format-menu': [windowId: number, state: Record<string, boolean>]
   'mt::update-line-ending-menu': [windowId: number, lineEnding: LineEnding]
-  'mt::update-sidebar-menu': [windowId: number, visible: boolean]
   'mt::view-layout-changed': [windowId: number, layout: unknown]
   'mt::win::close': []
   'mt::win::maximize': []
@@ -182,7 +245,9 @@ export interface IpcSendChannels {
   'mt::win::toggle-maximize': []
   'mt::win::unmaximize': []
   'mt::window-add-file-path': [windowId: number, filePath: string]
+  'mt::window-change-file-path': [windowId: number, pathname: string, oldPathname: string]
   'mt::window-initialized': []
+  'mt::workspace-path-renamed': [payload: { src: string; dest: string }]
   'mt::window-tab-closed': [pathname: string]
   'mt::window-toggle-always-on-top': []
   'mt::window::drop': [payload: unknown]
@@ -269,6 +334,7 @@ export interface IpcMainEventChannels {
   'mt::show-notification': [payload: unknown]
   'mt::spelling-replace-misspelling': [payload: unknown]
   'mt::spelling-show-switch-language': []
+  'mt::github-desktop::selected-repository-path': [repositoryPath: string | null]
   'mt::switch-tab-by-file_path': [filePath: string]
   'mt::switch-tab-by-index': [index: number]
   'mt::tab-save-failure': [tabId: string, message: string]

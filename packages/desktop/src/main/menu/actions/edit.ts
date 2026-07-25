@@ -1,5 +1,5 @@
 import path from 'path'
-import { BrowserWindow, ipcMain, type Menu, type MenuItem } from 'electron'
+import { BrowserWindow, ipcMain, type Menu } from 'electron'
 import log from 'electron-log'
 import { COMMANDS } from '../../commands'
 import type { CommandManager } from '../../commands'
@@ -152,14 +152,4 @@ export const loadEditCommands = (commandManager: CommandManager): void => {
   commandManager.add(COMMANDS.EDIT_SCREENSHOT, screenshot)
   commandManager.add(COMMANDS.EDIT_SELECT_ALL, editorSelectAll)
   commandManager.add(COMMANDS.EDIT_UNDO, editorUndo)
-}
-
-// --- IPC events -------------------------------------------------------------
-
-// NOTE: Don't use static `getMenuItemById` here, instead request the menu by
-//       window id from `AppMenu` manager.
-
-export const updateSidebarMenu = (applicationMenu: Menu, value: unknown): void => {
-  const sideBarMenuItem: MenuItem = applicationMenu.getMenuItemById('sideBarMenuItem')!
-  sideBarMenuItem.checked = !!value
 }

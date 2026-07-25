@@ -45,6 +45,7 @@
         v-model="createName"
         type="text"
         class="new-input"
+        :placeholder="createInputPlaceholder"
         :style="{ 'margin-left': `${depth * 5 + 15}px` }"
         @keypress.enter="handleInputEnter"
       >
@@ -59,7 +60,7 @@
 </template>
 
 <script setup lang="ts">
-import { ref, onMounted, nextTick } from 'vue'
+import { ref, onMounted, nextTick, computed } from 'vue'
 import { storeToRefs } from 'pinia'
 import { useProjectStore } from '@/store/project'
 import { showContextMenu } from '../../contextMenu/sideBar'
@@ -67,6 +68,7 @@ import bus from '../../bus'
 import File from './treeFile.vue'
 import { ArrowRight } from '@element-plus/icons-vue'
 import type { TreeFolderNode } from './types'
+import { useI18n } from 'vue-i18n'
 
 const props = defineProps<{
   folder: TreeFolderNode
@@ -74,6 +76,7 @@ const props = defineProps<{
 }>()
 
 const projectStore = useProjectStore()
+const { t } = useI18n()
 
 const createName = ref('')
 const newName = ref('')
@@ -89,6 +92,13 @@ const { renameCache } = storeToRefs(projectStore)
 const { createCache } = storeToRefs(projectStore)
 const { activeItem } = storeToRefs(projectStore)
 const { clipboard } = storeToRefs(projectStore)
+
+const createInputPlaceholder = computed(() => {
+  const cache = createCache.value as { type?: string }
+  return cache.type === 'directory'
+    ? t('sideBar.tree.enterDirectoryName')
+    : t('sideBar.tree.enterMarkdownFileName')
+})
 
 const handleInputFocus = (): void => {
   // Only the folder that is the create target reacts. Expand it FIRST so the

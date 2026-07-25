@@ -167,6 +167,17 @@ export const useProjectStore = defineStore('project', () => {
 
   function _processTreeEvent(type: string, change: TreeChange): void {
     const editorStore = useEditorStore()
+    const tree = projectTree.value
+    const pathname = change?.pathname
+    if (
+      tree &&
+      pathname &&
+      !window.fileUtils.isSamePathSync(pathname, tree.pathname) &&
+      !window.fileUtils.isChildOfDirectory(tree.pathname, pathname)
+    ) {
+      return
+    }
+
     switch (type) {
       case 'add': {
         const { pathname, data, isMarkdown } = change
@@ -237,7 +248,10 @@ export const useProjectStore = defineStore('project', () => {
     })
     bus.on('SIDEBAR::remove', () => {
       const { pathname } = activeItem.value
-      window.electron.ipcRenderer.invoke('mt::fs-trash-item', pathname).catch((err) => {
+      const editorStore = useEditorStore()
+      window.electron.ipcRenderer.invoke('mt::fs-trash-item', pathname).then(() => {
+        editorStore.CLOSE_TABS_BY_PATH(pathname)
+      }).catch((err) => {
         notice.notify({
           title: 'Error while deleting',
           type: 'error',
@@ -254,9 +268,12 @@ export const useProjectStore = defineStore('project', () => {
       const { pathname, isDirectory } = activeItem.value
       const dirname = isDirectory ? pathname : window.path.dirname(pathname)
       if (cb && cb.src) {
+        const editorStore = useEditorStore()
+        const src = cb.src
         cb.dest = dirname + PATH_SEPARATOR + window.path.basename(cb.src)
+        const dest = cb.dest
 
-        if (window.path.normalize(cb.src) === window.path.normalize(cb.dest)) {
+        if (window.path.normalize(src) === window.path.normalize(dest)) {
           notice.notify({
             title: 'Paste Forbidden',
             type: 'warning',
@@ -265,8 +282,17 @@ export const useProjectStore = defineStore('project', () => {
           return
         }
 
+        const pathMoveSnapshot =
+          cb.type === 'cut' ? editorStore.SNAPSHOT_PATH_MOVE_STATE(src) : undefined
         paste(cb as PasteOptions)
           .then(() => {
+            if (cb.type === 'cut') {
+              editorStore.UPDATE_PATHS_AFTER_MOVE({
+                src,
+                dest,
+                snapshot: pathMoveSnapshot
+              })
+            }
             clipboard.value = null
           })
           .catch((err) => {
@@ -329,8 +355,21 @@ export const useProjectStore = defineStore('project', () => {
     if (!src) return
     const dirname = window.path.dirname(src)
     const dest = dirname + PATH_SEPARATOR + name
+    const isRootRename = projectTree.value?.pathname
+      ? window.fileUtils.isSamePathSync(projectTree.value.pathname, src)
+      : false
     rename(src, dest).then(() => {
       editorStore.RENAME_IF_NEEDED({ src, dest })
+      window.electron.ipcRenderer.send('mt::workspace-path-renamed', { src, dest })
+      window.electron.ipcRenderer.send('mt::github-desktop::workspace-path-renamed', { src, dest })
+      if (isRootRename) {
+        pendingTreeEvents.value = []
+        const { windowId } = window.marktextpro?.env ?? {}
+        const editorWindowId = Number(windowId)
+        if (Number.isFinite(editorWindowId)) {
+          window.electron.ipcRenderer.send('mt::open-directory-in-window', editorWindowId, dest)
+        }
+      }
     })
   }
 

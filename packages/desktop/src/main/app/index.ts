@@ -43,6 +43,31 @@ interface BufferStoreInfo {
   filePath: string | null
 }
 
+interface WorkspacePathRenamePayload {
+  src: string
+  dest: string
+}
+
+const normalizeComparablePath = (pathname: string): string => {
+  const normalized = path.normalize(pathname)
+  return process.platform === 'win32' ? normalized.toLowerCase() : normalized
+}
+
+const isSameOrChildPath = (pathname: string, basePath: string): boolean => {
+  const normalizedPathname = normalizeComparablePath(pathname)
+  const normalizedBasePath = normalizeComparablePath(basePath)
+  if (normalizedPathname === normalizedBasePath) return true
+
+  const relativePath = path.relative(normalizedBasePath, normalizedPathname)
+  return !!relativePath && !relativePath.startsWith('..') && !path.isAbsolute(relativePath)
+}
+
+const replacePathPrefix = (pathname: string, src: string, dest: string): string => {
+  if (!isSameOrChildPath(pathname, src)) return pathname
+  if (normalizeComparablePath(pathname) === normalizeComparablePath(src)) return path.normalize(dest)
+  return path.join(dest, path.relative(src, pathname))
+}
+
 interface BufferedEditorState {
   tabs: Array<{ id?: string; [key: string]: unknown }>
   currentFileId?: string | null
@@ -813,6 +838,15 @@ class App {
       app.quit()
     })
 
+    ipcMain.on('mt::reload-workspace', (event, pathname: string) => {
+      const win = BrowserWindow.fromWebContents(event.sender)
+      if (!win || !pathname) return
+      const editor = this._windowManager.get(win.id) as EditorWindow | undefined
+      if (editor) {
+        editor.openFolder(pathname, true)
+      }
+    })
+
     ipcMain.on('mt::open-file-by-window-id', (_e, windowId: number, filePath: string) => {
       const resolvedPath = normalizeAndResolvePath(filePath)
       const editor = this._windowManager.get(windowId) as EditorWindow | undefined
@@ -834,6 +868,31 @@ class App {
       if (filePaths && filePaths[0]) {
         preferences.setItems({ defaultDirectoryToOpen: filePaths[0] })
       }
+    })
+
+    ipcMain.on('mt::open-directory-in-window', (_e, windowId: number, pathname: string) => {
+      if (!pathname || typeof pathname !== 'string') return
+      const editor = this._windowManager.get(windowId) as EditorWindow | undefined
+      editor?.openFolder(pathname)
+    })
+
+    ipcMain.on('mt::workspace-path-renamed', (_e, payload: WorkspacePathRenamePayload) => {
+      const { preferences } = this._accessor
+      const { src, dest } = payload ?? {}
+      if (!src || !dest) return
+
+      const nextPreferences: Record<string, string> = {}
+      const lastOpenedFolder = preferences.getItem<string>('lastOpenedFolder')
+      const defaultDirectoryToOpen = preferences.getItem<string>('defaultDirectoryToOpen')
+
+      if (lastOpenedFolder && isSameOrChildPath(lastOpenedFolder, src)) {
+        nextPreferences.lastOpenedFolder = replacePathPrefix(lastOpenedFolder, src, dest)
+      }
+      if (defaultDirectoryToOpen && isSameOrChildPath(defaultDirectoryToOpen, src)) {
+        nextPreferences.defaultDirectoryToOpen = replacePathPrefix(defaultDirectoryToOpen, src, dest)
+      }
+
+      preferences.setItems(nextPreferences)
     })
 
     ipcMain.on('mt::open-setting-window', () => {

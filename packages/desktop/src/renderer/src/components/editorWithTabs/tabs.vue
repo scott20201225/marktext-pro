@@ -18,12 +18,17 @@
             <Close />
           </el-icon>
         </li>
+        <li
+          v-if="!hideNewFile"
+          class="new-file"
+          :title="t('menu.file.newTab')"
+          @click.stop="newFile()"
+        >
+          <el-icon :size="16">
+            <Plus />
+          </el-icon>
+        </li>
       </ul>
-    </div>
-    <div class="new-file" :title="t('menu.file.newTab')" @click.stop="newFile()">
-      <el-icon :size="16">
-        <Plus />
-      </el-icon>
     </div>
   </div>
 </template>
@@ -47,6 +52,10 @@ const { t } = useI18n()
 
 const { currentFile, tabs } = storeToRefs(editorStore)
 
+const props = defineProps<{
+  hideNewFile?: boolean
+}>()
+
 interface AutoScroller {
   readonly down: boolean
   destroy: (forceCleanAnimation?: boolean) => void
@@ -54,8 +63,19 @@ interface AutoScroller {
 
 const tabContainer = ref<HTMLElement | null>(null)
 const tabDropContainer = ref<HTMLElement | null>(null)
+interface TabScrollState {
+  show: boolean
+  canLeft: boolean
+  canRight: boolean
+}
+
+const emit = defineEmits<{
+  (event: 'scroll-state-change', state: TabScrollState): void
+}>()
+
 let autoScroller: AutoScroller | null = null
 let drake: dragula.Drake | null = null
+let tabResizeObserver: ResizeObserver | null = null
 
 // Computed properties
 
@@ -80,6 +100,27 @@ const newFile = () => {
   editorStore.NEW_UNTITLED_TAB({})
 }
 
+const updateTabScrollState = () => {
+  const tabsEl = tabContainer.value
+  if (!tabsEl) return
+
+  const inlineNewFileWidth = 28
+  const shellWidth = tabsEl.closest<HTMLElement>('.editor-tab-shell')?.clientWidth
+  const availableWidth = shellWidth && shellWidth > 0 ? shellWidth : tabsEl.clientWidth
+  const contentWidth =
+    (tabDropContainer.value?.scrollWidth ?? tabsEl.scrollWidth) +
+    (props.hideNewFile ? inlineNewFileWidth : 0)
+  const actualMaxLeft = Math.max(0, tabsEl.scrollWidth - tabsEl.clientWidth)
+  if (tabsEl.scrollLeft > actualMaxLeft) {
+    tabsEl.scrollLeft = actualMaxLeft
+  }
+  emit('scroll-state-change', {
+    show: contentWidth > availableWidth + 1,
+    canLeft: tabsEl.scrollLeft > 1,
+    canRight: tabsEl.scrollLeft < actualMaxLeft - 1
+  })
+}
+
 // Keep the active tab visible when the selection changes by something other
 // than a direct click on a visible tab (keyboard cycle, switch-by-index, open
 // from the sidebar): the strip has `overflow: hidden` and only scrolls on the
@@ -97,19 +138,38 @@ const scrollActiveTabIntoView = () => {
   } else if (tabRect.right > containerRect.right) {
     container.scrollLeft += tabRect.right - containerRect.right
   }
+  updateTabScrollState()
+}
+
+const scrollTabs = (direction: 'left' | 'right') => {
+  const tabsEl = tabContainer.value
+  if (!tabsEl) return
+
+  const distance = Math.max(160, Math.floor(tabsEl.clientWidth * 0.6))
+  const maxLeft = Math.max(0, tabsEl.scrollWidth - tabsEl.clientWidth)
+  const nextLeft =
+    direction === 'left'
+      ? Math.max(0, tabsEl.scrollLeft - distance)
+      : Math.min(maxLeft, tabsEl.scrollLeft + distance)
+  tabsEl.scrollTo({ left: nextLeft, behavior: 'smooth' })
 }
 
 const handleTabScroll = (event: WheelEvent) => {
+  const tabsEl = tabContainer.value
+  if (!tabsEl || tabsEl.scrollWidth <= tabsEl.clientWidth) return
+
+  event.preventDefault()
+
   // Use mouse wheel value first but prioritize X value more (e.g. touchpad input).
   let delta = event.deltaY
   if (event.deltaX !== 0) {
     delta = event.deltaX
   }
 
-  const tabsEl = tabContainer.value
-  if (!tabsEl) return
-  const newLeft = Math.max(0, Math.min(tabsEl.scrollLeft + delta, tabsEl.scrollWidth))
+  const maxLeft = tabsEl.scrollWidth - tabsEl.clientWidth
+  const newLeft = Math.max(0, Math.min(tabsEl.scrollLeft + delta, maxLeft))
   tabsEl.scrollLeft = newLeft
+  updateTabScrollState()
 }
 
 const closeTab = (tabId: unknown) => {
@@ -172,6 +232,20 @@ watch(
   }
 )
 
+watch(
+  () => tabs.value.map((file) => file.id).join('|'),
+  () => {
+    nextTick(updateTabScrollState)
+  }
+)
+
+watch(
+  () => props.hideNewFile,
+  () => {
+    nextTick(updateTabScrollState)
+  }
+)
+
 onMounted(() => {
   bus.on('TABS::close-this', closeTab)
   bus.on('TABS::close-others', closeOthers)
@@ -186,22 +260,28 @@ onMounted(() => {
   if (!tabsEl || !tabDropContainer.value) return
 
   // Allow to scroll through the tabs by mouse wheel or touchpad.
-  tabsEl.addEventListener('wheel', handleTabScroll)
+  tabsEl.addEventListener('wheel', handleTabScroll, { passive: false })
+  tabsEl.addEventListener('scroll', updateTabScrollState)
+  tabResizeObserver = new ResizeObserver(updateTabScrollState)
+  tabResizeObserver.observe(tabsEl)
+  nextTick(updateTabScrollState)
 
   // Allow tab drag and drop to reorder tabs.
   drake = dragula([tabDropContainer.value], {
     direction: 'horizontal',
     revertOnSpill: true,
     mirrorContainer: tabDropContainer.value,
-    ignoreInputTextSelection: false
+    ignoreInputTextSelection: false,
+    moves: (el) => !el.classList.contains('new-file')
   }).on('drop', (el, _target, _source, sibling) => {
     // Current tab that was dropped and need to be reordered.
     const droppedId = el?.getAttribute('data-id')
     // This should be the next tab (tab | ... | el | sibling | tab | ...) but may be
     // the mirror image or null (tab | ... | el | sibling or null) if last tab.
     const nextTabId = sibling ? sibling.getAttribute('data-id') : null
-    const isLastTab = !sibling || sibling.classList.contains('gu-mirror')
-    if (!droppedId || (sibling && !nextTabId)) {
+    const isLastTab =
+      !sibling || sibling.classList.contains('gu-mirror') || sibling.classList.contains('new-file')
+    if (!droppedId || (!isLastTab && !nextTabId)) {
       console.error('Tab reorder error: invalid tab IDs')
       return
     }
@@ -227,7 +307,9 @@ onBeforeUnmount(() => {
   const tabsEl = tabContainer.value
   if (tabsEl) {
     tabsEl.removeEventListener('wheel', handleTabScroll)
+    tabsEl.removeEventListener('scroll', updateTabScrollState)
   }
+  tabResizeObserver?.disconnect()
 
   if (autoScroller) {
     // Force destroy
@@ -247,6 +329,10 @@ onBeforeUnmount(() => {
   bus.off('TABS::show-in-folder', showInFolder)
   bus.off('EDITOR_TABS::change-max-width', changeMaxWidth)
 })
+
+defineExpose({
+  scrollTabs
+})
 </script>
 
 <style scoped>
@@ -263,15 +349,26 @@ onBeforeUnmount(() => {
   position: relative;
   display: flex;
   flex-direction: row;
+  flex: 0 0 28px;
+  width: 100%;
+  max-width: 100%;
+  min-width: 0;
   height: 28px;
   user-select: none;
   box-shadow: 0px 0px 9px 2px rgba(0, 0, 0, 0.1);
   overflow: hidden;
 }
 .scrollable-tabs {
-  flex: 0 1 auto;
+  flex: 1 1 auto;
+  min-width: 0;
   height: 28px;
-  overflow: hidden;
+  box-sizing: border-box;
+  overflow-x: auto;
+  overflow-y: hidden;
+  scrollbar-width: none;
+}
+.scrollable-tabs::-webkit-scrollbar {
+  display: none;
 }
 .tabs-container {
   min-width: min-content;
@@ -284,10 +381,9 @@ onBeforeUnmount(() => {
   flex-direction: row;
   overflow-y: hidden;
   z-index: 2;
-  &::-webkit-scrollbar:horizontal {
-    display: none;
-  }
+
   & > li {
+    flex: 0 0 auto;
     transition: all 0.15s ease-in-out;
     position: relative;
     padding: 0 8px;
@@ -365,9 +461,10 @@ onBeforeUnmount(() => {
     }
   }
 }
-.editor-tabs > .new-file {
+.tabs-container > .new-file {
   flex: 0 0 28px;
   width: 28px;
+  padding: 0;
   height: 28px;
   border-right: none;
   background: transparent;
@@ -379,7 +476,7 @@ onBeforeUnmount(() => {
   opacity: 1;
 }
 
-.editor-tabs > .new-file:hover {
+.tabs-container > .new-file:hover {
   transition: all 0.15s ease-in-out;
   & > svg {
     fill: var(--focusColor);
