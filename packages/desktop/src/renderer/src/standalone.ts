@@ -139,6 +139,8 @@ const createFileUtilsStub = (): FileUtilsAPI => ({
     }) as unknown as FileUtilsAPI['stat'] extends (...args: never[]) => Promise<infer T> ? T : never,
   writeFile: async() => {},
   readFile: async() => '',
+  md5File: async() => 'stub-md5',
+  md5Data: async() => 'stub-md5',
   pathExists: async() => false,
   unlink: async() => {},
   readdir: async() => [],

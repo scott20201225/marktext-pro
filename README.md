@@ -3,8 +3,8 @@
 <h1 align="center">MarkTextPro</h1>
 
 <div align="center">
-  <strong>:high_brightness: Next generation markdown editor :crescent_moon:</strong><br>
-  A simple and elegant open-source markdown editor that focused on speed and usability.<br>
+  <strong>:high_brightness: Markdown editor with integrated Git workspace :crescent_moon:</strong><br>
+  A simple and elegant open-source markdown editor focused on writing, file workflows, version control and sync.<br>
   <sub>Available for Linux, macOS and Windows.</sub>
 </div>
 
@@ -163,6 +163,8 @@ The logo is retired from the screenshot area. Below are real product shots taken
 - Various [themes](https://github.com/scott20201225/marktext-pro/tree/main/docs): **Cadmium Light**, **Material Dark** etc.
 - Various editing modes: **Source Code mode**, **Typewriter mode**, **Focus mode**.
 - Paste images directly from clipboard.
+- Integrated Git workspace inspired by GitHub Desktop: clone or add repositories, review changes and history, commit, branch, fetch, pull and push without leaving MarkTextPro.
+- Switch between the editor workspace and the Git workspace, so local Markdown folders can use Git for version management and remote synchronization.
 
 ## Download and Installation
 
