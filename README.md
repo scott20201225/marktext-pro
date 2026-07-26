@@ -3,23 +3,20 @@
 <h1 align="center">MarkTextPro</h1>
 
 <div align="center">
-  <strong>:high_brightness: Markdown editor with integrated Git workspace :crescent_moon:</strong><br>
-  A simple and elegant open-source markdown editor focused on writing, file workflows, version control and sync.<br>
-  <sub>Available for Linux, macOS and Windows.</sub>
+  <strong>集成 Git 的 Markdown 文件编辑管理器</strong><br>
+  面向本地文件夹、外部 Markdown 文件和 Git 仓库的轻量编辑管理工具。<br>
+  <sub>支持 Linux、macOS、Windows。</sub>
 </div>
 
 <br>
 
 <div align="center">
-  <!-- License -->
   <a href="LICENSE">
     <img src="https://img.shields.io/github/license/scott20201225/marktext-pro.svg" alt="LICENSE">
   </a>
-  <!-- Downloads total -->
   <a href="https://github.com/scott20201225/marktext-pro/releases">
     <img src="https://img.shields.io/github/downloads/scott20201225/marktext-pro/total.svg" alt="total download">
   </a>
-  <!-- Downloads latest release -->
   <a href="https://github.com/scott20201225/marktext-pro/releases/latest">
     <img src="https://img.shields.io/github/downloads/scott20201225/marktext-pro/latest/total.svg" alt="latest download">
   </a>
@@ -27,212 +24,186 @@
 
 <div align="center">
   <h3>
-    <a href="https://github.com/scott20201225/marktext-pro">
-      Repository
-    </a>
+    <a href="#产品定位">产品定位</a>
     <span> | </span>
-    <a href="https://github.com/scott20201225/marktext-pro#features">
-      Features
-    </a>
+    <a href="#核心能力">核心能力</a>
     <span> | </span>
-    <a href="https://github.com/scott20201225/marktext-pro#download-and-installation">
-      Downloads
-    </a>
+    <a href="#文件工作区模型">工作区模型</a>
     <span> | </span>
-    <a href="https://github.com/scott20201225/marktext-pro#development">
-      Development
-    </a>
+    <a href="#git-联动">Git 联动</a>
     <span> | </span>
-    <a href="https://github.com/scott20201225/marktext-pro#contribution">
-      Contribution
-    </a>
+    <a href="#截图与演示">截图与演示</a>
+    <span> | </span>
+    <a href="#下载安装">下载安装</a>
   </h3>
 </div>
 
-<div align="center">
-  <sub>Translations:</sub>
-  <a href="docs/i18n/README-zh_cn.md#readme">
-    <span>:cn:</span>
-  </a>
-  <a href="docs/i18n/README-zh_tw.md#readme">
-    <span>:taiwan:</span>
-  </a>
-  <a href="docs/i18n/README-jp.md#readme">
-    <span>:jp:</span>
-  </a>
-  <a href="docs/i18n/README-fr.md#readme">
-    <span>:fr:</span>
-  </a>
-  <a href="docs/i18n/README-tr.md#readme">
-    <span>:tr:</span>
-  </a>
-  <a href="docs/i18n/README-es.md#readme">
-    <span>:es:</span>
-  </a>
-  <a href="docs/i18n/README-pt.md#readme">
-    <span>:portugal:</span>
-  </a>
-  <a href="docs/i18n/README-kr.md#readme">
-    <span>:kr:</span>
-  </a>
-  <a href="docs/i18n/README-bn.md#readme">
-    <span>:bangladesh:</span>
-  </a>
-</div>
+## 产品定位
 
-<div align="center">
-  <sub>
-    Based on MarkText and further developed as MarkTextPro. See the
-    <a href="LICENSE">license</a>
-    and repository history for attribution details.
-  </sub>
-</div>
+MarkTextPro 是一款集成 Git 的 Markdown 文件编辑管理器。它保留自由文件夹管理方式，适合编辑外部 Markdown、维护项目文档、整理本地资料，也适合把一个普通文件夹直接变成可以提交、同步、回滚的 Git 工作区。
 
-<br />
+MarkTextPro 和 MarkNotePro 的区别很明确：
 
-> MarkTextPro is built on top of MarkText and is an open-source project that is still being carefully refined. We value every bug report, suggestion, and real-world experience. If you notice rough edges or have ideas while using it, we'd be glad to hear from you and keep improving MarkTextPro together.
->
-> MarkTextPro 基于 MarkText 开发，是一个持续打磨中的开源项目。我们珍惜每一条问题反馈、使用建议和体验感受，欢迎你在使用过程中把遇到的问题与想法告诉我们，一起让 MarkTextPro 变得更稳定、更顺手。
+- MarkTextPro 更自由，面向文件夹、外部 Markdown 文件和临时编辑。
+- MarkNotePro 更结构化，面向长期笔记工作区、分区组、分区和笔记。
 
-## Screenshot
+如果你需要一个不强制笔记结构、但又能管理 Markdown 文件和 Git 仓库的本地工具，MarkTextPro 更适合。
 
-The logo is retired from the screenshot area. Below are real product shots taken from the current MarkTextPro build.
+## 核心能力
 
-[Open the full feature showcase image](docs/assets/screenshots/showcase-overview.png)
+- **本地文件夹管理**：直接打开文件夹，按真实目录结构管理 Markdown 文件。
+- **外部 Markdown 编辑**：可以打开工作区外的 Markdown 文件，适合临时编辑和文档处理。
+- **多标签编辑**：支持多个 Markdown 文件同时打开、切换和编辑。
+- **Markdown 所见即所得编辑**：支持标题、列表、任务、表格、引用、代码块、数学公式、Mermaid 等常用 Markdown 能力。
+- **表格增强**：支持表格批量编辑、复制粘贴、与 Excel 互操作等高频办公能力。
+- **工作区附件处理**：当文件位于工作区内时，本地图片可复制到工作区附件目录并使用相对路径；工作区外文件则保持外部路径逻辑。
+- **隐藏开发噪音目录**：工作区树默认隐藏 `.git`、`.idea`、`.vscode`、`.vs`、`.claude`、`.codex`、`node_modules` 等常见工具目录。
+- **集成 Git 工作区**：内置 Git 操作界面，支持仓库添加、克隆、变更查看、提交、分支、拉取、推送等操作。
+- **文件工作区与 Git 仓库联动**：可以从 Git 仓库切换文件工作区，也可以在工作区根目录重命名后同步更新 Git 仓库路径。
+
+## 文件工作区模型
+
+MarkTextPro 的工作区就是一个真实文件夹。它不会强制分区组、分区、笔记层级，而是尊重本地目录结构；同时会过滤掉对 Markdown 编辑管理意义不大的工具目录，保持侧边栏清爽。
+
+```mermaid
+flowchart TD
+  Root["文件工作区根目录"] --> Folder["任意子文件夹"]
+  Folder --> Markdown["Markdown 文件"]
+  Folder --> Other["其它普通文件"]
+  Root --> Attach["Attachments 附件目录"]
+  Root -. "默认隐藏" .-> Git[".git"]
+  Root -. "默认隐藏" .-> IDE[".idea / .vscode / .vs"]
+  Root -. "默认隐藏" .-> Agent[".claude / .codex"]
+  Root -. "默认隐藏" .-> Deps["node_modules 等依赖目录"]
+```
+
+工作区规则：
+
+- 文件夹名称和文件名称按真实文件系统显示。
+- 只打开 Markdown 文件进行编辑，其它文件主要作为目录内容存在。
+- 剪切、粘贴、重命名、删除文件或文件夹时，会同步处理已打开标签的路径指向。
+- 删除工作区内文件时，相关编辑标签会同步关闭，避免继续编辑已不存在的文件。
+- 根目录重命名后，会同步更新受管 Git 仓库路径。
+
+## Git 联动
+
+MarkTextPro 把 Git 作为文件工作区的版本管理能力。你可以在编辑区处理 Markdown 文件，也可以切换到 Git 区完成提交、拉取、推送和历史查看。
+
+```mermaid
+flowchart LR
+  Editor["编辑区"] -- "点击 Git 按钮" --> Git["Git 区"]
+  Git -- "点击编辑按钮" --> Editor
+  Git -- "选择仓库" --> Confirm{"确认切换仓库？"}
+  Confirm -- "确认，并勾选切换工作区" --> Workspace["将文件工作区切换到当前仓库或子目录"]
+  Confirm -- "确认，但不切换工作区" --> GitOnly["仅切换 Git 仓库"]
+  Workspace --> Reload["关闭已打开文件并重载工作区"]
+  Editor -- "重命名根目录" --> Sync["同步更新受管 Git 仓库路径"]
+  Sync --> Git
+```
+
+联动关系：
+
+- Git 区可以选择仓库，切换前会确认，避免误点。
+- 默认可以勾选“切换工作区”，让文件工作区跟随当前 Git 仓库。
+- 也可以取消勾选，只切换 Git 仓库，保留当前文件工作区。
+- 从 Git 区可以把当前仓库根目录或仓库子目录设置为文件工作区。
+- 如果工作区根目录重命名，MarkTextPro 会同步更新受管 Git 仓库路径，避免 Git 区找不到仓库。
+- 允许 Git 仓库和文件工作区不是同一个目录，适合更复杂的本地目录规划。
+
+## 截图与演示
+
+[查看完整功能展示图](docs/assets/screenshots/showcase-overview.png)
 
 <table>
   <tr>
     <td align="center" colspan="2">
-      <img src="docs/assets/screenshots/git-workspace-overview.png" alt="Integrated Git workspace in MarkTextPro" width="100%">
+      <img src="docs/assets/screenshots/git-workspace-demo.gif" alt="MarkTextPro Git 操作演示" width="100%">
       <br>
-      <sub>Integrated Git workspace for Markdown versioning and remote synchronization</sub>
+      <sub>在编辑区和 Git 区之间切换，完成仓库操作与工作区联动</sub>
+    </td>
+  </tr>
+  <tr>
+    <td align="center">
+      <img src="docs/assets/screenshots/warning-callouts.png" alt="五种警告块样式" width="100%">
+      <br>
+      <sub>五种警告块样式</sub>
+    </td>
+    <td align="center">
+      <img src="docs/assets/screenshots/paragraph-menu-warning.png" alt="段落菜单与警告块" width="100%">
+      <br>
+      <sub>段落菜单与警告块</sub>
+    </td>
+  </tr>
+  <tr>
+    <td align="center">
+      <img src="docs/assets/screenshots/task-status-bulk-action.png" alt="任务状态批量编辑" width="100%">
+      <br>
+      <sub>任务状态批量编辑</sub>
+    </td>
+    <td align="center">
+      <img src="docs/assets/screenshots/list-indent-context-menu.png" alt="列表缩进菜单" width="100%">
+      <br>
+      <sub>列表缩进菜单</sub>
     </td>
   </tr>
   <tr>
     <td align="center" colspan="2">
-      <img src="docs/assets/screenshots/git-workspace-demo.gif" alt="Switching between editing and Git operations in MarkTextPro" width="100%">
+      <img src="docs/assets/screenshots/insert-palette.png" alt="插入面板" width="100%">
       <br>
-      <sub>Switch between editing and Git operations without leaving MarkTextPro</sub>
-    </td>
-  </tr>
-  <tr>
-    <td align="center">
-      <img src="docs/assets/screenshots/warning-callouts.png" alt="Five warning callout styles" width="100%">
-      <br>
-      <sub>Five warning callout styles</sub>
-    </td>
-    <td align="center">
-      <img src="docs/assets/screenshots/paragraph-menu-warning.png" alt="Paragraph menu and warning callouts" width="100%">
-      <br>
-      <sub>Paragraph menu and warning callouts</sub>
-    </td>
-  </tr>
-  <tr>
-    <td align="center">
-      <img src="docs/assets/screenshots/task-status-bulk-action.png" alt="Bulk task status editing" width="100%">
-      <br>
-      <sub>Bulk task status editing</sub>
-    </td>
-    <td align="center">
-      <img src="docs/assets/screenshots/list-indent-context-menu.png" alt="List indent and outdent context menu" width="100%">
-      <br>
-      <sub>List indent and outdent context menu</sub>
+      <sub>插入面板</sub>
     </td>
   </tr>
   <tr>
     <td align="center" colspan="2">
-      <img src="docs/assets/screenshots/insert-palette.png" alt="Inline insert palette" width="100%">
+      <img src="docs/assets/screenshots/table-toolkit-overview.png" alt="表格工具能力" width="100%">
       <br>
-      <sub>Inline insert palette</sub>
+      <sub>表格工具能力</sub>
+    </td>
+  </tr>
+  <tr>
+    <td align="center">
+      <img src="docs/assets/screenshots/table-copy-paste.gif" alt="表格复制粘贴" width="100%">
+      <br>
+      <sub>表格复制粘贴</sub>
+    </td>
+    <td align="center">
+      <img src="docs/assets/screenshots/excel-table-interoperability.gif" alt="Excel 与 MarkTextPro 表格互操作" width="100%">
+      <br>
+      <sub>Excel 与 MarkTextPro 表格互操作</sub>
     </td>
   </tr>
   <tr>
     <td align="center" colspan="2">
-      <img src="docs/assets/screenshots/table-toolkit-overview.png" alt="Table editing toolkit overview" width="100%">
+      <img src="docs/assets/screenshots/git-workspace-overview.png" alt="MarkTextPro Git 工作区截图" width="100%">
       <br>
-      <sub>Table editing toolkit overview</sub>
-    </td>
-  </tr>
-  <tr>
-    <td align="center">
-      <img src="docs/assets/screenshots/table-copy-paste.gif" alt="Copy and paste between MarkTextPro tables" width="100%">
-      <br>
-      <sub>Copy and paste between MarkTextPro tables</sub>
-    </td>
-    <td align="center">
-      <img src="docs/assets/screenshots/excel-table-interoperability.gif" alt="Copy and paste between Excel and MarkTextPro tables" width="100%">
-      <br>
-      <sub>Excel and MarkTextPro table interoperability</sub>
+      <sub>集成 Git 工作区：查看变更、历史、分支并提交同步</sub>
     </td>
   </tr>
 </table>
 
-## Features
-
-- Realtime preview (WYSIWYG) and a clean and simple interface to get a distraction-free writing experience.
-- Support [CommonMark Spec](https://spec.commonmark.org), [GitHub Flavored Markdown Spec](https://github.github.com/gfm/) and selective support [Pandoc markdown](https://pandoc.org/MANUAL.html#pandocs-markdown).
-- Markdown extensions such as math expressions (KaTeX), front matter and emojis.
-- Support paragraphs and inline style shortcuts to improve your writing efficiency.
-- Output **HTML** and **PDF** files.
-- Various [themes](https://github.com/scott20201225/marktext-pro/tree/main/docs): **Cadmium Light**, **Material Dark** etc.
-- Various editing modes: **Source Code mode**, **Typewriter mode**, **Focus mode**.
-- Paste images directly from clipboard.
-- Integrated Git workspace inspired by GitHub Desktop: clone or add repositories, review changes and history, commit, branch, fetch, pull and push without leaving MarkTextPro.
-- Switch between the editor workspace and the Git workspace, so local Markdown folders can use Git for version management, remote synchronization and restore workflows.
-
-## Download and Installation
+## 下载安装
 
 ![platform](https://img.shields.io/static/v1.svg?label=Platform&message=Linux%20x64%20|%20macOS%20x64%2Farm64%20|%20Windows%20x64%2Farm64&style=for-the-badge)
 
-| ![](https://raw.githubusercontent.com/wiki/ryanoasis/nerd-fonts/screenshots/v1.0.x/mac-pass-sm.png)                                                                                         | ![](https://raw.githubusercontent.com/wiki/ryanoasis/nerd-fonts/screenshots/v1.0.x/windows-pass-sm.png)                                                                                         | ![](https://raw.githubusercontent.com/wiki/ryanoasis/nerd-fonts/screenshots/v1.0.x/linux-pass-sm.png)                                                                                                       |
-|:-------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------:|:-----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------:|:-----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------:|
-| [![Download for macOS](https://img.shields.io/badge/macOS-Download-blue)](https://github.com/scott20201225/marktext-pro/releases/latest) | [![Download for Windows](https://img.shields.io/badge/Windows-Download-blue)](https://github.com/scott20201225/marktext-pro/releases/latest) | [![Download for Linux](https://img.shields.io/badge/Linux-Download-blue)](https://github.com/scott20201225/marktext-pro/releases/latest) |
+请从 [Release 页面](https://github.com/scott20201225/marktext-pro/releases/latest) 下载对应系统版本：
 
-Want to see new features of the latest version? Please refer to [CHANGELOG](https://github.com/scott20201225/marktext-pro/tree/main/docs).
+- macOS：`marktextpro-mac-(arm64|x64)-%version%.dmg`
+- Windows：`marktextpro-win-(x64|arm64)-%version%-setup.exe`
+- Linux：提供 `deb`、`rpm`、`snap`、`tar.gz` 等构建，具体以 Release 页面为准。
 
-#### macOS
+## 开发
 
-Requires macOS 11 (Big Sur) or later. Universal builds aren't published — pick the matching `arm64` or `x64` installer.
+```bash
+pnpm install
+pnpm --filter marktextpro dev
+```
 
-You can download the latest `marktextpro-mac-(arm64|x64)-%version%.dmg` from the [release page](https://github.com/scott20201225/marktext-pro/releases/latest).
+构建桌面端：
 
-#### Windows
+```bash
+pnpm --filter marktextpro build
+```
 
-Requires Windows 10 or 11. Both x64 and arm64 installers are published — pick the architecture that matches your machine.
+## 许可
 
-Simply download and install MarkTextPro via the setup wizard (`marktextpro-win-(x64|arm64)-%version%-setup.exe`) and choose whether to install per-user or machine wide.
-
-#### Linux
-
-Please follow the [Linux installation instructions](https://github.com/scott20201225/marktext-pro/tree/main/docs).
-
-#### Other
-
-All binaries for Linux, macOS and Windows can be downloaded from the [release page](https://github.com/scott20201225/marktext-pro/releases/latest). If a version is unavailable for your system, then please open an [issue](https://github.com/scott20201225/marktext-pro/issues).
-
-## Development
-
-If you wish to build MarkTextPro yourself, please check out our [build instructions](https://github.com/scott20201225/marktext-pro/tree/main/docs).
-
-- [User documentation](https://github.com/scott20201225/marktext-pro/tree/main/docs)
-- [Developer documentation](https://github.com/scott20201225/marktext-pro/tree/main/docs)
-
-If you have any questions regarding MarkTextPro, you are welcome to write an issue. When doing so please use the default format found when opening an issue. Of course, if you submit a PR directly, it will be greatly appreciated.
-
-## Contribution
-
-MarkTextPro is in development, please make sure to read the [Contributing Guide](.github/CONTRIBUTING.md) before making a pull request. Want to add some features to MarkTextPro? Please open an issue first and describe the use case.
-
-## Community
-
-MarkTextPro is built on top of MarkText and is an open-source project under active refinement. Feedback, issues, and suggestions are always welcome to help us improve the experience.
-
-MarkTextPro 基于 MarkText 开发，是一个持续打磨中的开源项目。欢迎反馈问题与建议，帮助我们把体验做得更好。
-
-## Contributors
-
-Thank you to all the people who have already contributed to MarkTextPro [[contributors](https://github.com/scott20201225/marktext-pro/graphs/contributors)].
-
-## License
-
-[**MIT**](LICENSE).
+[MIT](LICENSE)
