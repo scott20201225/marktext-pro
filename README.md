@@ -102,6 +102,20 @@ The logo is retired from the screenshot area. Below are real product shots taken
 
 <table>
   <tr>
+    <td align="center" colspan="2">
+      <img src="docs/assets/screenshots/git-workspace-overview.png" alt="Integrated Git workspace in MarkTextPro" width="100%">
+      <br>
+      <sub>Integrated Git workspace for Markdown versioning and remote synchronization</sub>
+    </td>
+  </tr>
+  <tr>
+    <td align="center" colspan="2">
+      <img src="docs/assets/screenshots/git-workspace-demo.gif" alt="Switching between editing and Git operations in MarkTextPro" width="100%">
+      <br>
+      <sub>Switch between editing and Git operations without leaving MarkTextPro</sub>
+    </td>
+  </tr>
+  <tr>
     <td align="center">
       <img src="docs/assets/screenshots/warning-callouts.png" alt="Five warning callout styles" width="100%">
       <br>
@@ -164,7 +178,7 @@ The logo is retired from the screenshot area. Below are real product shots taken
 - Various editing modes: **Source Code mode**, **Typewriter mode**, **Focus mode**.
 - Paste images directly from clipboard.
 - Integrated Git workspace inspired by GitHub Desktop: clone or add repositories, review changes and history, commit, branch, fetch, pull and push without leaving MarkTextPro.
-- Switch between the editor workspace and the Git workspace, so local Markdown folders can use Git for version management and remote synchronization.
+- Switch between the editor workspace and the Git workspace, so local Markdown folders can use Git for version management, remote synchronization and restore workflows.
 
 ## Download and Installation
 
@@ -214,12 +228,6 @@ MarkTextPro is in development, please make sure to read the [Contributing Guide]
 MarkTextPro is built on top of MarkText and is an open-source project under active refinement. Feedback, issues, and suggestions are always welcome to help us improve the experience.
 
 MarkTextPro 基于 MarkText 开发，是一个持续打磨中的开源项目。欢迎反馈问题与建议，帮助我们把体验做得更好。
-
-QQ Group: `871505001`
-
-<p align="center">
-  <img src="docs/assets/community/qq-group-qrcode.jpg" alt="MarktextPro QQ group QR code" width="360">
-</p>
 
 ## Contributors
 
