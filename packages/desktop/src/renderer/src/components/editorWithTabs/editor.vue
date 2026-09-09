@@ -238,8 +238,15 @@ interface EditorContextState {
   hasTableSelection: boolean
 }
 
+interface EditorLinkContext {
+  href: string
+  text: string
+  dirname: string
+}
+
 interface MarkTextProWindow extends Window {
   __MARKTEXTPRO_GET_EDITOR_CONTEXT_STATE__?: () => EditorContextState
+  __MARKTEXTPRO_GET_LINK_CONTEXT__?: (x: number, y: number) => EditorLinkContext | null
 }
 
 const props = defineProps<{
@@ -902,6 +909,53 @@ const jumpClick = (linkInfo: { href?: string | null } | null) => {
   if (!linkInfo) return
   const { href } = linkInfo
   editorStore.FORMAT_LINK_CLICK({ data: { href: href ?? null }, dirname: window.DIRNAME })
+}
+
+const LINK_CONTEXT_SELECTOR = [
+  'span.mu-link',
+  'a.mu-no-text-link',
+  'a.mu-reference-link',
+  'a.mu-raw-html',
+  'a.mu-auto-link',
+  'a.mu-auto-link-extension',
+  '.mu-html-preview a[href]'
+].join(', ')
+
+const getLinkContextFromElement = (
+  link: (HTMLElement & { href?: unknown }) | null
+): EditorLinkContext | null => {
+  if (!link) return null
+
+  const href =
+    link.getAttribute('href') ||
+    link.dataset.href ||
+    (typeof link.href === 'string' ? link.href : '') ||
+    ''
+  const text = link.textContent || ''
+  if (!href && !text) return null
+
+  return {
+    href,
+    text,
+    dirname: window.DIRNAME
+  }
+}
+
+const getLinkContextAtPoint = (x: number, y: number): EditorLinkContext | null => {
+  const target = document.elementFromPoint(x, y) as HTMLElement | null
+  const pointContext = getLinkContextFromElement(
+    target?.closest(LINK_CONTEXT_SELECTOR) as (HTMLElement & { href?: unknown }) | null
+  )
+  if (pointContext) return pointContext
+
+  const selection = document.getSelection()
+  const selectionNode =
+    selection?.anchorNode instanceof HTMLElement
+      ? selection.anchorNode
+      : selection?.anchorNode?.parentElement
+  return getLinkContextFromElement(
+    selectionNode?.closest(LINK_CONTEXT_SELECTOR) as (HTMLElement & { href?: unknown }) | null
+  )
 }
 
 interface ImagePathSuggestion {
@@ -1858,6 +1912,7 @@ const resizeObserverForEditor = new ResizeObserver(handleResetPaddingBottom)
 
 onMounted(() => {
   ;(window as MarkTextProWindow).__MARKTEXTPRO_GET_EDITOR_CONTEXT_STATE__ = getEditorContextState
+  ;(window as MarkTextProWindow).__MARKTEXTPRO_GET_LINK_CONTEXT__ = getLinkContextAtPoint
 
   printer = new Printer()
   const ele = editorRef.value
@@ -2149,6 +2204,9 @@ onBeforeUnmount(() => {
   const appWindow = window as MarkTextProWindow
   if (appWindow.__MARKTEXTPRO_GET_EDITOR_CONTEXT_STATE__ === getEditorContextState) {
     delete appWindow.__MARKTEXTPRO_GET_EDITOR_CONTEXT_STATE__
+  }
+  if (appWindow.__MARKTEXTPRO_GET_LINK_CONTEXT__ === getLinkContextAtPoint) {
+    delete appWindow.__MARKTEXTPRO_GET_LINK_CONTEXT__
   }
 
   bus.off('file-loaded', setMarkdownToEditor)
