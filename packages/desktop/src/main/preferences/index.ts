@@ -11,6 +11,7 @@ import { DEFAULT_LANGUAGE, getSupportedLanguages, isLanguageSupported } from 'co
 import { normalizeAppTheme } from 'common/theme'
 import { TypedEmitter } from '@shared/types/typedEmitter'
 import type { IUserPreferences } from '@shared/types/preferences'
+import { configureLinkOpenWithPreferences } from '../utils/linkOpenWith'
 import schema from './schema.json'
 
 const PREFERENCES_FILE_NAME = 'preferences'
@@ -66,6 +67,10 @@ class Preference extends TypedEmitter<PreferenceEvents> {
 
     this.staticPath = path.join(global.__static, 'preference.json')
     this.init()
+    configureLinkOpenWithPreferences({
+      get: () => this.getItem<Record<string, string>>('linkOpenWithByExtension') ?? {},
+      set: value => this.setItem('linkOpenWithByExtension', value)
+    })
   }
 
   init = (): void => {
