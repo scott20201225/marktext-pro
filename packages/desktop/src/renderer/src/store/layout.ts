@@ -6,6 +6,7 @@ import { debouncedSendBufferedState } from './bufferedState'
 interface LayoutPartial {
   rightColumn?: string
   sideBarWidth?: number | string
+  showDocumentToc?: boolean
 }
 
 interface SetLayoutOptions {
@@ -20,6 +21,7 @@ const normalizeSideBarWidth = (width: unknown): number => {
 interface BufferedLayout {
   rightColumn: string | undefined
   sideBarWidth: number
+  showDocumentToc: boolean
 }
 
 const createBufferedLayoutState = (state: unknown): BufferedLayout | null => {
@@ -30,18 +32,21 @@ const createBufferedLayoutState = (state: unknown): BufferedLayout | null => {
   // not coerce to 'files' here — RESTORE_BUFFERED_STATE then routes through
   // SET_LAYOUT which only assigns when the key is defined.
   return {
-    rightColumn: s.rightColumn,
-    sideBarWidth: normalizeSideBarWidth(s.sideBarWidth)
+    rightColumn: s.rightColumn === 'toc' ? 'files' : s.rightColumn,
+    sideBarWidth: normalizeSideBarWidth(s.sideBarWidth),
+    showDocumentToc: s.showDocumentToc === true
   }
 }
 
 const initialWidth = localStorage.getItem('side-bar-width')
 const initialSideBarWidth = normalizeSideBarWidth(initialWidth)
+const initialDocumentTocVisible = localStorage.getItem('document-toc-visible') === 'true'
 
 export const useLayoutStore = defineStore('layout', () => {
   const rightColumn = ref<string>('files')
   const showSideBar = ref(true)
   const sideBarWidth = ref<number>(initialSideBarWidth)
+  const showDocumentToc = ref<boolean>(initialDocumentTocVisible)
 
   // Actual rendered sidebar width. `sideBarWidth` is the right-column width
   // (clamped to ≥220 by `normalizeSideBarWidth`); when `rightColumn` is empty
@@ -59,8 +64,11 @@ export const useLayoutStore = defineStore('layout', () => {
     // Match the pre-migration `Object.assign(this, layout)` semantics: assign
     // each known field as-is (no normalization here; SET_SIDE_BAR_WIDTH owns
     // sideBarWidth's normalization), and skip unknown keys silently.
-    if (layout.rightColumn !== undefined) rightColumn.value = layout.rightColumn
+    if (layout.rightColumn !== undefined) {
+      rightColumn.value = layout.rightColumn === 'toc' ? 'files' : layout.rightColumn
+    }
     if (layout.sideBarWidth !== undefined) sideBarWidth.value = layout.sideBarWidth as number
+    if (layout.showDocumentToc !== undefined) showDocumentToc.value = layout.showDocumentToc
     if (scheduleBufferUpdate) {
       debouncedSendBufferedState()
     }
@@ -69,7 +77,8 @@ export const useLayoutStore = defineStore('layout', () => {
   function CREATE_BUFFERED_STATE(): BufferedLayout | null {
     return createBufferedLayoutState({
       rightColumn: rightColumn.value,
-      sideBarWidth: sideBarWidth.value
+      sideBarWidth: sideBarWidth.value,
+      showDocumentToc: showDocumentToc.value
     })
   }
 
@@ -80,7 +89,8 @@ export const useLayoutStore = defineStore('layout', () => {
     SET_SIDE_BAR_WIDTH(layout.sideBarWidth, { scheduleBufferUpdate: false })
     SET_LAYOUT(
       {
-        rightColumn: layout.rightColumn
+        rightColumn: layout.rightColumn,
+        showDocumentToc: layout.showDocumentToc
       },
       { scheduleBufferUpdate: false }
     )
@@ -88,9 +98,7 @@ export const useLayoutStore = defineStore('layout', () => {
   }
 
   function TOGGLE_LAYOUT_ENTRY(entryName: string): void {
-    if (entryName === 'showSideBar') {
-      return
-    }
+    if (entryName === 'toc') TOGGLE_DOCUMENT_TOC()
   }
 
   function SET_SIDE_BAR_WIDTH(
@@ -138,10 +146,17 @@ export const useLayoutStore = defineStore('layout', () => {
     SET_SIDE_BAR_WIDTH(width)
   }
 
+  function TOGGLE_DOCUMENT_TOC(): void {
+    showDocumentToc.value = !showDocumentToc.value
+    localStorage.setItem('document-toc-visible', String(showDocumentToc.value))
+    debouncedSendBufferedState()
+  }
+
   return {
     rightColumn,
     showSideBar,
     sideBarWidth,
+    showDocumentToc,
     effectiveSideBarWidth,
     SET_LAYOUT,
     CREATE_BUFFERED_STATE,
@@ -150,6 +165,7 @@ export const useLayoutStore = defineStore('layout', () => {
     SET_SIDE_BAR_WIDTH,
     LISTEN_FOR_LAYOUT,
     DISPATCH_LAYOUT_MENU_ITEMS,
-    CHANGE_SIDE_BAR_WIDTH
+    CHANGE_SIDE_BAR_WIDTH,
+    TOGGLE_DOCUMENT_TOC
   }
 })
