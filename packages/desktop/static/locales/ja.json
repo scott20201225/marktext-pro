@@ -272,6 +272,8 @@
       "emptyProject": "空のプロジェクト",
       "createFile": "ファイルを作成",
       "openFolder": "フォルダを開く",
+      "workspaceActions": "ワークスペースの操作",
+      "nodeActions": "操作",
       "enterDirectoryName": "フォルダー名を入力",
       "enterMarkdownFileName": ".md ファイル名を入力"
     },

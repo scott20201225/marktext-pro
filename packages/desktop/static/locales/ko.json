@@ -272,6 +272,8 @@
       "emptyProject": "빈 프로젝트",
       "createFile": "파일 만들기",
       "openFolder": "폴더 열기",
+      "workspaceActions": "작업 영역 작업",
+      "nodeActions": "작업",
       "enterDirectoryName": "폴더 이름 입력",
       "enterMarkdownFileName": ".md 파일 이름 입력"
     },

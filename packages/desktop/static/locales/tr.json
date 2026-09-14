@@ -272,6 +272,8 @@
       "emptyProject": "Boş proje",
       "createFile": "Dosya Oluştur",
       "openFolder": "Klasör Aç",
+      "workspaceActions": "Çalışma alanı işlemleri",
+      "nodeActions": "İşlemler",
       "enterDirectoryName": "Klasör adını girin",
       "enterMarkdownFileName": ".md dosya adını girin"
     },

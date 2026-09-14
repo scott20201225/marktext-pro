@@ -7,11 +7,13 @@
       :class="[{ active: folder.id === activeItem.id }]"
       :title="folder.pathname"
       @click="folderNameClick"
+      @dblclick="folderNameDoubleClick"
     >
       <el-icon
         class="icon-arrow"
         :class="{ fold: isCollapsed }"
         :size="12"
+        @click.stop="toggleCollapsed"
       >
         <ArrowRight />
       </el-icon>
@@ -29,6 +31,16 @@
         v-else
         class="text-overflow"
       >{{ folder.name }}</span>
+      <button
+        class="folder-action-button"
+        type="button"
+        :title="t('sideBar.tree.nodeActions')"
+        @click.stop="showFolderActionMenu"
+      >
+        <el-icon :size="14">
+          <MoreFilled />
+        </el-icon>
+      </button>
     </div>
     <div
       v-if="!isCollapsed"
@@ -68,7 +80,7 @@ import { useProjectStore } from '@/store/project'
 import { showContextMenu } from '../../contextMenu/sideBar'
 import bus from '../../bus'
 import File from './treeFile.vue'
-import { ArrowRight } from '@element-plus/icons-vue'
+import { ArrowRight, MoreFilled } from '@element-plus/icons-vue'
 import type { TreeFolderNode } from './types'
 import { useI18n } from 'vue-i18n'
 
@@ -135,7 +147,29 @@ const handleInputBlur = (): void => {
 
 const folderNameClick = (): void => {
   projectStore.CHANGE_ACTIVE_ITEM(props.folder)
+}
+
+const folderNameDoubleClick = (event: MouseEvent): void => {
+  const target = event.target as HTMLElement | null
+  if (target?.closest('input, button')) return
+  toggleCollapsed()
+}
+
+const toggleCollapsed = (): void => {
   isCollapsed.value = !isCollapsed.value
+}
+
+const showFolderActionMenu = (event: MouseEvent): void => {
+  projectStore.CHANGE_ACTIVE_ITEM(props.folder)
+  const target = event.currentTarget as HTMLElement | null
+  const rect = target?.getBoundingClientRect()
+  showContextMenu(
+    {
+      clientX: rect ? rect.left + rect.width / 2 : event.clientX,
+      clientY: rect ? rect.bottom : event.clientY
+    },
+    !!clipboard.value
+  )
 }
 
 const noop = (): void => {}
@@ -187,6 +221,7 @@ onMounted(() => {
     align-items: center;
     height: 30px;
     padding-right: 15px;
+    gap: 6px;
     & > .icon-arrow {
       flex-shrink: 0;
       color: var(--sideBarIconColor);
@@ -201,6 +236,29 @@ onMounted(() => {
       background: var(--sideBarItemHoverBgColor);
     }
   }
+}
+.folder-name > span,
+.folder-name > input.rename {
+  flex: 1;
+  min-width: 0;
+}
+.folder-action-button {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+  width: 20px;
+  height: 20px;
+  padding: 0;
+  border: none;
+  border-radius: 4px;
+  background: transparent;
+  color: var(--sideBarIconColor);
+  cursor: pointer;
+}
+.folder-action-button:hover {
+  background: var(--sideBarItemHoverBgColor);
+  color: var(--sideBarTitleColor);
 }
 .new-input,
 input.rename {

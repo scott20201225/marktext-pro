@@ -17,7 +17,7 @@
         </el-icon>
         <span
           class="default-cursor text-overflow"
-          @click.stop="toggleOpenedFiles()"
+          @dblclick.stop="toggleOpenedFiles()"
         >{{
           t('sideBar.tree.openedFiles')
         }}</span>
@@ -80,7 +80,6 @@
         <span
           v-if="renameCache !== projectTree.pathname"
           class="default-cursor text-overflow"
-          @click.stop="toggleDirectories()"
           @dblclick.stop="toggleRootFromDoubleClick"
         >{{
           projectTree.name
@@ -95,10 +94,21 @@
                 @keydown.enter.prevent="renameRootFromKeyboard"
                 @blur="renameRootOnBlur"
         >
+        <button
+          class="tree-action-button"
+          type="button"
+          :title="t('sideBar.tree.workspaceActions')"
+          @click.stop="showRootActionMenu"
+        >
+          <el-icon :size="14">
+            <MoreFilled />
+          </el-icon>
+        </button>
       </div>
       <div
         v-show="showDirectories"
         class="tree-wrapper"
+        @contextmenu.prevent.stop="handleTreeWrapperContextMenu"
       >
         <folder
           v-for="folder of projectTree.folders"
@@ -173,7 +183,7 @@ import OpenedFile from './treeOpenedTab.vue'
 import bus from '../../bus'
 import { showContextMenu } from '../../contextMenu/sideBar'
 import { useI18n } from 'vue-i18n'
-import { ArrowRight } from '@element-plus/icons-vue'
+import { ArrowRight, MoreFilled } from '@element-plus/icons-vue'
 import type { TreeNode, TabDescriptor } from './types'
 
 const { t } = useI18n()
@@ -246,6 +256,26 @@ const createFile = (): void => {
 const handleRootContextMenu = (event: MouseEvent): void => {
   projectStore.CHANGE_ACTIVE_ITEM(props.projectTree)
   showContextMenu(event, !!clipboard.value)
+}
+
+const showRootActionMenu = (event: MouseEvent): void => {
+  if (!props.projectTree) return
+  projectStore.CHANGE_ACTIVE_ITEM(props.projectTree)
+  const target = event.currentTarget as HTMLElement | null
+  const rect = target?.getBoundingClientRect()
+  showContextMenu(
+    {
+      clientX: rect ? rect.left + rect.width / 2 : event.clientX,
+      clientY: rect ? rect.bottom : event.clientY
+    },
+    !!clipboard.value
+  )
+}
+
+const handleTreeWrapperContextMenu = (event: MouseEvent): void => {
+  const target = event.target as HTMLElement | null
+  if (target?.closest('.side-bar-folder, .side-bar-file')) return
+  handleRootContextMenu(event)
 }
 
 const noop = (): void => {}
@@ -454,6 +484,25 @@ onMounted(() => {
 .project-tree > .title > span {
   flex: 1;
   user-select: none;
+}
+
+.tree-action-button {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+  width: 22px;
+  height: 22px;
+  padding: 0;
+  border: none;
+  border-radius: 4px;
+  background: transparent;
+  color: var(--sideBarIconColor);
+  cursor: pointer;
+}
+.tree-action-button:hover {
+  background: var(--sideBarItemHoverBgColor);
+  color: var(--sideBarTitleColor);
 }
 
 .project-tree > .title > a {
