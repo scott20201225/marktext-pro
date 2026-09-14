@@ -17,7 +17,8 @@
       type="text"
       class="rename"
       @click.stop="noop"
-      @keypress.enter="rename"
+      @keydown.enter.prevent="renameFromKeyboard"
+      @blur="renameOnBlur"
     >
     <span v-else>{{ file.name }}</span>
   </div>
@@ -49,6 +50,7 @@ const { renameCache } = storeToRefs(projectStore)
 const { activeItem } = storeToRefs(projectStore)
 const { clipboard } = storeToRefs(projectStore)
 const { currentFile, tabs } = storeToRefs(editorStore)
+let skipNextBlur = false
 
 // from fileMixins
 const handleFileClick = (): void => {
@@ -80,6 +82,16 @@ const rename = (): void => {
   if (newName.value) {
     projectStore.RENAME_IN_SIDEBAR(newName.value)
   }
+}
+
+const renameFromKeyboard = (): void => {
+  skipNextBlur = true
+  rename()
+  window.setTimeout(() => { skipNextBlur = false }, 0)
+}
+
+const renameOnBlur = (): void => {
+  if (!skipNextBlur) rename()
 }
 
 onMounted(() => {

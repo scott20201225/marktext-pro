@@ -81,6 +81,7 @@
           v-if="renameCache !== projectTree.pathname"
           class="default-cursor text-overflow"
           @click.stop="toggleDirectories()"
+          @dblclick.stop="toggleRootFromDoubleClick"
         >{{
           projectTree.name
         }}</span>
@@ -91,7 +92,8 @@
           type="text"
           class="rename"
           @click.stop="noop"
-          @keypress.enter="renameRoot"
+                @keydown.enter.prevent="renameRootFromKeyboard"
+                @blur="renameRootOnBlur"
         >
       </div>
       <div
@@ -112,7 +114,8 @@
           type="text"
           class="new-input"
           :style="{ 'margin-left': `${depth * 5 + 15}px` }"
-          @keypress.enter="handleInputEnter"
+          @keydown.enter.prevent="handleInputEnterFromKeyboard"
+          @blur="handleInputBlur"
         >
         <file
           v-for="file of projectTree.files"
@@ -199,6 +202,7 @@ const createName = ref('')
 const newName = ref('')
 const input = ref<HTMLInputElement | null>(null)
 const renameInput = ref<HTMLInputElement | null>(null)
+let skipNextBlur = false
 
 const projectStore = useProjectStore()
 const editorStore = useEditorStore()
@@ -256,6 +260,10 @@ const toggleDirectories = (): void => {
   localStorage.setItem(SHOW_DIRECTORIES_KEY, String(showDirectories.value))
 }
 
+const toggleRootFromDoubleClick = (): void => {
+  toggleDirectories()
+}
+
 // From createFileOrDirectoryMixins
 const handleInputFocus = (): void => {
   nextTick(() => {
@@ -268,6 +276,16 @@ const handleInputFocus = (): void => {
 
 const handleInputEnter = (): void => {
   projectStore.CREATE_FILE_DIRECTORY(createName.value)
+}
+
+const handleInputEnterFromKeyboard = (): void => {
+  skipNextBlur = true
+  handleInputEnter()
+  window.setTimeout(() => { skipNextBlur = false }, 0)
+}
+
+const handleInputBlur = (): void => {
+  if (!skipNextBlur) handleInputEnter()
 }
 
 const focusRenameInput = (): void => {
@@ -284,6 +302,16 @@ const renameRoot = (): void => {
   if (newName.value) {
     projectStore.RENAME_IN_SIDEBAR(newName.value)
   }
+}
+
+const renameRootFromKeyboard = (): void => {
+  skipNextBlur = true
+  renameRoot()
+  window.setTimeout(() => { skipNextBlur = false }, 0)
+}
+
+const renameRootOnBlur = (): void => {
+  if (!skipNextBlur) renameRoot()
 }
 
 onMounted(() => {

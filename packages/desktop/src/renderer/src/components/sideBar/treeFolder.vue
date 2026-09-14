@@ -22,7 +22,8 @@
         type="text"
         class="rename"
         @click.stop="noop"
-        @keypress.enter="rename"
+        @keydown.enter.prevent="renameFromKeyboard"
+        @blur="renameOnBlur"
       >
       <span
         v-else
@@ -47,7 +48,8 @@
         class="new-input"
         :placeholder="createInputPlaceholder"
         :style="{ 'margin-left': `${depth * 5 + 15}px` }"
-        @keypress.enter="handleInputEnter"
+        @keydown.enter.prevent="handleInputEnterFromKeyboard"
+        @blur="handleInputBlur"
       >
       <File
         v-for="file of folder.files"
@@ -84,6 +86,7 @@ const newName = ref('')
 const folderEl = ref<HTMLDivElement | null>(null)
 const renameInput = ref<HTMLInputElement | null>(null)
 const input = ref<HTMLInputElement | null>(null)
+let skipNextBlur = false
 
 // Use a local reactive state for isCollapsed that syncs with the prop
 const isCollapsed = ref<boolean>(!!props.folder.isCollapsed)
@@ -120,7 +123,18 @@ const handleInputEnter = (): void => {
   projectStore.CREATE_FILE_DIRECTORY(createName.value)
 }
 
+const handleInputEnterFromKeyboard = (): void => {
+  skipNextBlur = true
+  handleInputEnter()
+  window.setTimeout(() => { skipNextBlur = false }, 0)
+}
+
+const handleInputBlur = (): void => {
+  if (!skipNextBlur) handleInputEnter()
+}
+
 const folderNameClick = (): void => {
+  projectStore.CHANGE_ACTIVE_ITEM(props.folder)
   isCollapsed.value = !isCollapsed.value
 }
 
@@ -139,6 +153,16 @@ const rename = (): void => {
   if (newName.value) {
     projectStore.RENAME_IN_SIDEBAR(newName.value)
   }
+}
+
+const renameFromKeyboard = (): void => {
+  skipNextBlur = true
+  rename()
+  window.setTimeout(() => { skipNextBlur = false }, 0)
+}
+
+const renameOnBlur = (): void => {
+  if (!skipNextBlur) rename()
 }
 
 onMounted(() => {
