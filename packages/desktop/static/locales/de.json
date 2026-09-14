@@ -272,6 +272,8 @@
       "emptyProject": "Leeres Projekt",
       "createFile": "Datei erstellen",
       "openFolder": "Ordner öffnen",
+      "workspaceActions": "Arbeitsbereich-Aktionen",
+      "nodeActions": "Aktionen",
       "enterDirectoryName": "Ordnernamen eingeben",
       "enterMarkdownFileName": ".md-Dateinamen eingeben"
     },

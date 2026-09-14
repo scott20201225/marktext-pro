@@ -272,6 +272,8 @@
       "emptyProject": "Empty project",
       "createFile": "Create File",
       "openFolder": "Open Folder",
+      "workspaceActions": "Workspace actions",
+      "nodeActions": "Actions",
       "enterDirectoryName": "Enter folder name",
       "enterMarkdownFileName": "Enter .md file name"
     },

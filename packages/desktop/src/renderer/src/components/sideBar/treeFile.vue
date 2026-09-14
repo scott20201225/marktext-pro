@@ -20,7 +20,17 @@
       @keydown.enter.prevent="renameFromKeyboard"
       @blur="renameOnBlur"
     >
-    <span v-else>{{ file.name }}</span>
+    <span v-else class="file-name">{{ file.name }}</span>
+    <button
+      class="file-action-button"
+      type="button"
+      :title="t('sideBar.tree.nodeActions')"
+      @click.stop="showFileActionMenu"
+    >
+      <el-icon :size="14">
+        <MoreFilled />
+      </el-icon>
+    </button>
   </div>
 </template>
 
@@ -29,10 +39,12 @@ import { ref, onMounted, nextTick } from 'vue'
 import { storeToRefs } from 'pinia'
 import { useProjectStore } from '@/store/project'
 import { useEditorStore } from '@/store/editor'
+import { MoreFilled } from '@element-plus/icons-vue'
 import FileIcon from './icon.vue'
 import { showContextMenu } from '../../contextMenu/sideBar'
 import bus from '../../bus'
 import type { TreeFileNode } from './types'
+import { useI18n } from 'vue-i18n'
 
 const props = defineProps<{
   file: TreeFileNode
@@ -41,6 +53,7 @@ const props = defineProps<{
 
 const projectStore = useProjectStore()
 const editorStore = useEditorStore()
+const { t } = useI18n()
 
 const newName = ref('')
 const fileEl = ref<HTMLDivElement | null>(null)
@@ -94,6 +107,19 @@ const renameOnBlur = (): void => {
   if (!skipNextBlur) rename()
 }
 
+const showFileActionMenu = (event: MouseEvent): void => {
+  projectStore.CHANGE_ACTIVE_ITEM(props.file)
+  const target = event.currentTarget as HTMLElement | null
+  const rect = target?.getBoundingClientRect()
+  showContextMenu(
+    {
+      clientX: rect ? rect.left + rect.width / 2 : event.clientX,
+      clientY: rect ? rect.bottom : event.clientY
+    },
+    !!clipboard.value
+  )
+}
+
 onMounted(() => {
   if (fileEl.value) {
     fileEl.value.addEventListener('contextmenu', (event) => {
@@ -117,10 +143,13 @@ onMounted(() => {
   height: 30px;
   box-sizing: border-box;
   padding-right: 15px;
+  gap: 6px;
   &:hover {
     background: var(--sideBarItemHoverBgColor);
   }
-  & > span {
+  & > .file-name {
+    flex: 1;
+    min-width: 0;
     overflow: hidden;
     text-overflow: ellipsis;
     white-space: nowrap;
@@ -141,10 +170,32 @@ onMounted(() => {
 .side-bar-file.current::before {
   height: 100%;
 }
-.side-bar-file.current > span {
+.side-bar-file.current > .file-name {
   color: var(--themeColor);
 }
-.side-bar-file.active > span {
+.side-bar-file.active > .file-name {
+  color: var(--sideBarTitleColor);
+}
+.side-bar-file > input.rename {
+  flex: 1;
+  min-width: 0;
+}
+.file-action-button {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+  width: 20px;
+  height: 20px;
+  padding: 0;
+  border: none;
+  border-radius: 4px;
+  background: transparent;
+  color: var(--sideBarIconColor);
+  cursor: pointer;
+}
+.file-action-button:hover {
+  background: var(--sideBarItemHoverBgColor);
   color: var(--sideBarTitleColor);
 }
 input.rename {

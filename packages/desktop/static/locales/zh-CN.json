@@ -272,6 +272,8 @@
       "emptyProject": "空项目",
       "createFile": "创建文件",
       "openFolder": "打开文件夹",
+      "workspaceActions": "工作区操作",
+      "nodeActions": "操作",
       "enterDirectoryName": "输入文件夹名称",
       "enterMarkdownFileName": "输入 .md 文件名称"
     },

@@ -272,6 +272,8 @@
       "emptyProject": "空專案",
       "createFile": "建立檔案",
       "openFolder": "開啟資料夾",
+      "workspaceActions": "工作區操作",
+      "nodeActions": "操作",
       "enterDirectoryName": "輸入資料夾名稱",
       "enterMarkdownFileName": "輸入 .md 檔案名稱"
     },

@@ -272,6 +272,8 @@
       "emptyProject": "Empty project",
       "createFile": "Create File",
       "openFolder": "Open Folder",
+      "workspaceActions": "Azioni dell'area di lavoro",
+      "nodeActions": "Azioni",
       "enterDirectoryName": "Inserisci il nome della cartella",
       "enterMarkdownFileName": "Inserisci il nome del file .md"
     },
