@@ -8,6 +8,8 @@ import { moveImageToFolder } from '@/util/fileSystem'
 // used for the content hash).
 const copy = vi.fn((_src: string, _dest: string) => Promise.resolve())
 const writeFile = vi.fn(() => Promise.resolve())
+const md5File = vi.fn(() => Promise.resolve('hash'))
+const md5Data = vi.fn(() => Promise.resolve('hash'))
 
 const win = window as unknown as {
   path: typeof path
@@ -21,6 +23,10 @@ beforeEach(() => {
   win.fileUtils = {
     ensureDir: vi.fn(() => Promise.resolve()),
     isImageFile: vi.fn(() => Promise.resolve(true)),
+    isSamePathSync: vi.fn(() => false),
+    md5Data,
+    md5File,
+    pathExists: vi.fn(() => Promise.resolve(false)),
     copy,
     writeFile
   }
@@ -64,7 +70,7 @@ describe('moveImageToFolder relative-directory persistence', () => {
   it('short-circuits without copying when the image already lives in outputDir', async() => {
     // The resolved imagePath equals path.join(outputDir, basename) so
     // noHashPath === imagePath and the copy step is skipped.
-    const inPlace = path.join(assetsDir, 'already.png')
+    const inPlace = path.join(assetsDir, 'already-hash.png')
     const result = await moveImageToFolder(docPath, inPlace, assetsDir, false, docPath)
     expect(copy).not.toHaveBeenCalled()
     // The original absolute path is returned unchanged (isRelative=false).
@@ -72,7 +78,7 @@ describe('moveImageToFolder relative-directory persistence', () => {
   })
 
   it('short-circuits to a relative reference when isRelative is set and the image is in outputDir', async() => {
-    const inPlace = path.join(assetsDir, 'already.png')
+    const inPlace = path.join(assetsDir, 'already-hash.png')
     const result = await moveImageToFolder(docPath, inPlace, assetsDir, true, docPath)
     expect(copy).not.toHaveBeenCalled()
     expect(path.isAbsolute(result)).toBe(false)
@@ -99,19 +105,19 @@ describe('moveImageToFolder relative-directory persistence', () => {
     expect(copy).not.toHaveBeenCalled()
     expect(writeFile).toHaveBeenCalledTimes(1)
     // The written destination is inside the assets dir...
-    expect((writeFile.mock.calls[0] as unknown[])[0] as string).toMatch(/pasted\.png$/)
+    expect((writeFile.mock.calls[0] as unknown[])[0] as string).toMatch(/pasted-hash\.png$/)
     expect(((writeFile.mock.calls[0] as unknown[])[0] as string).startsWith(assetsDir)).toBe(true)
     // ...and the inserted reference is the portable relative path.
     expect(path.isAbsolute(result)).toBe(false)
     expect(result.startsWith('assets/')).toBe(true)
-    expect(result.endsWith('pasted.png')).toBe(true)
+    expect(result.endsWith('pasted-hash.png')).toBe(true)
   })
 
   it('a string local path already inside outputDir is returned verbatim when isRelative is false (path-action string passthrough analog)', async() => {
     // Mirrors the editor.vue 'path' string branch intent: an absolute local
     // path that already lives in the output dir is neither copied nor uploaded;
     // the absolute reference is preserved unchanged.
-    const local = path.join(assetsDir, 'pic.png')
+    const local = path.join(assetsDir, 'pic-hash.png')
     const result = await moveImageToFolder(docPath, local, assetsDir, false, docPath)
     expect(copy).not.toHaveBeenCalled()
     expect(writeFile).not.toHaveBeenCalled()

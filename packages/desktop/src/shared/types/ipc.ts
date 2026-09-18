@@ -139,7 +139,6 @@ export interface IpcInvokeChannels {
   'mt::spellchecker-remove-word': { args: [word: string]; ret: boolean }
   'mt::spellchecker-set-enabled': { args: [enabled: boolean]; ret: void }
   'mt::spellchecker-switch-language': { args: [language: string]; ret: void }
-  'mt::uploader::upload': { args: [req: unknown]; ret: unknown }
   'mt::win::is-fullscreen': { args: []; ret: boolean }
   'mt::win::is-maximized': { args: []; ret: boolean }
   // Main derives the BrowserWindow via BrowserWindow.fromWebContents(e.sender);
@@ -159,16 +158,13 @@ export interface IpcSendChannels {
   'app-open-files-by-id': [windowId: number, filePaths: string[], options?: unknown]
   'app-open-markdown-by-id': [windowId: number, markdown: string, options?: unknown]
   'broadcast-preferences-changed': [partial: unknown]
-  'broadcast-user-data-changed': [partial: unknown]
   'menu-add-recently-used': [filePath: string]
   'menu-clear-recently-used': []
   'mt::NEED_UPDATE': [payload?: unknown]
   'mt::add-recently-used-document': [filePath: string]
   'mt::app-try-quit': []
   'mt::ask-for-image-auto-path': [payload: unknown]
-  'mt::ask-for-modify-image-folder-path': [imagePath?: string]
   'mt::ask-for-open-project-in-sidebar': []
-  'mt::ask-for-user-data': []
   'mt::ask-for-user-preference': []
   'mt::check-for-update': []
   'mt::clipboard::write-text': [text: string]
@@ -239,7 +235,6 @@ export interface IpcSendChannels {
   'mt::save-and-close-tabs': [tabs: unknown[]]
   'mt::save-tabs': [tabs: unknown[]]
   'mt::select-default-directory-to-open': []
-  'mt::set-user-data': [partial: unknown]
   'mt::set-user-preference': [partial: unknown]
   'mt::shell::open-external': [url: string]
   'mt::shell::show-item': [fullPath: string]
@@ -262,7 +257,6 @@ export interface IpcSendChannels {
   'mt::window-zoom-delta': [direction: 'in' | 'out']
   'mt::window::drop': [payload: unknown]
   'screen-capture': [payload: unknown]
-  'set-image-folder-path': [path: string]
   'set-user-preference': [partial: unknown]
   'watcher-unwatch-all-by-id': [windowId: number]
   'watcher-unwatch-directory': [windowId: number, path: string]

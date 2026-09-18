@@ -221,10 +221,6 @@ const ripgrepAPI = {
   }
 }
 
-const uploaderAPI = {
-  uploadImage: (req: unknown) => invoke('mt::uploader::upload', req)
-}
-
 const fontsAPI = {
   list: () => invoke('mt::fonts::list')
 }
@@ -295,7 +291,6 @@ try {
   contextBridge.exposeInMainWorld('commandExists', commandAPI)
   contextBridge.exposeInMainWorld('i18nUtils', i18nAPI)
   contextBridge.exposeInMainWorld('ripgrep', ripgrepAPI)
-  contextBridge.exposeInMainWorld('uploader', uploaderAPI)
   contextBridge.exposeInMainWorld('fonts', fontsAPI)
 } catch (error) {
   console.error(error)

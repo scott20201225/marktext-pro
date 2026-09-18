@@ -3,7 +3,6 @@ import {
   Edit as EditorIcon,
   Document as MarkdownIcon,
   Brush as ThemeIcon,
-  Picture as ImageIcon,
   Reading as SpellIcon,
   Operation as KeyBindingIcon
 } from '@element-plus/icons-vue'
@@ -95,12 +94,6 @@ export const getCategory = (): PrefCategory[] => [
     label: 'theme',
     icon: ThemeIcon,
     path: '/preference/theme'
-  },
-  {
-    name: t('preferences.categories.image'),
-    label: 'image',
-    icon: ImageIcon,
-    path: '/preference/image'
   },
   {
     name: t('preferences.categories.keybindings'),

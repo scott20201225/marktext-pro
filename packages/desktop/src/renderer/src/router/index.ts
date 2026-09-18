@@ -9,7 +9,6 @@ import Editor from '@/prefComponents/editor/index.vue'
 import Markdown from '@/prefComponents/markdown/index.vue'
 import SpellChecker from '@/prefComponents/spellchecker/index.vue'
 import Theme from '@/prefComponents/theme/index.vue'
-import Image from '@/prefComponents/image/index.vue'
 import Keybindings from '@/prefComponents/keybindings/index.vue'
 
 const parseSettingsPage = (type: string | null | undefined): string => {
@@ -61,11 +60,6 @@ const routes = (type: string | null | undefined): RouteRecordRaw[] => [
         path: 'theme',
         component: Theme,
         name: 'theme'
-      },
-      {
-        path: 'image',
-        component: Image,
-        name: 'image'
       },
       {
         path: 'keybindings',

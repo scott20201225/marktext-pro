@@ -16,8 +16,6 @@ export type OrderListDelimiter = '.' | ')'
 export type PreferHeadingStyle = 'atx' | 'setext'
 export type FrontmatterType = '-' | ';' | '{' | '+'
 export type SequenceTheme = 'hand' | 'simple'
-export type ImageInsertAction = 'folder' | 'path' | 'upload'
-export type ImageRelativeDirectoryBase = 'file' | 'root'
 export type FileSortBy = 'created' | 'modified' | 'title'
 export type FileSortOrder = 'asc' | 'desc'
 
@@ -62,10 +60,6 @@ export interface PreferencesState {
   trimTrailingNewline: number
   textDirection: TextDirection | string
   hideQuickInsertHint: boolean
-  imageInsertAction: ImageInsertAction | string
-  imagePreferRelativeDirectory: boolean
-  imageRelativeDirectoryBase: ImageRelativeDirectoryBase | string
-  imageRelativeDirectoryName: string
   hideLinkPopup: boolean
   autoCheck: boolean
 
@@ -113,21 +107,10 @@ export interface PreferencesState {
   focus: boolean
   sourceCode: boolean
 
-  // ----- User config -----
-  imageFolderPath: string
-  webImages: unknown[]
-  cloudImages: unknown[]
-  currentUploader: string
-  cliScript: string
 }
 
 interface SingleSetPreferencePayload {
   type: keyof PreferencesState | string
-  value: unknown
-}
-
-interface SetUserDataPayload {
-  type: string
   value: unknown
 }
 
@@ -175,10 +158,6 @@ export const usePreferencesStore = defineStore('preferences', {
     trimTrailingNewline: 2,
     textDirection: 'ltr',
     hideQuickInsertHint: false,
-    imageInsertAction: 'folder',
-    imagePreferRelativeDirectory: false,
-    imageRelativeDirectoryBase: 'file',
-    imageRelativeDirectoryName: 'assets',
     hideLinkPopup: false,
     autoCheck: false,
 
@@ -224,12 +203,6 @@ export const usePreferencesStore = defineStore('preferences', {
     focus: false,
     sourceCode: false, // source code mode
 
-    // user configration
-    imageFolderPath: '',
-    webImages: [],
-    cloudImages: [],
-    currentUploader: 'picgo',
-    cliScript: ''
   }),
 
   getters: {
@@ -268,7 +241,6 @@ export const usePreferencesStore = defineStore('preferences', {
 
     ASK_FOR_USER_PREFERENCE(): void {
       window.electron.ipcRenderer.send('mt::ask-for-user-preference')
-      window.electron.ipcRenderer.send('mt::ask-for-user-data')
 
       window.electron.ipcRenderer.on('mt::user-preference', (_e, preferences) => {
         this.SET_USER_PREFERENCE(preferences as Partial<PreferencesState>)
@@ -288,13 +260,6 @@ export const usePreferencesStore = defineStore('preferences', {
       window.electron.ipcRenderer.send('mt::set-user-preference', { [type as string]: value })
     },
 
-    SET_USER_DATA({ type, value }: SetUserDataPayload): void {
-      window.electron.ipcRenderer.send('mt::set-user-data', { [type]: value })
-    },
-
-    SET_IMAGE_FOLDER_PATH(value?: string): void {
-      window.electron.ipcRenderer.send('mt::ask-for-modify-image-folder-path', value)
-    },
 
     SELECT_DEFAULT_DIRECTORY_TO_OPEN(): void {
       window.electron.ipcRenderer.send('mt::select-default-directory-to-open')
