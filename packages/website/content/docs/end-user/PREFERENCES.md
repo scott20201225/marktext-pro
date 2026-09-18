@@ -82,15 +82,6 @@ Preferences can be controlled and modified in the settings window or via the `pr
 | spellcheckerNoUnderline | Boolean | `false` | Don't underline spelling mistakes.                                          |
 | spellcheckerLanguage   | String  | `en-US` | The spell-checker language (BCP-47, e.g. `en-US`, `de-DE`, `zh-CN`).         |
 
-#### Image
-
-| Key                          | Type    | Default  | Description                                                                                                  |
-| ---------------------------- | ------- | -------- | ------------------------------------------------------------------------------------------------------------ |
-| imageInsertAction            | String  | `path`   | Default action after inserting a local image: `upload`, `folder`, or `path`.                                 |
-| imagePreferRelativeDirectory | Boolean | `false`  | Prefer the relative image directory when copying images.                                                     |
-| imageRelativeDirectoryBase   | String  | `file`   | Where relative images are anchored: `file` (next to the document) or `folder` (project root).                |
-| imageRelativeDirectoryName   | String  | `assets` | Folder name (or relative path) used for local image copies. Supports the `${filename}` variable.             |
-
 #### Editable via file
 
 These entries are marked `--internal` in the schema. They have no UI control and must be edited directly in `preferences.json`.

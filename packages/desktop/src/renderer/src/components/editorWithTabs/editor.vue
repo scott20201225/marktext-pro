@@ -160,7 +160,7 @@ import Printer from '@/services/printService'
 import { SpellcheckerLanguageCommand } from '@/commands'
 import { SpellChecker } from '@/spellchecker'
 import { isOsx, animatedScrollTo } from '@/util'
-import { copyImageToFolder, NOTE_ATTACHMENTS_DIRECTORY, uploadImage } from '@/util/fileSystem'
+import { copyImageToFolder, NOTE_ATTACHMENTS_DIRECTORY } from '@/util/fileSystem'
 import { guessClipboardFilePath } from '@/util/clipboard'
 import { getCssForOptions, getHtmlToc, type PdfCssOptions, type HtmlTocOptions } from '@/util/pdf'
 import { patchMuyaSoftBreakIme } from '@/util/softBreakIme'
@@ -289,11 +289,6 @@ const {
   autoCheck,
   editorLineWidth,
   wrapCodeBlocks,
-  imageInsertAction,
-  imagePreferRelativeDirectory,
-  imageRelativeDirectoryBase,
-  imageRelativeDirectoryName,
-  imageFolderPath,
   theme,
   sequenceTheme,
   hideScrollbar,
@@ -972,174 +967,63 @@ const imagePathAutoComplete = async (src: string) => {
   })
 }
 
+const dataUriToImageFile = (value: string): File | null => {
+  const match = /^data:(image\/[\w.+-]+);base64,([a-zA-Z0-9+/]+={0,2})$/.exec(value)
+  if (!match) return null
+
+  try {
+    const mimeType = match[1]
+    const binary = window.atob(match[2])
+    const bytes = new Uint8Array(binary.length)
+    for (let index = 0; index < binary.length; index++) bytes[index] = binary.charCodeAt(index)
+    const extension = mimeType === 'image/jpeg' ? 'jpg' : mimeType.split('/')[1] || 'png'
+    return new File([bytes], `screenshot.${extension}`, { type: mimeType })
+  } catch {
+    return null
+  }
+}
+
+const isCurrentFileInWorkspace = (): boolean => {
+  const currentPathname = currentFile.value?.pathname
+  const workspaceRootPath = projectTree.value?.pathname
+  if (!currentPathname || !workspaceRootPath) return false
+  const relativePath = window.path.relative(
+    window.path.resolve(workspaceRootPath),
+    window.path.resolve(currentPathname)
+  )
+  return !relativePath || (!relativePath.startsWith('..') && !window.path.isAbsolute(relativePath))
+}
+
 const imageAction = async (
   image: string | File,
   id: string | null,
   alt: string = ''
 ): Promise<string> => {
-  // TODO(Refactor): Refactor this method.
   if (!currentFile.value) return ''
-  const { filename, pathname: currentPathname } = currentFile.value
-
-  // Figure out the current working directory.
-  // Save an image relative to the file, otherwise use the project root when available.
-  const isTabSavedOnDisk = !!currentPathname
-  let relativeBasePath: string | null = isTabSavedOnDisk
-    ? window.path.dirname(currentPathname)
-    : null
-  if (isTabSavedOnDisk && imageRelativeDirectoryBase.value !== 'file' && projectTree.value) {
-    const { pathname: rootPath } = projectTree.value as { pathname?: string }
-    if (rootPath && window.fileUtils.isChildOfDirectory(rootPath, currentPathname)) {
-      // Save assets relative to root directory.
-      relativeBasePath = rootPath
-    }
-  }
-
-  const getResolvedImagePath = (imagePath: string) => {
-    const replacement = isTabSavedOnDisk
-      ? filename.replace(/\.[^/.]+$/, '') // Filename w/o extension
-      : ''
-    return imagePath.replace(/\${filename}/g, replacement)
-  }
-
-  const resolvedGlobalImageFolderPath = getResolvedImagePath(imageFolderPath.value)
-  const resolvedImageRelativeDirectoryName = getResolvedImagePath(imageRelativeDirectoryName.value) // assets/
-  const resolvedImageRelativeFullDirectoryPath = relativeBasePath
-    ? window.path.join(relativeBasePath, resolvedImageRelativeDirectoryName)
-    : null // /root/dir/assets
+  const { pathname: currentPathname } = currentFile.value
   const workspaceRootPath = projectTree.value?.pathname ?? null
-  const isCurrentFileInWorkspace = !!workspaceRootPath && !!currentPathname && (
-    window.fileUtils.isSamePathSync(workspaceRootPath, currentPathname) ||
-    window.fileUtils.isChildOfDirectory(workspaceRootPath, currentPathname)
-  )
   const attachmentDirectoryPath = workspaceRootPath
     ? window.path.join(workspaceRootPath, NOTE_ATTACHMENTS_DIRECTORY)
     : null
-  const isAbsoluteLocalImage = typeof image === 'string' && window.path.isAbsolute(image)
-  const shouldUseWorkspaceAttachments = isCurrentFileInWorkspace &&
-    !!attachmentDirectoryPath &&
-    (image instanceof File || isAbsoluteLocalImage)
-  let destImagePath = ''
+  const embeddedImage = typeof image === 'string' ? dataUriToImageFile(image) : null
+  const attachmentImage = embeddedImage ?? image
+  const isAbsoluteLocalImage = typeof attachmentImage === 'string' && window.path.isAbsolute(attachmentImage)
+  const shouldUseWorkspaceAttachments = isCurrentFileInWorkspace() && !!attachmentDirectoryPath &&
+    (attachmentImage instanceof File || isAbsoluteLocalImage)
 
-  if (shouldUseWorkspaceAttachments) {
-    destImagePath = (await copyImageToFolder(
+  const destImagePath = shouldUseWorkspaceAttachments
+    ? await copyImageToFolder(
       currentPathname,
-      image,
+      attachmentImage,
       attachmentDirectoryPath,
       true,
       currentPathname
-    )) as string
+    ) as string
+    : image instanceof File
+      ? window.electron.webUtils.getPathForFile(image)
+      : image
 
-    if (id && sourceCode.value) {
-      bus.emit('image-action', {
-        id,
-        result: destImagePath,
-        alt
-      })
-    }
-    return destImagePath
-  }
-
-  if (!isCurrentFileInWorkspace && isAbsoluteLocalImage) {
-    destImagePath = image
-
-    if (id && sourceCode.value) {
-      bus.emit('image-action', {
-        id,
-        result: destImagePath,
-        alt
-      })
-    }
-    return destImagePath
-  }
-
-  if (!isCurrentFileInWorkspace && image instanceof File) {
-    const localFilePath = window.electron.webUtils.getPathForFile(image)
-    if (localFilePath && window.path.isAbsolute(localFilePath)) {
-      destImagePath = localFilePath
-
-      if (id && sourceCode.value) {
-        bus.emit('image-action', {
-          id,
-          result: destImagePath,
-          alt
-        })
-      }
-      return destImagePath
-    }
-  }
-
-  switch (imageInsertAction.value) {
-    case 'upload': {
-      try {
-        // Pass the full preferences state object to avoid dereferencing non-existent .value
-        destImagePath = (await uploadImage(
-          currentPathname,
-          image,
-          preferencesStore.$state as unknown as import('@/util/fileSystem').UploadImagePreferences
-        )) as string
-      } catch (err) {
-        notice.notify({
-          title: 'Upload Image',
-          type: 'warning',
-          message: err as string
-        })
-        destImagePath = (await copyImageToFolder(
-          currentPathname,
-          image,
-          resolvedGlobalImageFolderPath
-        )) as string
-      }
-      break
-    }
-    case 'folder': {
-      if (isTabSavedOnDisk && imagePreferRelativeDirectory.value) {
-        // `image` may be a path string (paste/drag/image-selector) — pass
-        // `currentPathname` so copyImageToFolder can resolve relative paths
-        // via `path.dirname(pathname)` instead of crashing on `dirname(null)`.
-        destImagePath = (await copyImageToFolder(
-          currentPathname,
-          image,
-          resolvedImageRelativeFullDirectoryPath as string,
-          true,
-          currentPathname
-        )) as string
-      } else {
-        destImagePath = (await copyImageToFolder(
-          currentPathname,
-          image,
-          resolvedGlobalImageFolderPath
-        )) as string
-      }
-      break
-    }
-    case 'path': {
-      if (typeof image === 'string') {
-        // Input is a local path.
-        destImagePath = image
-      } else {
-        // Save and move image to image folder if input is binary.
-
-        // Respect user preferences if tab exists on disk.
-        if (isTabSavedOnDisk && imagePreferRelativeDirectory.value) {
-          destImagePath = (await copyImageToFolder(
-            null as unknown as string,
-            image,
-            resolvedImageRelativeFullDirectoryPath as string,
-            true,
-            currentPathname
-          )) as string
-        } else {
-          destImagePath = (await copyImageToFolder(
-            currentPathname,
-            image,
-            resolvedGlobalImageFolderPath
-          )) as string
-        }
-      }
-      break
-    }
-  }
+  if (!destImagePath) return ''
 
   if (id && sourceCode.value) {
     bus.emit('image-action', {
