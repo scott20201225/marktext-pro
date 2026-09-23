@@ -228,9 +228,7 @@
       "paste": "Einfügen",
       "rename": "Umbenennen",
       "moveToTrash": "In Papierkorb verschieben",
-      "showInFolder": "Im Ordner anzeigen",
-      "saved": "Gespeichert",
-      "unsaved": "Nicht gespeichert"
+      "showInFolder": "Im Ordner anzeigen"
     },
     "tabs": {
       "close": "Schließen",
@@ -239,7 +237,9 @@
       "closeAllTabs": "Alle Tabs schließen",
       "rename": "Umbenennen",
       "copyPath": "Pfad kopieren",
-      "showInFolder": "Im Ordner anzeigen"
+      "showInFolder": "Im Ordner anzeigen",
+      "saved": "Gespeichert",
+      "unsaved": "Ausstehend"
     },
     "copyAsExcel": "Copy As Excel",
     "tableBatchEdit": "Stapelbearbeitung",

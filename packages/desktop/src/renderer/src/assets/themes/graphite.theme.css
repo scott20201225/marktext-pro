@@ -139,7 +139,7 @@
 }
 
 .editor-tabs {
-  background: #f3f3f3 !important;
+  background: var(--editorBgColor) !important;
   box-shadow: none !important;
 }
 .editor-tabs:after {
@@ -161,11 +161,11 @@
   z-index: 2;
 }
 .title-bar-editor-bg.tabs-visible {
-  background: #f3f3f3 !important;
+  background: var(--editorBgColor) !important;
 }
 
 .tabs-container > li {
-  background: none !important;
+  background: var(--editorBgColor) !important;
 }
 .tabs-container > li.active {
   border: 1px solid #dddddd;
