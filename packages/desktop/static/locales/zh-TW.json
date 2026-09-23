@@ -228,7 +228,9 @@
       "paste": "貼上",
       "rename": "重新命名",
       "moveToTrash": "移到垃圾桶",
-      "showInFolder": "在資料夾中顯示"
+      "showInFolder": "在資料夾中顯示",
+      "saved": "已儲存",
+      "unsaved": "待儲存"
     },
     "tabs": {
       "close": "關閉",
@@ -284,6 +286,8 @@
       "files": "檔案",
       "search": "搜尋",
       "toc": "目錄",
+      "headingNumbering": "顯示標題編號",
+      "headingNumberingIncludeTopLevel": "最高層標題參與編號",
       "settings": "設定",
       "git": "Git"
     }

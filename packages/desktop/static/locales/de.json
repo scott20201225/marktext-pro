@@ -228,7 +228,9 @@
       "paste": "Einfügen",
       "rename": "Umbenennen",
       "moveToTrash": "In Papierkorb verschieben",
-      "showInFolder": "Im Ordner anzeigen"
+      "showInFolder": "Im Ordner anzeigen",
+      "saved": "Gespeichert",
+      "unsaved": "Nicht gespeichert"
     },
     "tabs": {
       "close": "Schließen",
@@ -284,6 +286,8 @@
       "files": "Dateien",
       "search": "Suchen",
       "toc": "Inhaltsverzeichnis",
+      "headingNumbering": "Überschriftennummerierung anzeigen",
+      "headingNumberingIncludeTopLevel": "Höchste Überschrift nummerieren",
       "settings": "Einstellungen",
       "git": "Git"
     }

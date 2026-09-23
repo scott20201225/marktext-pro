@@ -228,7 +228,9 @@
       "paste": "Coller",
       "rename": "Renommer",
       "moveToTrash": "Déplacer vers la corbeille",
-      "showInFolder": "Afficher dans le dossier"
+      "showInFolder": "Afficher dans le dossier",
+      "saved": "Enregistré",
+      "unsaved": "En attente d'enregistrement"
     },
     "tabs": {
       "close": "Fermer",
@@ -284,6 +286,8 @@
       "files": "Fichiers",
       "search": "Rechercher",
       "toc": "Table des matières",
+      "headingNumbering": "Afficher la numérotation des titres",
+      "headingNumberingIncludeTopLevel": "Numéroter le titre de niveau supérieur",
       "settings": "Paramètres",
       "git": "Git"
     }

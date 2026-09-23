@@ -237,7 +237,9 @@
       "closeAllTabs": "Close all tabs",
       "rename": "Rename",
       "copyPath": "Copy path",
-      "showInFolder": "Show in folder"
+      "showInFolder": "Show in folder",
+      "saved": "Saved",
+      "unsaved": "Pending save"
     },
     "copyAsExcel": "Copy As Excel",
     "tableBatchEdit": "Batch Edit",
@@ -284,6 +286,8 @@
       "files": "Files",
       "search": "Search",
       "toc": "Table of Contents",
+      "headingNumbering": "Show heading numbering",
+      "headingNumberingIncludeTopLevel": "Number the top-level heading",
       "settings": "Settings",
       "git": "Git"
     }

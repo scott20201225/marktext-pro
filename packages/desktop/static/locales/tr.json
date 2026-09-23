@@ -237,7 +237,9 @@
       "closeAllTabs": "Tüm sekmeleri kapat",
       "rename": "Yeniden Adlandır",
       "copyPath": "Yolu kopyala",
-      "showInFolder": "Klasörde göster"
+      "showInFolder": "Klasörde göster",
+      "saved": "Kaydedildi",
+      "unsaved": "Kaydedilmeyi bekliyor"
     },
     "copyAsExcel": "Excel olarak kopyala",
     "tableBatchEdit": "Toplu düzenle",
@@ -284,6 +286,8 @@
       "files": "Dosyalar",
       "search": "Ara",
       "toc": "İçindekiler",
+      "headingNumbering": "Başlık numaralarını göster",
+      "headingNumberingIncludeTopLevel": "En üst düzey başlığı numaralandır",
       "settings": "Ayarlar",
       "git": "Git"
     }

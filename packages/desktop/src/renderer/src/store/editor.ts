@@ -22,6 +22,7 @@ import { useLayoutStore } from './layout'
 import { useMainStore } from '.'
 import { t } from '../i18n'
 import { debouncedSendBufferedState, sendBufferedState } from './bufferedState'
+import { addHeadingNumbersToToc } from '../util/titleNumbering'
 import type {
   BootstrapEditorConfig,
   IFileState,
@@ -44,6 +45,11 @@ interface TocItem extends ListItem {
 }
 
 type TocTreeNode = TreeNode<TocItem>
+
+const getDisplayToc = (toc: TocItem[], file: IFileState | null): TocItem[] =>
+  addHeadingNumbersToToc(toc, file?.showHeadingNumbers === true, {
+    includeTopLevel: file?.headingNumberingIncludesTopLevel === true
+  })
 
 interface RestoreWarning {
   tabId?: string | null
@@ -1458,8 +1464,25 @@ export const useEditorStore = defineStore('editor', {
      * @param toc Flat list of headings returned by `muya.getTOC()`.
      */
     UPDATE_TOC(toc: TocItem[]): void {
-      this.listToc = toc ?? []
-      this.toc = listToTree<TocItem>(toc ?? [])
+      const displayToc = getDisplayToc(toc ?? [], this.currentFile)
+      this.listToc = displayToc
+      this.toc = listToTree<TocItem>(displayToc)
+    },
+
+    TOGGLE_HEADING_NUMBERING(): void {
+      const file = this.currentFile
+      if (!file) return
+      file.showHeadingNumbers = !file.showHeadingNumbers
+      bus.emit('heading-numbering-display-changed')
+      debouncedSendBufferedState()
+    },
+
+    TOGGLE_HEADING_NUMBERING_TOP_LEVEL(): void {
+      const file = this.currentFile
+      if (!file || !file.showHeadingNumbers) return
+      file.headingNumberingIncludesTopLevel = !file.headingNumberingIncludesTopLevel
+      bus.emit('heading-numbering-display-changed')
+      debouncedSendBufferedState()
     },
 
     // Content change from realtime preview editor and source code editor
@@ -1507,8 +1530,9 @@ export const useEditorStore = defineStore('editor', {
 
       // Only update TOC if it's the current file
       if (id === this.currentFile?.id && toc && !equal(toc, this.listToc)) {
-        this.listToc = toc
-        this.toc = listToTree<TocItem>(toc)
+        const displayToc = getDisplayToc(toc, this.currentFile)
+        this.listToc = displayToc
+        this.toc = listToTree<TocItem>(displayToc)
       }
 
       const lastEditIndex = tab.history.lastEditIndex
@@ -2106,6 +2130,8 @@ interface BufferedTabState {
   wordCount: IFileState['wordCount']
   muyaIndexCursor: unknown
   scrollTop: number
+  showHeadingNumbers: boolean
+  headingNumberingIncludesTopLevel: boolean
 }
 
 const createBufferedTabState = (tab: Partial<IFileState> & { id: string }): BufferedTabState => {
@@ -2125,7 +2151,9 @@ const createBufferedTabState = (tab: Partial<IFileState> & { id: string }): Buff
     cursor: toSerializableValue(tab.cursor, defaultFileState.cursor),
     wordCount: toSerializableValue(tab.wordCount, defaultFileState.wordCount),
     muyaIndexCursor: toSerializableValue(tab.muyaIndexCursor, defaultFileState.muyaIndexCursor),
-    scrollTop: tab.scrollTop ?? defaultFileState.scrollTop
+    scrollTop: tab.scrollTop ?? defaultFileState.scrollTop,
+    showHeadingNumbers: tab.showHeadingNumbers === true,
+    headingNumberingIncludesTopLevel: tab.headingNumberingIncludesTopLevel === true
   }
 }
 

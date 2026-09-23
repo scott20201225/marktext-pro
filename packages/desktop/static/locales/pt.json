@@ -237,7 +237,9 @@
       "closeAllTabs": "Fechar todas as abas",
       "rename": "Renomear",
       "copyPath": "Copiar caminho",
-      "showInFolder": "Mostrar na pasta"
+      "showInFolder": "Mostrar na pasta",
+      "saved": "Salvo",
+      "unsaved": "Aguardando salvamento"
     },
     "copyAsExcel": "Copiar como Excel",
     "tableBatchEdit": "Editar em lote",
@@ -284,6 +286,8 @@
       "files": "Arquivos",
       "search": "Pesquisar",
       "toc": "Índice",
+      "headingNumbering": "Mostrar numeração de títulos",
+      "headingNumberingIncludeTopLevel": "Numerar título de nível superior",
       "settings": "Configurações",
       "git": "Git"
     }

@@ -228,7 +228,9 @@
       "paste": "붙여넣기",
       "rename": "이름 바꾸기",
       "moveToTrash": "휴지통으로 이동",
-      "showInFolder": "폴더에서 보기"
+      "showInFolder": "폴더에서 보기",
+      "saved": "저장됨",
+      "unsaved": "저장 대기 중"
     },
     "tabs": {
       "close": "닫기",
@@ -284,6 +286,8 @@
       "files": "파일",
       "search": "검색",
       "toc": "목차",
+      "headingNumbering": "제목 번호 표시",
+      "headingNumberingIncludeTopLevel": "최상위 제목 번호 매기기",
       "settings": "설정",
       "git": "Git"
     }
