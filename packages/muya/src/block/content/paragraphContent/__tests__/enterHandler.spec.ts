@@ -173,6 +173,22 @@ describe('enter at offset 0 — all text moves to the new block', () => {
     });
 });
 
+describe('enter at document end — keep the editable blank paragraph', () => {
+    it('serializes the new trailing paragraph as a real newline', async () => {
+        const muya = bootMuya('tail\n');
+        const content = contentByText(muya, 'tail');
+
+        enterAt(muya, content, content.text.length);
+
+        await flush();
+        expect(muya.getState()).toEqual([
+            { name: 'paragraph', text: 'tail' },
+            { name: 'paragraph', text: '' },
+        ]);
+        expect(muya.getMarkdown()).toBe('tail\n\n');
+    });
+});
+
 describe('enter at end-of-text — appends an empty paragraph with the caret in it', () => {
     it('keeps the full text on the first block and adds an empty second block', async () => {
         const muya = bootMuya('hello world\n');
