@@ -228,9 +228,7 @@
       "paste": "粘贴",
       "rename": "重命名",
       "moveToTrash": "移动到废纸篓",
-      "showInFolder": "在文件夹中显示",
-      "saved": "已保存",
-      "unsaved": "待保存"
+      "showInFolder": "在文件夹中显示"
     },
     "tabs": {
       "close": "关闭",
@@ -239,7 +237,9 @@
       "closeAllTabs": "关闭所有标签页",
       "rename": "重命名",
       "copyPath": "复制路径",
-      "showInFolder": "在文件夹中显示"
+      "showInFolder": "在文件夹中显示",
+      "saved": "已保存",
+      "unsaved": "待保存"
     },
     "copyAsExcel": "复制为 Excel",
     "tableBatchEdit": "批量编辑",

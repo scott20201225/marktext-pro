@@ -238,8 +238,8 @@
       "rename": "Rename",
       "copyPath": "Copy path",
       "showInFolder": "Show in folder",
-      "saved": "Saved",
-      "unsaved": "Pending save"
+      "saved": "Salvato",
+      "unsaved": "In attesa di salvataggio"
     },
     "copyAsExcel": "Copia come Excel",
     "tableBatchEdit": "Modifica in blocco",

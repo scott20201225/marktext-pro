@@ -13,6 +13,7 @@
           @contextmenu.prevent="handleContextMenu($event, file)"
         >
           <el-tooltip
+            :key="`${file.id}-${locale}`"
             :content="file.isSaved ? t('contextMenu.tabs.saved') : t('contextMenu.tabs.unsaved')"
             placement="right"
             :fallback-placements="['left']"
@@ -67,7 +68,7 @@ import type { IFileState } from '@shared/types/files'
 
 const editorStore = useEditorStore()
 const layoutStore = useLayoutStore()
-const { t } = useI18n()
+const { t, locale } = useI18n()
 
 const { currentFile, tabs } = storeToRefs(editorStore)
 
@@ -382,7 +383,7 @@ defineExpose({
   background: var(--floatBgColor) !important;
   color: var(--floatFontColor) !important;
   border: 1px solid var(--floatBorderColor) !important;
-  box-shadow: var(--floatShadow) !important;
+  box-shadow: 0 4px 8px 0 var(--floatShadow) !important;
 }
 
 :global(.tab-save-status-tooltip.el-popper .el-popper__arrow::before) {
@@ -400,6 +401,7 @@ defineExpose({
   min-width: 0;
   height: 28px;
   user-select: none;
+  background: var(--editorBgColor);
   box-shadow: 0px 0px 9px 2px rgba(0, 0, 0, 0.1);
   overflow: hidden;
 }
@@ -408,6 +410,7 @@ defineExpose({
   min-width: 0;
   height: 28px;
   box-sizing: border-box;
+  background: var(--editorBgColor);
   overflow-x: auto;
   overflow-y: hidden;
   scrollbar-width: none;
@@ -426,6 +429,7 @@ defineExpose({
   flex-direction: row;
   overflow-y: hidden;
   z-index: 2;
+  background: var(--editorBgColor);
 
   & > li {
     flex: 0 0 auto;
@@ -439,6 +443,7 @@ defineExpose({
     max-width: 280px;
     display: flex;
     align-items: center;
+    background: var(--editorBgColor) !important;
     &[aria-grabbed='true'] {
       color: var(--editorColor30) !important;
     }
@@ -493,6 +498,7 @@ defineExpose({
   height: 28px;
   border-right: none;
   background: transparent;
+  background-color: var(--editorBgColor);
   display: flex;
   align-items: center;
   justify-content: space-around;

@@ -1,5 +1,10 @@
 <template>
-  <el-tooltip :content="t('sideBar.icons.headingNumbering')" placement="bottom" :open-delay="400">
+  <el-tooltip
+    :content="t('sideBar.icons.headingNumbering')"
+    placement="bottom"
+    :open-delay="400"
+    popper-class="editor-document-tooltip"
+  >
     <button
       class="document-editor-control"
       :class="{ active: showHeadingNumbers }"
@@ -19,6 +24,7 @@
     :content="t('sideBar.icons.headingNumberingIncludeTopLevel')"
     placement="bottom"
     :open-delay="400"
+    popper-class="editor-document-tooltip"
   >
     <button
       class="document-editor-control"
@@ -95,5 +101,17 @@ const includesTopLevel = computed(() => currentFile.value?.headingNumberingInclu
 
 .heading-level-icon::first-letter {
   font-size: 14px;
+}
+
+:global(.editor-document-tooltip.el-popper) {
+  color: var(--floatFontColor) !important;
+  background: var(--floatBgColor) !important;
+  border: 1px solid var(--floatBorderColor) !important;
+  box-shadow: 0 4px 8px 0 var(--floatShadow) !important;
+}
+
+:global(.editor-document-tooltip.el-popper .el-popper__arrow::before) {
+  background: var(--floatBgColor) !important;
+  border-color: var(--floatBorderColor) !important;
 }
 </style>
