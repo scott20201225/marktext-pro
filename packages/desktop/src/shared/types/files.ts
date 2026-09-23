@@ -85,6 +85,9 @@ export interface IFileState {
   muyaIndexCursor: unknown
   notifications: FileNotification[]
   lastSavedHistoryId?: number
+  // Per-document heading display options. These never change Markdown source.
+  showHeadingNumbers: boolean
+  headingNumberingIncludesTopLevel: boolean
   // Muya block tree; only populated for the actively edited tab.
   blocks?: unknown
   isMixedLineEndings?: boolean

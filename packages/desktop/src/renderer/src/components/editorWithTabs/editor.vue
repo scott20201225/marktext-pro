@@ -164,7 +164,8 @@ import { copyImageToFolder, NOTE_ATTACHMENTS_DIRECTORY } from '@/util/fileSystem
 import { guessClipboardFilePath } from '@/util/clipboard'
 import { getCssForOptions, getHtmlToc, type PdfCssOptions, type HtmlTocOptions } from '@/util/pdf'
 import { patchMuyaSoftBreakIme } from '@/util/softBreakIme'
-import { resolveTocHeadingElement } from '@/util/tocNavigation'
+import { resolveTocHeadingElement, TOP_LEVEL_HEADINGS_SELECTOR } from '@/util/tocNavigation'
+import { computeHeadingNumbers } from '@/util/titleNumbering'
 import { addCommonStyle, setEditorWidth } from '@/util/theme'
 import { usePreferencesStore } from '@/store/preferences'
 import { useEditorStore } from '@/store/editor'
@@ -343,6 +344,7 @@ let switchLanguageCommand: SpellcheckerLanguageCommand | null = null
 let imageViewer: SimpleImageViewer | null = null
 // The engine has no `scroll` event; we listen on the scroll container directly.
 let scrollHandler: ((e: Event) => void) | null = null
+let headingNumberSyncFrame: number | null = null
 
 // The engine's undo/redo history (`getHistory()`) has a different shape than
 // the desktop store's `tab.history` (which drives the save/dirty tracking and
@@ -383,6 +385,39 @@ const resetSyntheticHistory = (id: string, baselineContent: string): void => {
 }
 const makeSyntheticHistory = (id: string, content: string): IFileHistoryLike => {
   return getSyntheticHistory(id, content).build(content)
+}
+
+const syncHeadingNumbers = (): void => {
+  const root = (editor.value?.domNode ?? editorRef.value) as HTMLElement | null
+  if (!root) return
+
+  const headings = Array.from(root.querySelectorAll(TOP_LEVEL_HEADINGS_SELECTOR)) as HTMLElement[]
+  const numbers = computeHeadingNumbers(headings.map((heading) => Number(heading.tagName.slice(1))), {
+    includeTopLevel: currentFile.value?.headingNumberingIncludesTopLevel === true
+  })
+
+  headings.forEach((heading, index) => {
+    const number = currentFile.value?.showHeadingNumbers ? numbers[index] : ''
+    if (number) {
+      heading.dataset.marktextTitleNumber = number
+    } else {
+      delete heading.dataset.marktextTitleNumber
+    }
+  })
+}
+
+const queueHeadingNumbersSync = (): void => {
+  if (headingNumberSyncFrame != null) return
+
+  headingNumberSyncFrame = window.requestAnimationFrame(() => {
+    headingNumberSyncFrame = null
+    syncHeadingNumbers()
+  })
+}
+
+const handleHeadingNumberingDisplayChanged = (): void => {
+  queueHeadingNumbersSync()
+  if (editor.value) editorStore.UPDATE_TOC(editor.value.getTOC())
 }
 // Drop per-tab bookkeeping for tabs that no longer exist. Tab ids are unique
 // over the session, so without pruning these maps (and the content -> id map
@@ -1593,6 +1628,7 @@ const setMarkdownToEditor = (payload: unknown) => {
     // `json-change`, so seed the TOC explicitly (otherwise it stays empty until
     // the first edit, and a file switch keeps the previous file's TOC).
     editorStore.UPDATE_TOC(editor.value.getTOC())
+    queueHeadingNumbersSync()
     // A freshly created/opened tab should be ready to type into.
     focusFreshEditor()
   }
@@ -1654,6 +1690,7 @@ const handleFileChange = (payload: unknown) => {
       editor.value.replaceContent(newMarkdown, preSourceModeSelection)
       preSourceModeSelection = null
       editorStore.UPDATE_TOC(editor.value.getTOC())
+      queueHeadingNumbersSync()
       // Map the CodeMirror `{ line, ch }` cursor onto a block-key cursor so the
       // WYSIWYG caret lands where the source-mode cursor was (PG2).
       editor.value.setCursorByOffset(muyaIndexCursor)
@@ -1676,6 +1713,7 @@ const handleFileChange = (payload: unknown) => {
       }
       editor.value.replaceContent(newMarkdown)
       editorStore.UPDATE_TOC(editor.value.getTOC())
+      queueHeadingNumbersSync()
       if (newCursor) {
         applyCursor(editor.value, newCursor)
       }
@@ -1689,6 +1727,7 @@ const handleFileChange = (payload: unknown) => {
       // Tab switch swaps content without firing `json-change`, so re-seed the
       // TOC (otherwise returning to an open tab keeps the other tab's TOC).
       editorStore.UPDATE_TOC(editor.value.getTOC())
+      queueHeadingNumbersSync()
       if (newCursor) {
         applyCursor(editor.value, newCursor)
       } else if (isIndexCursor(muyaIndexCursor)) {
@@ -1911,6 +1950,7 @@ onMounted(() => {
   // The first document's content is set via constructor options, so no
   // `file-loaded` / `setMarkdownToEditor` runs for it — seed its TOC here.
   editorStore.UPDATE_TOC(muya.getTOC())
+  queueHeadingNumbersSync()
 
   // Seed the save-tracking baseline for the mount-loaded document (from the
   // engine's OWN serialization, same reason as setMarkdownToEditor). Without
@@ -1972,6 +2012,7 @@ onMounted(() => {
   bus.on('switch-spellchecker-language', switchSpellcheckLanguage)
   bus.on('open-command-spellchecker-switch-language', openSpellcheckerLanguageCommand)
   bus.on('replace-misspelling', replaceMisspelling)
+  bus.on('heading-numbering-display-changed', handleHeadingNumberingDisplayChanged)
 
   // The engine emits a low-level `json-change` ({ op, source, prevDoc, doc })
   // on every document mutation; the desktop's content-change pipeline wants the
@@ -2003,6 +2044,7 @@ onMounted(() => {
       toc: editor.value.getTOC(),
       blocks: editor.value.getState()
     })
+    queueHeadingNumbersSync()
   })
 
   // The engine does not emit `scroll`; listen on the scroll container directly
@@ -2135,6 +2177,7 @@ onBeforeUnmount(() => {
   bus.off('switch-spellchecker-language', switchSpellcheckLanguage)
   bus.off('open-command-spellchecker-switch-language', openSpellcheckerLanguageCommand)
   bus.off('replace-misspelling', replaceMisspelling)
+  bus.off('heading-numbering-display-changed', handleHeadingNumberingDisplayChanged)
   bus.off('language-changed', handleLanguageChanged)
 
   document.removeEventListener('keyup', keyup)
@@ -2146,6 +2189,11 @@ onBeforeUnmount(() => {
     container?.removeEventListener('scroll', scrollHandler)
   }
   scrollHandler = null
+
+  if (headingNumberSyncFrame != null) {
+    window.cancelAnimationFrame(headingNumberSyncFrame)
+    headingNumberSyncFrame = null
+  }
 
   resizeObserverForEditor.disconnect()
 
@@ -2245,6 +2293,17 @@ onBeforeUnmount(() => {
 .editor-component .mu-container {
   padding-top: 20px;
   padding-bottom: 100vh;
+}
+
+.editor-component .mu-container > [data-marktext-title-number]::before {
+  content: attr(data-marktext-title-number);
+  color: var(--list-marker-color, inherit);
+  font-weight: normal;
+  margin-right: 6px;
+}
+
+.editor-component .mu-container > [data-marktext-title-number] > .mu-content {
+  display: inline;
 }
 
 .typewriter .editor-component {

@@ -228,7 +228,9 @@
       "paste": "貼り付け",
       "rename": "名前を変更",
       "moveToTrash": "ゴミ箱に移動",
-      "showInFolder": "フォルダで表示"
+      "showInFolder": "フォルダで表示",
+      "saved": "保存済み",
+      "unsaved": "保存待ち"
     },
     "tabs": {
       "close": "閉じる",
@@ -284,6 +286,8 @@
       "files": "ファイル",
       "search": "検索",
       "toc": "目次",
+      "headingNumbering": "見出し番号を表示",
+      "headingNumberingIncludeTopLevel": "最上位の見出しを番号付け",
       "settings": "設定",
       "git": "Git"
     }
