@@ -408,6 +408,23 @@ export class MarkdownToState {
             }
 
             case 'space': {
+                // Marked groups consecutive blank lines into a `space` token.
+                // Keep the additional blank lines as ordinary paragraphs so
+                // they remain editable content and survive a tab switch.
+                if (parentList.length !== 1)
+                    break;
+
+                const newlineCount = (token.raw.match(/\n/g) || []).length;
+                const blankParagraphCount = tokens.length === 0
+                    ? Math.max(0, newlineCount - 1)
+                    : Math.max(0, Math.floor((newlineCount - 2) / 2));
+
+                for (let i = 0; i < blankParagraphCount; i++) {
+                    parentList[0].push({
+                        name: 'paragraph',
+                        text: '',
+                    });
+                }
                 break;
             }
 
