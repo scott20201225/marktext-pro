@@ -224,6 +224,7 @@
       "newFile": "Yeni Dosya",
       "newDirectory": "Yeni Klasör",
       "copy": "Kopyala",
+      "copyPath": "Yolu kopyala",
       "cut": "Kes",
       "paste": "Yapıştır",
       "rename": "Yeniden Adlandır",

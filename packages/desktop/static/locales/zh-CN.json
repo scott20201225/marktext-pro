@@ -224,6 +224,7 @@
       "newFile": "新建文件",
       "newDirectory": "新建目录",
       "copy": "复制",
+      "copyPath": "复制路径",
       "cut": "剪切",
       "paste": "粘贴",
       "rename": "重命名",
