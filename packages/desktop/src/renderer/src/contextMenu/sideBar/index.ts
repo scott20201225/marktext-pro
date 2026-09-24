@@ -3,6 +3,7 @@ import {
   getNewFile,
   getNewDirectory,
   getCOPY,
+  getCopyPath,
   getCUT,
   getPASTE,
   getRENAME,
@@ -25,6 +26,8 @@ export const showContextMenu = (
     SEPARATOR,
     getRENAME(),
     getDELETE(),
+    SEPARATOR,
+    getCopyPath(),
     SEPARATOR,
     getShowInFolder()
   ]

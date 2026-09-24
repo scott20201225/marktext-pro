@@ -32,6 +32,14 @@ export const getCOPY = () => ({
   }
 })
 
+export const getCopyPath = () => ({
+  label: t('contextMenu.sideBar.copyPath'),
+  id: 'copyPathMenuItem',
+  click(_menuItem: unknown, _browserWindow: unknown) {
+    contextMenu.copyPath()
+  }
+})
+
 export const getCUT = () => ({
   label: t('contextMenu.sideBar.cut'),
   id: 'cutMenuItem',
@@ -76,6 +84,7 @@ export const getShowInFolder = () => ({
 export const NEW_FILE = getNewFile()
 export const NEW_DIRECTORY = getNewDirectory()
 export const COPY = getCOPY()
+export const COPY_PATH = getCopyPath()
 export const CUT = getCUT()
 export const PASTE = getPASTE()
 export const RENAME = getRENAME()
