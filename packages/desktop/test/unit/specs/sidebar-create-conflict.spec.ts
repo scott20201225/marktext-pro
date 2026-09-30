@@ -62,4 +62,14 @@ describe('CREATE_FILE_DIRECTORY — name conflict guard (#1946)', () => {
     expect(create).toHaveBeenCalledWith('/docs/fresh.md', 'file')
     expect(notice.notify).not.toHaveBeenCalled()
   })
+
+  it('safely bails out when createCache has no dirname or type (e.g. duplicate blur event)', async() => {
+    const store = useProjectStore()
+    store.createCache = {}
+
+    await store.CREATE_FILE_DIRECTORY('test')
+
+    expect(create).not.toHaveBeenCalled()
+    expect(notice.notify).not.toHaveBeenCalled()
+  })
 })

@@ -72,6 +72,9 @@ export const getOptionsFromState = (
 
 const documentStateKeys = [
   'isSaved',
+  'isDrawing',
+  'isGeoGebra',
+  'geoGebraMode',
   'pathname',
   'filename',
   'markdown',

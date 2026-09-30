@@ -18,6 +18,8 @@ import { TITLE_BAR_HEIGHT, editorWinOptions, isLinux, isOsx, isWindows } from '.
 import { showEditorContextMenu } from '../contextMenu/editor'
 import { loadMarkdownFile } from '../filesystem/markdown'
 import { switchLanguage } from '../spellchecker'
+import { isDrawioFile } from '../drawio'
+import { isGeoGebraFile } from '../geogebra'
 import fs from 'fs'
 
 type RawMarkdownDocument = Awaited<ReturnType<typeof loadMarkdownFile>>
@@ -138,6 +140,8 @@ class EditorWindow extends BaseWindow {
     }
 
     let win: BrowserWindow | null = (this.browserWindow = new BrowserWindow(winOptions))
+    ;(win as BrowserWindow & { __marknoteWorkspaceRoot?: string }).__marknoteWorkspaceRoot =
+      rootDirectory ?? undefined
 
     // Give every editor window a stable id for session buffer persistence.
     // We cant use win.id as it might collide with same IDs from closed windows
@@ -345,6 +349,18 @@ class EditorWindow extends BaseWindow {
         browserWindow!.webContents.send('mt::switch-tab-by-file_path', filePath)
         continue
       }
+      if (isDrawioFile(filePath)) {
+        this.addToOpenedFiles(filePath)
+        this._accessor.menu.addRecentlyUsedDocument(filePath)
+        browserWindow!.webContents.send('mt::open-drawio-file', filePath)
+        continue
+      }
+      if (isGeoGebraFile(filePath)) {
+        this.addToOpenedFiles(filePath)
+        this._accessor.menu.addRecentlyUsedDocument(filePath)
+        browserWindow!.webContents.send('mt::open-geogebra-file', filePath)
+        continue
+      }
       loadMarkdownFile(
         filePath,
         eol,
@@ -410,6 +426,9 @@ class EditorWindow extends BaseWindow {
       preferences.setItems({ lastOpenedFolder: pathname })
       appMenu.addRecentlyUsedDocument(pathname)
       this._openedRootDirectory = pathname
+      ;(
+        browserWindow as BrowserWindow & { __marknoteWorkspaceRoot?: string }
+      ).__marknoteWorkspaceRoot = pathname
       ipcMain.emit('watcher-watch-directory', browserWindow, pathname)
       browserWindow!.webContents.send('mt::open-directory', pathname)
     } else {
@@ -595,6 +614,32 @@ class EditorWindow extends BaseWindow {
       const fileOpenRequests: Promise<void>[] = []
       for (const tab of bufferState.tabs) {
         if (!tab.pathname) {
+          continue
+        }
+
+        const isDrawing = isDrawioFile(tab.pathname)
+        const isGeoGebra = isGeoGebraFile(tab.pathname)
+
+        if (isDrawing || isGeoGebra) {
+          fileOpenRequests.push(
+            fs.promises
+              .access(tab.pathname)
+              .then(() => {
+                if (!this._openedFiles!.includes(tab.pathname)) {
+                  this.addToOpenedFiles(tab.pathname)
+                  appMenu.addRecentlyUsedDocument(tab.pathname)
+                }
+              })
+              .catch((err: Error) => {
+                tab.isSaved = false
+                log.error(`[ERROR] Non-markdown file not found: ${err.message}`)
+                browserWindow!.webContents.send('mt::show-notification', {
+                  title: `Could not find file ${tab.filename} on disk, please save your work.`,
+                  type: 'error',
+                  message: err.message
+                })
+              })
+          )
           continue
         }
 

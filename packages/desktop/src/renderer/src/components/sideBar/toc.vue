@@ -103,6 +103,16 @@ const handleClick = (data: { slug?: unknown }): void => {
 </script>
 
 <style>
+body {
+  --toc-text-color: color-mix(in srgb, var(--editorBgColor, #ffffff) 8%, #000000 92%);
+  --toc-icon-color: color-mix(in srgb, var(--editorBgColor, #ffffff) 25%, #000000 75%);
+}
+
+body.dark {
+  --toc-text-color: color-mix(in srgb, var(--editorBgColor, #1e1e1e) 5%, #ffffff 95%);
+  --toc-icon-color: color-mix(in srgb, var(--editorBgColor, #1e1e1e) 20%, #ffffff 80%);
+}
+
 .document-toc {
   height: 100%;
   min-width: 0;
@@ -112,18 +122,30 @@ const handleClick = (data: { slug?: unknown }): void => {
   display: flex;
   flex-direction: column;
   background: var(--editorBgColor);
-  color: var(--editorColor);
+  color: var(--toc-text-color, var(--tree-text-color, #333333));
+  --el-tree-text-color: var(--toc-text-color, var(--tree-text-color, #333333));
+  --el-tree-expand-icon-color: var(--toc-icon-color, var(--tree-icon-color, #666666));
+}
+
+body.dark .document-toc {
+  color: var(--toc-text-color, var(--tree-text-color, #ffffff));
+  --el-tree-text-color: var(--toc-text-color, var(--tree-text-color, #ffffff));
+  --el-tree-expand-icon-color: var(--toc-icon-color, var(--tree-icon-color, #cccccc));
 }
 
 .document-toc .title {
   display: flex;
   align-items: center;
   justify-content: space-between;
-  color: var(--editorColor);
+  color: var(--toc-text-color, var(--tree-text-color, #333333));
   font-weight: 600;
-  font-size: 16px;
+  font-size: 15px;
   margin: 0;
   padding: 16px 16px 10px;
+}
+
+body.dark .document-toc .title {
+  color: var(--toc-text-color, var(--tree-text-color, #ffffff));
 }
 
 .document-toc-close {
@@ -134,14 +156,23 @@ const handleClick = (data: { slug?: unknown }): void => {
   align-items: center;
   justify-content: center;
   border: 0;
+  border-radius: 4px;
   background: transparent;
-  color: var(--editorColor);
+  color: var(--toc-icon-color, var(--tree-icon-color, #666666));
   cursor: pointer;
 }
 
+body.dark .document-toc-close {
+  color: var(--toc-icon-color, var(--tree-icon-color, #cccccc));
+}
+
 .document-toc-close:hover {
-  color: var(--themeColor);
+  color: var(--toc-text-color, var(--tree-text-color, #333333));
   background: var(--floatHoverColor);
+}
+
+body.dark .document-toc-close:hover {
+  color: var(--toc-text-color, var(--tree-text-color, #ffffff));
 }
 
 .document-toc .el-tree-node {
@@ -153,21 +184,50 @@ const handleClick = (data: { slug?: unknown }): void => {
   min-height: 0;
   overflow-y: auto;
   background: transparent;
-  color: var(--editorColor);
+  color: var(--toc-text-color, var(--tree-text-color, #333333));
   padding: 0 8px 14px;
 }
 
-.document-toc .el-tree-node__label,
+body.dark .document-toc .el-tree {
+  color: var(--toc-text-color, var(--tree-text-color, #ffffff));
+}
+
+.document-toc .el-tree-node__content {
+  border-radius: 4px;
+}
+
+.document-toc .el-tree-node__label {
+  color: var(--toc-text-color, var(--tree-text-color, #333333)) !important;
+}
+
+body.dark .document-toc .el-tree-node__label {
+  color: var(--toc-text-color, var(--tree-text-color, #ffffff)) !important;
+}
+
 .document-toc .el-tree-node__expand-icon {
-  color: var(--editorColor);
+  color: var(--toc-icon-color, var(--tree-icon-color, #666666)) !important;
 }
 
-.document-toc .el-tree-node:focus > .el-tree-node__content {
-  background-color: var(--floatHoverColor);
+body.dark .document-toc .el-tree-node__expand-icon {
+  color: var(--toc-icon-color, var(--tree-icon-color, #cccccc)) !important;
 }
 
-.document-toc .el-tree-node__content:hover {
-  background: var(--floatHoverColor);
+.document-toc .el-tree-node:focus > .el-tree-node__content,
+.document-toc .el-tree-node__content:hover,
+.document-toc .el-tree-node.is-current > .el-tree-node__content {
+  background: var(--floatHoverColor) !important;
+}
+
+.document-toc .el-tree-node:focus > .el-tree-node__content .el-tree-node__label,
+.document-toc .el-tree-node__content:hover .el-tree-node__label,
+.document-toc .el-tree-node.is-current > .el-tree-node__content .el-tree-node__label {
+  color: var(--toc-text-color, var(--tree-text-color, #333333)) !important;
+}
+
+body.dark .document-toc .el-tree-node:focus > .el-tree-node__content .el-tree-node__label,
+body.dark .document-toc .el-tree-node__content:hover .el-tree-node__label,
+body.dark .document-toc .el-tree-node.is-current > .el-tree-node__content .el-tree-node__label {
+  color: var(--toc-text-color, var(--tree-text-color, #ffffff)) !important;
 }
 
 .document-toc > li {

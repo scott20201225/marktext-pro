@@ -5,14 +5,14 @@
   >
     <div class="container">
       <toc
-        v-if="showDocumentToc"
+        v-if="showDocumentToc && hasMarkdownFile"
         class="document-toc-panel"
         @close="layoutStore.TOGGLE_DOCUMENT_TOC()"
       />
       <div class="editor-content">
         <div class="document-editor-controls">
           <button
-            v-if="!showDocumentToc"
+            v-if="!showDocumentToc && hasMarkdownFile"
             class="document-editor-control"
             type="button"
             :title="t('sideBar.icons.toc')"
@@ -22,7 +22,7 @@
               <Memo />
             </el-icon>
           </button>
-          <div v-if="currentFile" class="document-heading-controls">
+          <div v-if="hasMarkdownFile" class="document-heading-controls">
             <heading-numbering-controls />
           </div>
         </div>
@@ -45,6 +45,7 @@
 </template>
 
 <script setup lang="ts">
+import { computed } from 'vue'
 import { useLayoutStore } from '@/store/layout'
 import { useEditorStore } from '@/store/editor'
 import { storeToRefs } from 'pinia'
@@ -73,6 +74,12 @@ const layoutStore = useLayoutStore()
 const editorStore = useEditorStore()
 const { effectiveSideBarWidth, showDocumentToc } = storeToRefs(layoutStore)
 const { currentFile } = storeToRefs(editorStore)
+const hasMarkdownFile = computed(
+  () =>
+    Boolean(currentFile.value?.id) &&
+    !currentFile.value?.isDrawing &&
+    !currentFile.value?.isGeoGebra
+)
 </script>
 
 <style scoped>
@@ -131,7 +138,7 @@ const { currentFile } = storeToRefs(editorStore)
   flex: 0 0 260px;
   width: 260px;
   overflow: hidden;
-  border-right: 1px solid var(--itemBgColor);
+  border-right: 1px solid var(--floatBorderColor);
 }
 
 .editor-content {

@@ -1,10 +1,22 @@
 import bus from '../../bus'
+import type { GeoGebraMode } from '@shared/types/files'
 
 type MenuItemArg = unknown
 type BrowserWindowArg = unknown
 
 export const newFile = (_menuItem?: MenuItemArg, _browserWindow?: BrowserWindowArg): void => {
   bus.emit('SIDEBAR::new', 'file')
+}
+
+export const newDrawing = (_menuItem?: MenuItemArg, _browserWindow?: BrowserWindowArg): void => {
+  bus.emit('SIDEBAR::new', 'drawing')
+}
+
+export const newGeoGebra = (
+  mode: GeoGebraMode = 'graphing',
+  _browserWindow?: BrowserWindowArg
+): void => {
+  bus.emit('SIDEBAR::new', { type: 'geogebra', geoGebraMode: mode })
 }
 
 export const newDirectory = (_menuItem?: MenuItemArg, _browserWindow?: BrowserWindowArg): void => {

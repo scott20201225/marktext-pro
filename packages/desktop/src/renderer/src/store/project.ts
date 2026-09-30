@@ -17,8 +17,10 @@ import { getFileStateFromData } from './help'
 import { useLayoutStore } from './layout'
 import { useEditorStore } from './editor'
 import { debouncedSendBufferedState } from './bufferedState'
+import { getDrawioConfiguration } from '../util/drawioConfiguration'
+import { getGeoGebraConfiguration } from '../util/geogebraConfiguration'
 import type { TreeNode } from '../components/sideBar/types'
-import type { FileChangeDetail } from '@shared/types/files'
+import type { FileChangeDetail, GeoGebraMode } from '@shared/types/files'
 
 type ProjectTree = TreeNode
 type TreeChange = FileChangeDetail
@@ -65,7 +67,8 @@ interface OpenProjectOptions {
 
 interface CreateCacheEntry {
   dirname: string
-  type: 'file' | 'directory' | string
+  type: 'file' | 'drawing' | 'geogebra' | 'directory' | string
+  geoGebraMode?: GeoGebraMode
 }
 
 interface ClipboardEntry {
@@ -246,10 +249,21 @@ export const useProjectStore = defineStore('project', () => {
         window.electron.clipboard.writeText(pathname)
       }
     })
-    bus.on('SIDEBAR::new', (type: unknown) => {
+    bus.on('SIDEBAR::new', (payload: unknown) => {
+      const request =
+        typeof payload === 'object' && payload !== null
+          ? (payload as { type?: unknown; geoGebraMode?: unknown })
+          : { type: payload }
+      const type = String(request.type ?? '')
       const { pathname, isDirectory } = activeItem.value
       const dirname = isDirectory ? pathname : window.path.dirname(pathname)
-      createCache.value = { dirname, type: String(type) }
+      createCache.value = {
+        dirname,
+        type,
+        ...(type === 'geogebra'
+          ? { geoGebraMode: (request.geoGebraMode ?? 'graphing') as GeoGebraMode }
+          : {})
+      }
       bus.emit('SIDEBAR::show-new-input')
     })
     bus.on('SIDEBAR::remove', () => {
@@ -320,30 +334,70 @@ export const useProjectStore = defineStore('project', () => {
   async function CREATE_FILE_DIRECTORY(name: string): Promise<void> {
     const cache = createCache.value as CreateCacheEntry
     const { dirname, type } = cache
+    createCache.value = {}
 
-    if (type === 'file' && !window.fileUtils.hasMarkdownExtension(name)) {
-      name += '.md'
+    if (!dirname || !type) {
+      return
     }
 
-    const fullName = `${dirname}/${name}`
+    const geoGebraMode = cache.geoGebraMode ?? 'graphing'
+    const inputName = name.trim()
+    if (!inputName) {
+      return
+    }
+
+    let fileType: FileCreateType = 'directory'
+    let storedName = inputName
+
+    if (type === 'file') {
+      fileType = 'file'
+      if (!window.fileUtils.hasMarkdownExtension(storedName)) {
+        storedName += '.md'
+      }
+    } else if (type === 'drawing') {
+      fileType = 'file'
+      if (!storedName.toLowerCase().endsWith('.drawio')) {
+        storedName += '.drawio'
+      }
+    } else if (type === 'geogebra') {
+      fileType = 'file'
+      if (!storedName.toLowerCase().endsWith('.ggb')) {
+        storedName += '.ggb'
+      }
+    } else {
+      fileType = 'directory'
+    }
+
+    const fullName = dirname.endsWith('/') ? `${dirname}${storedName}` : `${dirname}/${storedName}`
 
     // Creating over an existing path would silently overwrite it (outputFile
     // truncates). Refuse instead of destroying the existing file (#1946).
     if (await window.fileUtils.pathExists(fullName)) {
-      createCache.value = {}
       notice.notify({
         title: 'Error in Side Bar',
         type: 'error',
-        message: `A ${type} named "${name}" already exists in this folder.`
+        message: `A ${type} named "${storedName}" already exists in this folder.`
       })
       return
     }
 
-    create(fullName, type as FileCreateType)
+    create(fullName, fileType)
       .then(() => {
-        createCache.value = {}
         if (type === 'file') {
           newFileNameCache.value = fullName
+        } else if (type === 'drawing') {
+          return window.electron.ipcRenderer.invoke(
+            'mt::drawio::open',
+            fullName,
+            getDrawioConfiguration()
+          )
+        } else if (type === 'geogebra') {
+          return window.electron.ipcRenderer.invoke(
+            'mt::geogebra::open',
+            fullName,
+            geoGebraMode,
+            getGeoGebraConfiguration()
+          )
         }
       })
       .catch((err) => {
@@ -359,8 +413,15 @@ export const useProjectStore = defineStore('project', () => {
     const editorStore = useEditorStore()
     const src = renameCache.value
     if (!src) return
+    let nextName = name.trim()
+    if (!nextName) return
+    if (/\.drawio$/i.test(src) && !/\.drawio$/i.test(nextName)) {
+      nextName += '.drawio'
+    } else if (/\.ggb$/i.test(src) && !/\.ggb$/i.test(nextName)) {
+      nextName += '.ggb'
+    }
     const dirname = window.path.dirname(src)
-    const dest = dirname + PATH_SEPARATOR + name
+    const dest = dirname + PATH_SEPARATOR + nextName
     const isRootRename = projectTree.value?.pathname
       ? window.fileUtils.isSamePathSync(projectTree.value.pathname, src)
       : false

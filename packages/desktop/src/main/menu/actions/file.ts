@@ -15,11 +15,18 @@ import {
 } from 'electron'
 import log from 'electron-log'
 import { isDirectory, isFile, exists } from 'common/filesystem'
-import { MARKDOWN_EXTENSIONS, isMarkdownFile } from 'common/filesystem/paths'
+import { isChildOfDirectory, MARKDOWN_EXTENSIONS, isMarkdownFile } from 'common/filesystem/paths'
 import { checkUpdates, userSetting } from './marktextpro'
 import { COMMANDS } from '../../commands'
 import type { CommandManager } from '../../commands'
 import { EXTENSION_HASN, PANDOC_EXTENSIONS, URL_REG, isOsx } from '../../config'
+import {
+  createDrawioFile,
+  isDrawioFile,
+  openDrawioFile,
+  saveDrawioDocuments
+} from '../../drawio'
+import { isGeoGebraFile, openGeoGebraFile } from '../../geogebra'
 import { normalizeAndResolvePath, writeFile } from '../../filesystem'
 import { writeMarkdownFile } from '../../filesystem/markdown'
 import { getPath, getRecommendTitleFromMarkdownString } from '../../utils'
@@ -30,7 +37,7 @@ import {
 } from '../../utils/linkOpenWith'
 import pandoc from '../../utils/pandoc'
 import { t } from '../../i18n'
-import type { ExportType, UnsavedFile } from '@shared/types/files'
+import type { ExportType, UnsavedDrawioFile, UnsavedFile } from '@shared/types/files'
 
 type Win = BrowserWindow | null | undefined
 
@@ -493,16 +500,18 @@ const handleResponseForSave = async (
 
 const showUnsavedFilesMessage = async (
   win: BrowserWindow,
-  files: UnsavedFile[]
+  files: UnsavedFile[],
+  drawioFiles: UnsavedDrawioFile[] = []
 ): Promise<{ needSave: boolean } | null> => {
+  const allFiles = [...files, ...drawioFiles]
   const { response } = await dialog.showMessageBox(win, {
     type: 'warning',
     buttons: [t('dialog.save'), t('dialog.dontSave'), t('dialog.cancel')],
     defaultId: 0,
     message: t('dialog.saveChanges', {
-      count: files.length,
-      type: files.length === 1 ? t('dialog.file') : t('dialog.files'),
-      files: files.map((f) => f.filename).join('\n')
+      count: allFiles.length,
+      type: allFiles.length === 1 ? t('dialog.file') : t('dialog.files'),
+      files: allFiles.map((f) => f.filename).join('\n')
     }),
     detail: t('dialog.changesWillBeLost'),
     cancelId: 2,
@@ -671,56 +680,63 @@ ipcMain.on(
   }
 )
 
-ipcMain.on('mt::close-window-confirm', async (e, unsavedFiles: UnsavedFile[]) => {
-  const win = BrowserWindow.fromWebContents(e.sender)
-  if (!win) {
-    return
-  }
-  const userResult = await showUnsavedFilesMessage(win, unsavedFiles)
-  if (!userResult) {
-    return
-  }
+ipcMain.on(
+  'mt::close-window-confirm',
+  async (e, unsavedFiles: UnsavedFile[], unsavedDrawioFiles: UnsavedDrawioFile[] = []) => {
+    const win = BrowserWindow.fromWebContents(e.sender)
+    if (!win) {
+      return
+    }
+    const userResult = await showUnsavedFilesMessage(win, unsavedFiles, unsavedDrawioFiles)
+    if (!userResult) {
+      return
+    }
 
-  const { needSave } = userResult
-  if (needSave) {
-    Promise.all(
-      unsavedFiles.map((file) =>
-        handleResponseForSave(
-          e,
-          file.id,
-          file.filename,
-          file.pathname,
-          file.markdown,
-          file.options,
-          file.defaultPath
+    const { needSave } = userResult
+    if (needSave) {
+      Promise.all([
+        ...unsavedFiles.map((file) =>
+          handleResponseForSave(
+            e,
+            file.id,
+            file.filename,
+            file.pathname,
+            file.markdown,
+            file.options,
+            file.defaultPath
+          )
+        ),
+        saveDrawioDocuments(
+          win,
+          unsavedDrawioFiles.map((file) => file.pathname)
         )
-      )
-    )
-      .then(() => {
-        ipcMain.emit('window-close-by-id', win.id)
-      })
-      .catch((err: unknown) => {
-        log.error('Error while saving before quit:', err)
+      ])
+        .then(() => {
+          ipcMain.emit('window-close-by-id', win.id)
+        })
+        .catch((err: unknown) => {
+          log.error('Error while saving before quit:', err)
 
-        const msg = err instanceof Error ? err.message : String(err)
-        // Notify user about the problem.
-        dialog
-          .showMessageBox(win, {
-            type: 'error',
-            buttons: [t('dialog.close'), t('dialog.keepOpen')],
-            message: t('dialog.saveFailure'),
-            detail: msg
-          })
-          .then(({ response }) => {
-            if (win.id && response === 0) {
-              ipcMain.emit('window-close-by-id', win.id)
-            }
-          })
-      })
-  } else {
-    ipcMain.emit('window-close-by-id', win.id)
+          const msg = err instanceof Error ? err.message : String(err)
+          // Notify user about the problem.
+          dialog
+            .showMessageBox(win, {
+              type: 'error',
+              buttons: [t('dialog.close'), t('dialog.keepOpen')],
+              message: t('dialog.saveFailure'),
+              detail: msg
+            })
+            .then(({ response }) => {
+              if (win.id && response === 0) {
+                ipcMain.emit('window-close-by-id', win.id)
+              }
+            })
+        })
+    } else {
+      ipcMain.emit('window-close-by-id', win.id)
+    }
   }
-})
+)
 
 ipcMain.on('mt::response-file-save', handleResponseForSave as Parameters<typeof ipcMain.on>[1])
 
@@ -734,7 +750,7 @@ ipcMain.on('mt::window::drop', async (e, fileList: string[]) => {
     return
   }
   for (const file of fileList) {
-    if (isMarkdownFile(file)) {
+    if (isMarkdownFile(file) || isDrawioFile(file) || isGeoGebraFile(file)) {
       openFileOrFolder(win, file)
       continue
     }
@@ -886,11 +902,28 @@ ipcMain.on('mt::format-link-click', async (e, { data, dirname }: FormatLinkPaylo
   let pathname = localTarget?.pathname ?? ''
 
   if (pathname) {
+    const workspaceRoot = (win as BrowserWindow & { __marknoteWorkspaceRoot?: string })
+      .__marknoteWorkspaceRoot
+    const isWorkspaceDocument =
+      !!workspaceRoot &&
+      isChildOfDirectory(workspaceRoot, pathname) &&
+      (isMarkdownFile(pathname) || isDrawioFile(pathname) || isGeoGebraFile(pathname))
+
+    if (isWorkspaceDocument) {
+      openFileOrFolder(win, pathname)
+      return
+    }
+
     if (isMarkdownFile(pathname)) {
       const innerWin = BrowserWindow.fromWebContents(e.sender)
       if (innerWin) {
         openFileOrFolder(innerWin, pathname)
       }
+    } else if (isDrawioFile(pathname) || isGeoGebraFile(pathname)) {
+      const openedWithApplication = localTarget
+        ? await openLocalLinkWithApplication(win, localTarget)
+        : false
+      if (!openedWithApplication) shell.openPath(pathname)
     } else {
       // A link in an untrusted document could point at a co-located script or
       // executable; opening it via the OS shell would run code silently (#3575).
@@ -982,15 +1015,28 @@ export const openFile = async (win: BrowserWindow | null): Promise<void> => {
     properties: ['openFile', 'multiSelections'],
     filters: [
       {
-        name: 'Markdown document',
-        extensions: [...MARKDOWN_EXTENSIONS]
+        name: 'Markdown, Draw.io & GeoGebra',
+        extensions: [...MARKDOWN_EXTENSIONS, 'drawio', 'ggb']
       }
     ]
   })
 
   if (Array.isArray(filePaths) && filePaths.length > 0) {
-    ipcMain.emit('app-open-files-by-id', win.id, filePaths)
+    const markdownFiles = filePaths.filter(
+      (filePath) => !isDrawioFile(filePath) && !isGeoGebraFile(filePath)
+    )
+    if (markdownFiles.length) ipcMain.emit('app-open-files-by-id', win.id, markdownFiles)
+    for (const filePath of filePaths.filter(isDrawioFile)) {
+      void openDrawioFile(filePath, win)
+    }
+    for (const filePath of filePaths.filter(isGeoGebraFile)) {
+      void openGeoGebraFile(filePath, win)
+    }
   }
+}
+
+export const newDrawioFile = (win: Win): void => {
+  void createDrawioFile(win)
 }
 
 export const openFolder = async (win: BrowserWindow | null): Promise<void> => {
@@ -1008,7 +1054,11 @@ export const openFolder = async (win: BrowserWindow | null): Promise<void> => {
 
 export const openFileOrFolder = (win: BrowserWindow, pathname: string): void => {
   const resolvedPath = normalizeAndResolvePath(pathname)
-  if (isFile(resolvedPath)) {
+  if (isDrawioFile(resolvedPath)) {
+    void openDrawioFile(resolvedPath, win)
+  } else if (isGeoGebraFile(resolvedPath)) {
+    void openGeoGebraFile(resolvedPath, win)
+  } else if (isFile(resolvedPath)) {
     ipcMain.emit('app-open-file-by-id', win.id, resolvedPath)
   } else if (isDirectory(resolvedPath)) {
     ipcMain.emit('app-open-directory-by-id', win.id, resolvedPath)

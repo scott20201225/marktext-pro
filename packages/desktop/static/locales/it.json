@@ -29,7 +29,8 @@
       "closeTab": "Chiudi scheda",
       "closeWindow": "Chiudi finestra",
       "quit": "Esci",
-      "preferences": "Preferenze"
+      "preferences": "Preferenze",
+      "preview": "Anteprima"
     },
     "edit": {
       "edit": "Modifica",
@@ -221,7 +222,7 @@
     "addToDictionary": "Aggiungi al dizionario",
     "editDictionary": "Modifica dizionario...",
     "sideBar": {
-      "newFile": "New File",
+      "newFile": "New Markdown",
       "newDirectory": "New Directory",
       "copy": "Copy",
       "copyPath": "Copy path",
@@ -229,7 +230,8 @@
       "paste": "Paste",
       "rename": "Rename",
       "moveToTrash": "Move To Trash",
-      "showInFolder": "Show In Folder"
+      "showInFolder": "Show In Folder",
+      "newDrawing": "Nuovo disegno"
     },
     "tabs": {
       "close": "Close",
@@ -273,12 +275,12 @@
       "saveAll": "Save All",
       "closeAll": "Close All",
       "emptyProject": "Empty project",
-      "createFile": "Create File",
+      "createFile": "New Markdown",
       "openFolder": "Open Folder",
       "workspaceActions": "Azioni dell'area di lavoro",
       "nodeActions": "Azioni",
       "enterDirectoryName": "Inserisci il nome della cartella",
-      "enterMarkdownFileName": "Inserisci il nome del file .md"
+      "enterMarkdownFileName": "Enter Markdown file name"
     },
     "toc": {
       "title": "Table Of Contents"
@@ -382,7 +384,7 @@
   },
   "recent": {
     "noTabsOpen": "You have no tabs open.",
-    "newFile": "New File"
+    "newFile": "New Markdown"
   },
   "import": {
     "title": "Import or Open",

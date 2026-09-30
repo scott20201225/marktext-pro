@@ -10,6 +10,8 @@ import paragraph from './paragraph'
 import format from './format'
 import language from './language'
 import theme from './theme'
+import drawioFile from './drawioFile'
+import geogebraFile from './geogebraFile'
 import type Keybindings from '../../keyboard/shortcutHandler'
 import type Preference from '../../preferences'
 
@@ -38,8 +40,32 @@ export const configSettingMenu = (keybindings: Keybindings): MenuItemConstructor
 export default function(
   keybindings: Keybindings,
   preferences: Preference,
-  recentlyUsedFiles: string[] = []
+  recentlyUsedFiles: string[] = [],
+  options: { drawioMode?: boolean; drawioAutoSave?: boolean; geogebraMode?: boolean } = {}
 ): MenuItemConstructorOptions[] {
+  if (options.drawioMode) {
+    return [
+      // macOS reserves the first top-level entry for the application menu.
+      // Without this placeholder it consumes the Draw.io File menu instead.
+      ...(process.platform === 'darwin' ? [marktextpro(keybindings)] : []),
+      drawioFile(keybindings, options.drawioAutoSave ?? true),
+      theme(preferences),
+      language(preferences),
+      help()
+    ]
+  }
+
+  if (options.geogebraMode) {
+    const { autoSave } = preferences.getAll() as { autoSave?: boolean }
+    return [
+      ...(process.platform === 'darwin' ? [marktextpro(keybindings)] : []),
+      geogebraFile(keybindings, !!autoSave),
+      theme(preferences),
+      language(preferences),
+      help()
+    ]
+  }
+
   return [
     ...(process.platform === 'darwin' ? [marktextpro(keybindings)] : []),
     file(keybindings, preferences, recentlyUsedFiles),

@@ -23,6 +23,8 @@ import { onInternalChannel } from '../utils/internalIpc'
 import { WindowType } from '../windows/base'
 import EditorWindow from '../windows/editor'
 import SettingWindow from '../windows/setting'
+import { isDrawioFile, openDrawioFile } from '../drawio'
+import { isGeoGebraFile, openGeoGebraFile } from '../geogebra'
 import { zoomIn, zoomOut } from '../windows/utils'
 import { setLanguage } from '../i18n'
 import { getNativeThemeSource, isDarkApplicationTheme } from './nativeTheme'
@@ -67,6 +69,20 @@ const replacePathPrefix = (pathname: string, src: string, dest: string): string 
   if (!isSameOrChildPath(pathname, src)) return pathname
   if (normalizeComparablePath(pathname) === normalizeComparablePath(src)) return path.normalize(dest)
   return path.join(dest, path.relative(src, pathname))
+}
+
+const normalizeOpenPath = (pathname: string): PathInfo | null => {
+  const markdownPath = normalizeMarkdownPath(pathname)
+  if (markdownPath) return markdownPath as PathInfo
+  if (isDrawioFile(pathname) && fs.existsSync(pathname)) {
+    const resolved = normalizeAndResolvePath(pathname)
+    return resolved ? { isDir: false, path: resolved } : null
+  }
+  if (isGeoGebraFile(pathname) && fs.existsSync(pathname)) {
+    const resolved = normalizeAndResolvePath(pathname)
+    return resolved ? { isDir: false, path: resolved } : null
+  }
+  return null
 }
 
 interface BufferedEditorState {
@@ -127,7 +143,7 @@ class App {
           continue
         }
 
-        const info = normalizeMarkdownPath(path.resolve(workingDirectory, pathname))
+        const info = normalizeOpenPath(path.resolve(workingDirectory, pathname))
         if (info) {
           buf.push(info as PathInfo)
         }
@@ -242,7 +258,7 @@ class App {
           continue
         }
 
-        const info = normalizeMarkdownPath(pathname)
+        const info = normalizeOpenPath(pathname)
         if (info) {
           _openFilesCache.push(info as PathInfo)
         }
@@ -256,12 +272,12 @@ class App {
         // Restore based off the previous buffer
         isRestorePathway = true
       } else if (startUpAction === 'folder' && defaultDirectoryToOpen) {
-        const info = normalizeMarkdownPath(defaultDirectoryToOpen)
+        const info = normalizeOpenPath(defaultDirectoryToOpen)
         if (info) {
           _openFilesCache.unshift(info as PathInfo)
         }
       } else if (startUpAction === 'openLastFolder' && lastOpenedFolder) {
-        const info = normalizeMarkdownPath(lastOpenedFolder)
+        const info = normalizeOpenPath(lastOpenedFolder)
         if (info) {
           _openFilesCache.unshift(info as PathInfo)
         }
@@ -456,7 +472,7 @@ class App {
 
   openFile = (event: Electron.Event, pathname: string): void => {
     event.preventDefault()
-    const info = normalizeMarkdownPath(pathname)
+    const info = normalizeOpenPath(pathname)
     if (info) {
       this._openFilesCache.push(info as PathInfo)
 
@@ -605,6 +621,18 @@ class App {
         directorySet.add(path)
       } else {
         fileSet.add(path)
+      }
+    }
+
+    for (const pathname of [...fileSet]) {
+      if (isDrawioFile(pathname)) {
+        fileSet.delete(pathname)
+        const activeEditor = _windowManager.getActiveEditor()
+        void openDrawioFile(pathname, activeEditor?.browserWindow)
+      } else if (isGeoGebraFile(pathname)) {
+        fileSet.delete(pathname)
+        const activeEditor = _windowManager.getActiveEditor()
+        void openGeoGebraFile(pathname, activeEditor?.browserWindow)
       }
     }
 

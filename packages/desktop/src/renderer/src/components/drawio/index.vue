@@ -1,0 +1,141 @@
+<template>
+  <div ref="surfaceRef" class="drawio-surface" />
+</template>
+
+<script setup lang="ts">
+import { nextTick, onBeforeUnmount, onMounted, ref, watch } from 'vue'
+import { storeToRefs } from 'pinia'
+import { usePreferencesStore } from '@/store/preferences'
+import { useLayoutStore } from '@/store/layout'
+import { useEditorStore } from '@/store/editor'
+import type { DrawioBounds } from '@shared/types/ipc'
+import { getDrawioConfiguration } from '@/util/drawioConfiguration'
+
+const surfaceRef = ref<HTMLDivElement | null>(null)
+const preferencesStore = usePreferencesStore()
+const layoutStore = useLayoutStore()
+const editorStore = useEditorStore()
+const { zoom } = storeToRefs(preferencesStore)
+const { currentFile } = storeToRefs(editorStore)
+const { preferenceLoaded } = storeToRefs(preferencesStore)
+const { rightColumn, sideBarWidth, showSideBar } = storeToRefs(layoutStore)
+let boundsSyncAnimationFrame = 0
+let themeObserver: MutationObserver | null = null
+let lastConfiguration = ''
+let removeOpenedListener: (() => void) | null = null
+
+const syncConfiguration = (): void => {
+  const configuration = getDrawioConfiguration()
+  const fingerprint = JSON.stringify(configuration)
+  if (fingerprint === lastConfiguration) return
+  lastConfiguration = fingerprint
+  void window.electron.ipcRenderer.invoke('mt::drawio::configure', configuration)
+}
+
+const getBounds = (): DrawioBounds | null => {
+  const rect = surfaceRef.value?.getBoundingClientRect()
+  if (!rect) return null
+
+  const zoomFactor = window.electron.webFrame.getZoomFactor()
+  return {
+    x: rect.left * zoomFactor,
+    y: rect.top * zoomFactor,
+    width: Math.max(1, rect.width) * zoomFactor,
+    height: rect.height * zoomFactor
+  }
+}
+
+const showDrawio = async (): Promise<void> => {
+  await nextTick()
+  const bounds = getBounds()
+  if (bounds) await window.electron.ipcRenderer.invoke('mt::drawio::show', bounds)
+}
+
+const resumeAfterHostOverlay = (): void => {
+  if (currentFile.value?.isDrawing) void showDrawio()
+}
+
+const syncBounds = (): void => {
+  const bounds = getBounds()
+  if (bounds) window.electron.ipcRenderer.send('mt::drawio::set-bounds', bounds)
+}
+
+const syncBoundsDuringZoom = (duration = 220): void => {
+  if (boundsSyncAnimationFrame) window.cancelAnimationFrame(boundsSyncAnimationFrame)
+  const startedAt = window.performance.now()
+  const step = (): void => {
+    syncBounds()
+    if (window.performance.now() - startedAt < duration) {
+      boundsSyncAnimationFrame = window.requestAnimationFrame(step)
+    } else {
+      boundsSyncAnimationFrame = 0
+    }
+  }
+  boundsSyncAnimationFrame = window.requestAnimationFrame(step)
+}
+
+onMounted(() => {
+  // The Drawio BrowserView is mounted before the parent finishes loading
+  // persisted preferences. Do not cache the default language/theme as the
+  // first configuration; the watcher below will send the real values once
+  // preferences are ready.
+  if (preferenceLoaded.value) syncConfiguration()
+  void showDrawio()
+  removeOpenedListener = window.electron.ipcRenderer.on('mt::drawio::opened', () => {
+    void showDrawio()
+  })
+  window.addEventListener('resize', syncBounds)
+  window.addEventListener('marknotepro:resume-native-editor', resumeAfterHostOverlay)
+  themeObserver = new MutationObserver(() => syncConfiguration())
+  themeObserver.observe(document.body, { attributes: true, attributeFilter: ['class'] })
+})
+
+watch(preferenceLoaded, (loaded) => {
+  if (loaded) nextTick(syncConfiguration)
+})
+
+watch(zoom, () => {
+  syncBoundsDuringZoom()
+})
+
+watch(
+  () => preferencesStore.language,
+  () => syncConfiguration()
+)
+
+watch(
+  () => preferencesStore.theme,
+  () => nextTick(syncConfiguration)
+)
+
+watch(
+  [rightColumn, sideBarWidth, showSideBar],
+  () => {
+    nextTick(syncBounds)
+  }
+)
+
+onBeforeUnmount(() => {
+  if (boundsSyncAnimationFrame) window.cancelAnimationFrame(boundsSyncAnimationFrame)
+  themeObserver?.disconnect()
+  themeObserver = null
+  window.removeEventListener('resize', syncBounds)
+  window.removeEventListener('marknotepro:resume-native-editor', resumeAfterHostOverlay)
+  removeOpenedListener?.()
+  removeOpenedListener = null
+  window.electron.ipcRenderer.send('mt::drawio::hide')
+})
+</script>
+
+<style scoped>
+.drawio-surface {
+  position: absolute;
+  top: calc(var(--titleBarHeight) + 28px);
+  right: 0;
+  bottom: 0;
+  left: 0;
+  min-width: 0;
+  min-height: 0;
+  background: var(--editorBgColor);
+}
+</style>

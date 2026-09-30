@@ -62,6 +62,16 @@ extraResources:
     to: embedded-git
     filter:
       - '**/*'
+  # Draw.io 与 GeoGebra Web 编辑器资源随 MarkTextPro 源码维护，和 GitHub Desktop
+  # 位于同一 src 层级；发布构建不依赖外部仓库或同级目录。
+  - from: src/drawioWebApp/drawio
+    to: drawio
+    filter:
+      - '**/*'
+  - from: src/geoGebraWebApp/webapp
+    to: geogebra
+    filter:
+      - '**/*'
 npmRebuild: false
 electronLanguages: # Keep Chromium/AppKit locales for the UI languages MarkText supports
   # Values must cover both spellings: "xx-YY" .pak files on Windows/Linux and

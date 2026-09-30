@@ -391,6 +391,16 @@ defineExpose({
   border-color: var(--floatBorderColor) !important;
 }
 
+:global(body) {
+  --tab-text-color: color-mix(in srgb, var(--editorBgColor) 12%, #000000 88%);
+  --tab-active-text-color: #000000;
+}
+
+:global(body.dark) {
+  --tab-text-color: color-mix(in srgb, var(--editorBgColor) 10%, #ffffff 90%);
+  --tab-active-text-color: #ffffff;
+}
+
 .editor-tabs {
   position: relative;
   display: flex;
@@ -436,7 +446,7 @@ defineExpose({
     transition: all 0.15s ease-in-out;
     position: relative;
     padding: 0 8px;
-    color: var(--editorColor50);
+    color: var(--tab-text-color);
     font-size: 12px;
     line-height: 28px;
     height: 28px;
@@ -455,6 +465,7 @@ defineExpose({
     }
     &:hover {
       background: var(--floatBgColor) !important;
+      color: var(--tab-active-text-color);
     }
     &:hover > .close-icon {
       opacity: 1;
@@ -464,6 +475,7 @@ defineExpose({
       text-overflow: ellipsis;
       white-space: nowrap;
       margin-right: 3px;
+      color: inherit;
     }
   }
   & > li.unsaved:not(.active) {
@@ -476,6 +488,8 @@ defineExpose({
   }
   & > li.active {
     background: var(--itemBgColor);
+    color: var(--tab-active-text-color);
+    font-weight: 500;
     z-index: 3;
     &:after {
       content: '';

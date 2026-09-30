@@ -29,7 +29,8 @@
       "closeTab": "关闭标签页",
       "closeWindow": "关闭窗口",
       "quit": "退出",
-      "preferences": "偏好设置"
+      "preferences": "偏好设置",
+      "preview": "预览"
     },
     "edit": {
       "edit": "编辑",
@@ -221,7 +222,7 @@
     "addToDictionary": "添加到词典",
     "editDictionary": "编辑词典…",
     "sideBar": {
-      "newFile": "新建文件",
+      "newFile": "新建 Markdown",
       "newDirectory": "新建目录",
       "copy": "复制",
       "copyPath": "复制路径",
@@ -229,7 +230,9 @@
       "paste": "粘贴",
       "rename": "重命名",
       "moveToTrash": "移动到废纸篓",
-      "showInFolder": "在文件夹中显示"
+      "showInFolder": "在文件夹中显示",
+      "newDrawing": "新建绘图",
+      "newGeoGebra": "新建 GeoGebra"
     },
     "tabs": {
       "close": "关闭",
@@ -273,12 +276,20 @@
       "saveAll": "保存全部",
       "closeAll": "关闭全部",
       "emptyProject": "空项目",
-      "createFile": "创建文件",
+      "createFile": "新建 Markdown",
       "openFolder": "打开文件夹",
       "workspaceActions": "工作区操作",
       "nodeActions": "操作",
       "enterDirectoryName": "输入文件夹名称",
-      "enterMarkdownFileName": "输入 .md 文件名称"
+      "enterMarkdownFileName": "输入 Markdown 文件名称",
+      "documentNamePlaceholder": "输入笔记名称",
+      "geoGebraMode": "GeoGebra 模式",
+      "geoGebraGraphing": "绘图计算",
+      "geoGebra3d": "3D 计算器",
+      "geoGebraGeometry": "几何",
+      "geoGebraCas": "CAS",
+      "geoGebraProbability": "概率",
+      "geoGebraScientific": "Scientific"
     },
     "toc": {
       "title": "目录"
@@ -382,7 +393,7 @@
   },
   "recent": {
     "noTabsOpen": "您没有打开的标签页。",
-    "newFile": "新建文件"
+    "newFile": "新建 Markdown"
   },
   "import": {
     "title": "导入或打开",

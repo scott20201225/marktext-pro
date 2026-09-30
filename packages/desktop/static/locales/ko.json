@@ -29,7 +29,8 @@
       "closeTab": "탭 닫기",
       "closeWindow": "창 닫기",
       "quit": "종료",
-      "preferences": "환경설정"
+      "preferences": "환경설정",
+      "preview": "미리 보기"
     },
     "edit": {
       "edit": "편집",
@@ -221,7 +222,7 @@
     "addToDictionary": "사전에 추가",
     "editDictionary": "사전 편집...",
     "sideBar": {
-      "newFile": "새 파일",
+      "newFile": "New Markdown",
       "newDirectory": "새 디렉터리",
       "copy": "복사",
       "copyPath": "경로 복사",
@@ -229,7 +230,8 @@
       "paste": "붙여넣기",
       "rename": "이름 바꾸기",
       "moveToTrash": "휴지통으로 이동",
-      "showInFolder": "폴더에서 보기"
+      "showInFolder": "폴더에서 보기",
+      "newDrawing": "새 그림"
     },
     "tabs": {
       "close": "닫기",
@@ -273,12 +275,12 @@
       "saveAll": "모두 저장",
       "closeAll": "모두 닫기",
       "emptyProject": "빈 프로젝트",
-      "createFile": "파일 만들기",
+      "createFile": "New Markdown",
       "openFolder": "폴더 열기",
       "workspaceActions": "작업 영역 작업",
       "nodeActions": "작업",
       "enterDirectoryName": "폴더 이름 입력",
-      "enterMarkdownFileName": ".md 파일 이름 입력"
+      "enterMarkdownFileName": "Enter Markdown file name"
     },
     "toc": {
       "title": "목차"
@@ -382,7 +384,7 @@
   },
   "recent": {
     "noTabsOpen": "열린 탭이 없습니다.",
-    "newFile": "새 파일"
+    "newFile": "New Markdown"
   },
   "import": {
     "title": "가져오기 또는 열기",

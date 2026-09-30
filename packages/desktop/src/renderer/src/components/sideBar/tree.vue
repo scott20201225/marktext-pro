@@ -234,9 +234,13 @@ const createCacheDirname = computed<string | undefined>(() => {
 
 const createInputPlaceholder = computed(() => {
   const cache = createCache.value as { type?: string }
-  return cache.type === 'directory'
-    ? t('sideBar.tree.enterDirectoryName')
-    : t('sideBar.tree.enterMarkdownFileName')
+  if (cache.type === 'directory') {
+    return t('sideBar.tree.enterDirectoryName')
+  }
+  if (cache.type === 'drawing' || cache.type === 'geogebra') {
+    return t('sideBar.tree.documentNamePlaceholder')
+  }
+  return t('sideBar.tree.enterMarkdownFileName')
 })
 
 // Methods
@@ -305,7 +309,9 @@ const handleInputFocus = (): void => {
 }
 
 const handleInputEnter = (): void => {
-  projectStore.CREATE_FILE_DIRECTORY(createName.value)
+  const name = createName.value
+  createName.value = ''
+  projectStore.CREATE_FILE_DIRECTORY(name)
 }
 
 const handleInputEnterFromKeyboard = (): void => {
@@ -391,9 +397,17 @@ onMounted(() => {
   opacity: 0;
   transform: translateX(-50px);
 }
+:global(body) {
+  --tree-text-color: color-mix(in srgb, var(--editorBgColor) 8%, #000000 92%);
+  --tree-icon-color: color-mix(in srgb, var(--editorBgColor) 25%, #000000 75%);
+}
+:global(body.dark) {
+  --tree-text-color: color-mix(in srgb, var(--editorBgColor) 5%, #ffffff 95%);
+  --tree-icon-color: color-mix(in srgb, var(--editorBgColor) 20%, #ffffff 80%);
+}
 .tree-view {
   font-size: 14px;
-  color: var(--sideBarColor);
+  color: var(--tree-text-color);
   display: flex;
   flex-direction: column;
   height: 100%;
@@ -405,13 +419,14 @@ onMounted(() => {
   display: flex;
   flex-shrink: 0;
   flex-direction: row-reverse;
+  color: var(--tree-text-color);
 }
 
 .icon-arrow {
   margin-right: 5px;
   transition: transform 0.25s ease-out;
   transform: rotate(90deg);
-  color: var(--sideBarTextColor);
+  color: var(--tree-icon-color);
   cursor: pointer;
 }
 
@@ -424,6 +439,7 @@ onMounted(() => {
   height: 30px;
   line-height: 30px;
   font-size: 14px;
+  color: var(--tree-text-color);
 }
 
 .opened-files .title {
@@ -434,12 +450,13 @@ onMounted(() => {
 
 .opened-files .title > span {
   flex: 1;
+  color: var(--tree-text-color);
 }
 
 .opened-files .title > a {
   display: none;
   text-decoration: none;
-  color: var(--sideBarColor);
+  color: var(--tree-icon-color);
   margin-left: 8px;
 }
 .opened-files div.title:hover > a,
@@ -479,11 +496,13 @@ onMounted(() => {
   padding-right: 15px;
   display: flex;
   align-items: center;
+  color: var(--tree-text-color);
 }
 
 .project-tree > .title > span {
   flex: 1;
   user-select: none;
+  color: var(--tree-text-color);
 }
 
 .tree-action-button {
@@ -497,19 +516,19 @@ onMounted(() => {
   border: none;
   border-radius: 4px;
   background: transparent;
-  color: var(--sideBarIconColor);
+  color: var(--tree-icon-color);
   cursor: pointer;
 }
 .tree-action-button:hover {
   background: var(--sideBarItemHoverBgColor);
-  color: var(--sideBarTitleColor);
+  color: var(--tree-text-color);
 }
 
 .project-tree > .title > a {
   pointer-events: auto;
   cursor: pointer;
   margin-left: 8px;
-  color: var(--sideBarIconColor);
+  color: var(--tree-icon-color);
   opacity: 0;
 }
 
@@ -569,7 +588,7 @@ input.rename {
   height: 22px;
   margin: 5px 0;
   padding: 0 6px;
-  color: var(--sideBarColor);
+  color: var(--tree-text-color);
   border: 1px solid var(--floatBorderColor);
   background: var(--inputBgColor);
   width: calc(100% - 45px);
@@ -584,7 +603,7 @@ input.rename {
   flex-direction: column;
   padding-top: 40px;
   align-items: center;
-  color: var(--sideBarTextColor);
+  color: var(--tree-text-color);
   & button {
     margin-top: 10px;
   }
