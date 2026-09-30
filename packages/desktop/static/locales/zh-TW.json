@@ -29,7 +29,8 @@
       "closeTab": "關閉標籤頁",
       "closeWindow": "關閉視窗",
       "quit": "退出",
-      "preferences": "偏好設定"
+      "preferences": "偏好設定",
+      "preview": "預覽"
     },
     "edit": {
       "edit": "編輯",
@@ -221,7 +222,7 @@
     "addToDictionary": "加入字典",
     "editDictionary": "編輯字典…",
     "sideBar": {
-      "newFile": "新建檔案",
+      "newFile": "新建 Markdown",
       "newDirectory": "新建資料夾",
       "copy": "複製",
       "copyPath": "複製路徑",
@@ -229,7 +230,8 @@
       "paste": "貼上",
       "rename": "重新命名",
       "moveToTrash": "移到垃圾桶",
-      "showInFolder": "在資料夾中顯示"
+      "showInFolder": "在資料夾中顯示",
+      "newDrawing": "新增繪圖"
     },
     "tabs": {
       "close": "關閉",
@@ -273,12 +275,13 @@
       "saveAll": "全部儲存",
       "closeAll": "全部關閉",
       "emptyProject": "空專案",
-      "createFile": "建立檔案",
+      "createFile": "新建 Markdown",
       "openFolder": "開啟資料夾",
       "workspaceActions": "工作區操作",
       "nodeActions": "操作",
       "enterDirectoryName": "輸入資料夾名稱",
-      "enterMarkdownFileName": "輸入 .md 檔案名稱"
+      "enterMarkdownFileName": "輸入 Markdown 檔案名稱",
+      "documentNamePlaceholder": "輸入筆記名稱"
     },
     "toc": {
       "title": "目錄"
@@ -382,7 +385,7 @@
   },
   "recent": {
     "noTabsOpen": "您沒有開啟的標籤頁。",
-    "newFile": "新建檔案"
+    "newFile": "新建 Markdown"
   },
   "import": {
     "title": "匯入或開啟",

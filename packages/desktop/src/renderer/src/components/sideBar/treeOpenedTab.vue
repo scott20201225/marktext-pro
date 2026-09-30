@@ -54,28 +54,36 @@ const removeFileInTab = (file: TabDescriptor): void => {
   line-height: 28px;
   padding-left: 35px;
   position: relative;
-  color: var(--sideBarColor);
+  color: var(--tree-text-color, var(--sideBarTitleColor));
+  cursor: pointer;
   & > .close-icon {
     display: none;
     position: absolute;
     top: 9px;
     left: 10px;
     cursor: pointer;
+    color: var(--tree-icon-color, var(--sideBarIconColor));
+  }
+  & > .close-icon:hover {
+    color: var(--tree-text-color, var(--sideBarTitleColor));
   }
   &:hover > .close-icon {
     display: inline-flex;
   }
   &:hover {
     background: var(--sideBarItemHoverBgColor);
+    color: var(--tree-text-color, var(--sideBarTitleColor));
   }
   & > span {
     overflow: hidden;
     text-overflow: ellipsis;
     white-space: nowrap;
+    color: inherit;
   }
 }
 .opened-file.active {
-  color: var(--highlightThemeColor);
+  color: var(--themeColor);
+  font-weight: 500;
 }
 .unsaved.opened-file::before {
   content: '';

@@ -34,6 +34,7 @@ export interface PreferencesState {
   restoreLayoutState: boolean
   defaultDirectoryToOpen: string
   lastOpenedFolder: string
+  preferenceLoaded: boolean
   treePathExcludePatterns: string[]
   language: string
 
@@ -134,6 +135,7 @@ export const usePreferencesStore = defineStore('preferences', {
     restoreLayoutState: true,
     defaultDirectoryToOpen: '',
     lastOpenedFolder: '',
+    preferenceLoaded: false,
     treePathExcludePatterns: [],
     language: DEFAULT_LANGUAGE,
 
@@ -228,6 +230,8 @@ export const usePreferencesStore = defineStore('preferences', {
       if (lang && lang !== oldLanguage) {
         setLanguage(lang)
       }
+
+      this.preferenceLoaded = true
     },
 
     SET_MODE({ type, checked }: ModeTogglePayload): void {

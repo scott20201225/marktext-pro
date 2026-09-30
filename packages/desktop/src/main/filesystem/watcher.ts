@@ -25,6 +25,11 @@ const EVENT_NAME = {
   file: 'mt::update-file' as const
 }
 
+const isDrawioFile = (pathname: string): boolean =>
+  path.extname(pathname).toLowerCase() === '.drawio'
+
+const isGeoGebraFile = (pathname: string): boolean => path.extname(pathname).toLowerCase() === '.ggb'
+
 type WatchType = 'dir' | 'file'
 
 interface IgnoreEntry {
@@ -55,6 +60,8 @@ const add = async(
   const birthTime = stats.birthtime
   const mtimeMs = stats.mtimeMs
   const isMarkdown = hasMarkdownExtension(pathname)
+  const isDrawing = isDrawioFile(pathname)
+  const isGeoGebra = isGeoGebraFile(pathname)
   const file: {
     pathname: string
     name: string
@@ -63,6 +70,8 @@ const add = async(
     birthTime: Date
     mtimeMs: number
     isMarkdown: boolean
+    isDrawing: boolean
+    isGeoGebra: boolean
     data?: Awaited<ReturnType<typeof loadMarkdownFile>>
   } = {
     pathname,
@@ -71,7 +80,9 @@ const add = async(
     isDirectory: false,
     birthTime,
     mtimeMs,
-    isMarkdown
+    isMarkdown,
+    isDrawing,
+    isGeoGebra
   }
   if (isMarkdown) {
     // HACK: But this should be removed completely in #1034/#1035.
@@ -95,6 +106,8 @@ const add = async(
         return
       }
     }
+  }
+  if (isMarkdown || isDrawing || isGeoGebra) {
     win.webContents.send(EVENT_NAME[type], {
       type: 'add',
       change: file
@@ -134,6 +147,8 @@ const change = async(
   }
 
   const isMarkdown = hasMarkdownExtension(pathname)
+  const isDrawing = isDrawioFile(pathname)
+  const isGeoGebra = isGeoGebraFile(pathname)
   if (isMarkdown) {
     try {
       const [data, stats] = await Promise.all([
@@ -153,6 +168,16 @@ const change = async(
           message: err instanceof Error ? err.message : String(err)
         })
       }
+    }
+  } else if (isDrawing || isGeoGebra) {
+    try {
+      const stats = await fsPromises.stat(pathname)
+      win.webContents.send('mt::update-object-tree', {
+        type: 'change',
+        change: { pathname, mtimeMs: stats.mtimeMs }
+      })
+    } catch {
+      // File may have been deleted between the event and the stat; ignore.
     }
   }
 }
@@ -228,7 +253,11 @@ class Watcher {
         if (fileInfo.isDirectory()) {
           return false
         }
-        return !hasMarkdownExtension(pathname)
+        return (
+          !hasMarkdownExtension(pathname) &&
+          !isDrawioFile(pathname) &&
+          !isGeoGebraFile(pathname)
+        )
       },
       ignoreInitial: type === 'file',
       persistent: true,

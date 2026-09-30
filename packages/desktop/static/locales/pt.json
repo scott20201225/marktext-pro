@@ -29,7 +29,8 @@
       "closeTab": "Fechar Aba",
       "closeWindow": "Fechar Janela",
       "quit": "Sair",
-      "preferences": "Preferências"
+      "preferences": "Preferências",
+      "preview": "Visualizar"
     },
     "edit": {
       "edit": "Editar",
@@ -221,7 +222,7 @@
     "addToDictionary": "Adicionar ao Dicionário",
     "editDictionary": "Editar Dicionário...",
     "sideBar": {
-      "newFile": "Novo Arquivo",
+      "newFile": "New Markdown",
       "newDirectory": "Nova Pasta",
       "copy": "Copiar",
       "copyPath": "Copiar caminho",
@@ -229,7 +230,8 @@
       "paste": "Colar",
       "rename": "Renomear",
       "moveToTrash": "Mover para Lixeira",
-      "showInFolder": "Mostrar na Pasta"
+      "showInFolder": "Mostrar na Pasta",
+      "newDrawing": "Novo desenho"
     },
     "tabs": {
       "close": "Fechar",
@@ -273,12 +275,12 @@
       "saveAll": "Salvar Todos",
       "closeAll": "Fechar Todos",
       "emptyProject": "Projeto vazio",
-      "createFile": "Criar Arquivo",
+      "createFile": "New Markdown",
       "openFolder": "Abrir Pasta",
       "workspaceActions": "Ações do espaço de trabalho",
       "nodeActions": "Ações",
       "enterDirectoryName": "Digite o nome da pasta",
-      "enterMarkdownFileName": "Digite o nome do arquivo .md"
+      "enterMarkdownFileName": "Enter Markdown file name"
     },
     "toc": {
       "title": "Índice"
@@ -382,7 +384,7 @@
   },
   "recent": {
     "noTabsOpen": "Você não tem abas abertas.",
-    "newFile": "Novo Arquivo"
+    "newFile": "New Markdown"
   },
   "import": {
     "title": "Importar ou Abrir",

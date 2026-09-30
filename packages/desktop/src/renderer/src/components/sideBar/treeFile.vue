@@ -3,7 +3,10 @@
     ref="fileEl"
     :title="file.pathname"
     class="side-bar-file"
-    :style="{ 'padding-left': `${depth * 6 + 10}px`, opacity: file.isMarkdown ? 1 : 0.75 }"
+    :style="{
+      'padding-left': `${depth * 6 + 10}px`,
+      opacity: file.isMarkdown || file.isDrawing || file.isGeoGebra ? 1 : 0.75
+    }"
     :class="[
       { current: currentFile?.pathname === file.pathname, active: file.id === activeItem.id }
     ]"
@@ -45,6 +48,8 @@ import { showContextMenu } from '../../contextMenu/sideBar'
 import bus from '../../bus'
 import type { TreeFileNode } from './types'
 import { useI18n } from 'vue-i18n'
+import { getDrawioConfiguration } from '@/util/drawioConfiguration'
+import { getGeoGebraConfiguration } from '@/util/geogebraConfiguration'
 
 const props = defineProps<{
   file: TreeFileNode
@@ -67,7 +72,25 @@ let skipNextBlur = false
 
 // from fileMixins
 const handleFileClick = (): void => {
-  const { isMarkdown, pathname } = props.file
+  const { isMarkdown, isDrawing, isGeoGebra, pathname } = props.file
+  projectStore.CHANGE_ACTIVE_ITEM(props.file)
+  if (isDrawing || /\.drawio$/i.test(pathname)) {
+    void window.electron.ipcRenderer.invoke(
+      'mt::drawio::open',
+      pathname,
+      getDrawioConfiguration()
+    )
+    return
+  }
+  if (isGeoGebra || /\.ggb$/i.test(pathname)) {
+    void window.electron.ipcRenderer.invoke(
+      'mt::geogebra::open',
+      pathname,
+      undefined,
+      getGeoGebraConfiguration()
+    )
+    return
+  }
   if (!isMarkdown) return
   const openedTab = tabs.value.find((f) => window.fileUtils.isSamePathSync(f.pathname, pathname))
   if (openedTab) {
@@ -144,6 +167,7 @@ onMounted(() => {
   box-sizing: border-box;
   padding-right: 15px;
   gap: 6px;
+  color: var(--tree-text-color, var(--sideBarTitleColor));
   &:hover {
     background: var(--sideBarItemHoverBgColor);
   }
@@ -153,6 +177,7 @@ onMounted(() => {
     overflow: hidden;
     text-overflow: ellipsis;
     white-space: nowrap;
+    color: var(--tree-text-color, var(--sideBarTitleColor));
   }
   &::before {
     content: '';
@@ -170,11 +195,11 @@ onMounted(() => {
 .side-bar-file.current::before {
   height: 100%;
 }
+.side-bar-file.active > .file-name {
+  color: var(--tree-text-color, var(--sideBarTitleColor));
+}
 .side-bar-file.current > .file-name {
   color: var(--themeColor);
-}
-.side-bar-file.active > .file-name {
-  color: var(--sideBarTitleColor);
 }
 .side-bar-file > input.rename {
   flex: 1;
@@ -191,19 +216,19 @@ onMounted(() => {
   border: none;
   border-radius: 4px;
   background: transparent;
-  color: var(--sideBarIconColor);
+  color: var(--tree-icon-color, var(--sideBarIconColor));
   cursor: pointer;
 }
 .file-action-button:hover {
   background: var(--sideBarItemHoverBgColor);
-  color: var(--sideBarTitleColor);
+  color: var(--tree-text-color, var(--sideBarTitleColor));
 }
 input.rename {
   height: 22px;
   outline: none;
   margin: 5px 0;
   padding: 0 8px;
-  color: var(--sideBarColor);
+  color: var(--tree-text-color, var(--sideBarTitleColor));
   border: 1px solid var(--floatBorderColor);
   background: var(--floatBorderColor);
   width: 100%;

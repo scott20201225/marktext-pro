@@ -26,6 +26,11 @@ import { addHeadingNumbersToToc } from '../util/titleNumbering'
 import type {
   BootstrapEditorConfig,
   IFileState,
+  IDrawioState,
+  IGeoGebraState,
+  GeoGebraMode,
+  UnsavedDrawioFile,
+  UnsavedGeoGebraFile,
   FileNotification,
   LineEnding,
   MarkdownDocument,
@@ -171,6 +176,8 @@ export interface EditorState {
   currentFile: IFileState | null
   tabs: IFileState[]
   tabIdToIndex: Record<string, number>
+  drawioStates: Record<string, IDrawioState>
+  geogebraStates: Record<string, IGeoGebraState>
   listToc: TocItem[]
   toc: TocTreeNode[]
 }
@@ -182,6 +189,8 @@ export const useEditorStore = defineStore('editor', {
     currentFile: null,
     tabs: [],
     tabIdToIndex: {},
+    drawioStates: {},
+    geogebraStates: {},
     listToc: [], // Used for equal check and for searching for the correct github-slug to jump to
     toc: []
   }),
@@ -228,6 +237,37 @@ export const useEditorStore = defineStore('editor', {
         s.tabs = tabs
         s.currentFile = currentFile
         s.tabIdToIndex = {}
+        s.drawioStates = Object.fromEntries(
+          tabs
+            .filter((tab) => tab.isDrawing)
+            .map((tab) => [
+              tab.id,
+              {
+                id: tab.id,
+                pathname: tab.pathname,
+                filename: tab.filename,
+                modified: false,
+                isSaved: tab.isSaved,
+                isSaving: false
+              } satisfies IDrawioState
+            ])
+        )
+        s.geogebraStates = Object.fromEntries(
+          tabs
+            .filter((tab) => tab.isGeoGebra)
+            .map((tab) => [
+              tab.id,
+              {
+                id: tab.id,
+                pathname: tab.pathname,
+                filename: tab.filename,
+                modified: false,
+                isSaved: tab.isSaved,
+                isSaving: false,
+                mode: tab.geoGebraMode ?? 'graphing'
+              } satisfies IGeoGebraState
+            ])
+        )
         s.listToc = []
         s.toc = []
       })
@@ -542,6 +582,24 @@ export const useEditorStore = defineStore('editor', {
 
     FILE_SAVE(): void {
       if (!this.currentFile) return
+      if (this.currentFile.isDrawing) {
+        if (this.currentFile.pathname) {
+          void window.electron.ipcRenderer.invoke(
+            'mt::drawio::save-request',
+            this.currentFile.pathname
+          )
+        }
+        return
+      }
+      if (this.currentFile.isGeoGebra) {
+        if (this.currentFile.pathname) {
+          void window.electron.ipcRenderer.invoke(
+            'mt::geogebra::save-request',
+            this.currentFile.pathname
+          )
+        }
+        return
+      }
       this.flushActiveEditor()
       const projectStore = useProjectStore()
       const { id, filename, pathname, markdown } = this.currentFile
@@ -683,7 +741,7 @@ export const useEditorStore = defineStore('editor', {
           })
           .then(() => {
             const unsavedFiles = this.tabs
-              .filter((file) => !file.isSaved)
+              .filter((file) => !file.isDrawing && !file.isGeoGebra && !file.isSaved)
               .map((file) => {
                 const { id, filename, pathname, markdown } = file
                 const options = getOptionsFromState(file)
@@ -697,13 +755,116 @@ export const useEditorStore = defineStore('editor', {
                 }
               })
 
-            if (unsavedFiles.length && preferencesStore.startUpAction !== 'restoreAll') {
+            const unsavedDrawioFiles: UnsavedDrawioFile[] = this.tabs
+              .filter((file) => {
+                if (!file.isDrawing) return false
+                const state = this.drawioStates[file.id]
+                return state ? state.modified || !state.isSaved : !file.isSaved
+              })
+              .map((file) => ({
+                id: file.id,
+                filename: file.filename,
+                pathname: file.pathname
+              }))
+
+            if (
+              (unsavedFiles.length || unsavedDrawioFiles.length) &&
+              preferencesStore.startUpAction !== 'restoreAll'
+            ) {
               // Ignore unsaved files when user has chosen to restore all on startup, as they will be restored anyway.
-              window.electron.ipcRenderer.send('mt::close-window-confirm', deepClone(unsavedFiles))
+              window.electron.ipcRenderer.send(
+                'mt::close-window-confirm',
+                deepClone(unsavedFiles),
+                deepClone(unsavedDrawioFiles)
+              )
             } else {
               window.electron.ipcRenderer.send('mt::close-window')
             }
           })
+      })
+    },
+
+    LISTEN_FOR_DRAWIO_STATE(): void {
+      window.electron.ipcRenderer.on('mt::drawio::state', (_, payload) => {
+        if (!payload || typeof payload.filePath !== 'string') return
+        const tab = this.tabs.find(
+          (file) =>
+            file.isDrawing && window.fileUtils.isSamePathSync(file.pathname, payload.filePath)
+        )
+        if (!tab) return
+
+        const state: IDrawioState = {
+          id: tab.id,
+          pathname: tab.pathname,
+          filename: tab.filename,
+          modified: payload.modified === true,
+          isSaved: payload.isSaved === true,
+          isSaving: payload.isSaving === true,
+          ...(payload.saveError ? { saveError: payload.saveError } : {}),
+          ...(payload.lastSavedHash ? { lastSavedHash: payload.lastSavedHash } : {})
+        }
+        this.drawioStates[tab.id] = state
+        tab.isSaved = state.isSaved && !state.modified
+
+        if (payload.saveError) {
+          notice.notify({
+            title: t('dialog.saveFailure'),
+            message: payload.saveError,
+            type: 'error',
+            time: 20000,
+            showConfirm: false
+          })
+        }
+
+        if (state.isSaved) {
+          const timer = autoSaveTimers.get(tab.id)
+          if (timer) clearTimeout(timer)
+          autoSaveTimers.delete(tab.id)
+        } else if (state.modified && !state.isSaving) {
+          this.HANDLE_DRAWIO_AUTO_SAVE({ id: tab.id, pathname: tab.pathname })
+        }
+        debouncedSendBufferedState()
+      })
+    },
+
+    LISTEN_FOR_GEOGEBRA_STATE(): void {
+      window.electron.ipcRenderer.on('mt::geogebra::state', (_, payload) => {
+        if (!payload || typeof payload.filePath !== 'string') return
+        const tab = this.tabs.find(
+          (file) =>
+            file.isGeoGebra && window.fileUtils.isSamePathSync(file.pathname, payload.filePath)
+        )
+        if (!tab) return
+        const state: IGeoGebraState = {
+          id: tab.id,
+          pathname: tab.pathname,
+          filename: tab.filename,
+          modified: payload.modified === true,
+          isSaved: payload.isSaved === true,
+          isSaving: payload.isSaving === true,
+          mode: payload.mode ?? tab.geoGebraMode ?? 'graphing',
+          ...(payload.saveError ? { saveError: payload.saveError } : {}),
+          ...(payload.lastSavedHash ? { lastSavedHash: payload.lastSavedHash } : {})
+        }
+        this.geogebraStates[tab.id] = state
+        tab.isSaved = state.isSaved && !state.modified
+        if (payload.saveError) {
+          notice.notify({
+            title: t('dialog.saveFailure'),
+            message: payload.saveError,
+            type: 'error',
+            time: 20000,
+            showConfirm: false
+          })
+        }
+        if (state.isSaved) {
+          const timer = autoSaveTimers.get(tab.id)
+          if (timer) clearTimeout(timer)
+          autoSaveTimers.delete(tab.id)
+        } else if (state.modified && !state.isSaving) {
+          this.HANDLE_GEOGEBRA_AUTO_SAVE({ id: tab.id, pathname: tab.pathname })
+        }
+        debouncedSendBufferedState()
       })
     },
 
@@ -719,7 +880,10 @@ export const useEditorStore = defineStore('editor', {
       const { tabs } = this
       const projectStore = useProjectStore()
       const unsavedFiles = tabs
-        .filter((file) => !(file.isSaved && /[^\n]/.test(file.markdown)))
+        .filter(
+          (file) =>
+            !file.isDrawing && !file.isGeoGebra && !(file.isSaved && /[^\n]/.test(file.markdown))
+        )
         .map((file) => {
           const { id, filename, pathname, markdown } = file
           const options = getOptionsFromState(file)
@@ -733,15 +897,36 @@ export const useEditorStore = defineStore('editor', {
           }
         })
 
+      const unsavedDrawioFiles = tabs.filter((file) => {
+        if (!file.isDrawing) return false
+        const state = this.drawioStates[file.id]
+        return state ? state.modified || !state.isSaved : !file.isSaved
+      })
+
       if (closeTabs) {
+        const savedTabIds = tabs
+          .filter((file) => file.isSaved && !unsavedDrawioFiles.some((item) => item.id === file.id))
+          .map((file) => file.id)
+        this.CLOSE_TABS(savedTabIds)
         if (unsavedFiles.length) {
-          this.CLOSE_TABS(tabs.filter((f) => f.isSaved).map((f) => f.id))
           window.electron.ipcRenderer.send('mt::save-and-close-tabs', deepClone(unsavedFiles))
-        } else {
-          this.CLOSE_TABS(tabs.map((f) => f.id))
+        }
+        if (unsavedDrawioFiles.length) {
+          void Promise.all(
+            unsavedDrawioFiles.map((file) =>
+              window.electron.ipcRenderer.invoke('mt::drawio::save-request', file.pathname)
+            )
+          ).then(() => this.CLOSE_TABS(unsavedDrawioFiles.map((file) => file.id)))
         }
       } else {
-        window.electron.ipcRenderer.send('mt::save-tabs', deepClone(unsavedFiles))
+        if (unsavedFiles.length) {
+          window.electron.ipcRenderer.send('mt::save-tabs', deepClone(unsavedFiles))
+        }
+        void Promise.all(
+          unsavedDrawioFiles.map((file) =>
+            window.electron.ipcRenderer.invoke('mt::drawio::save-request', file.pathname)
+          )
+        )
       }
     },
 
@@ -875,6 +1060,14 @@ export const useEditorStore = defineStore('editor', {
 
         tab.pathname = nextPathname
         tab.filename = window.path.basename(nextPathname)
+        if (this.drawioStates[tab.id]) {
+          this.drawioStates[tab.id]!.pathname = nextPathname
+          this.drawioStates[tab.id]!.filename = tab.filename
+        }
+        if (this.geogebraStates[tab.id]) {
+          this.geogebraStates[tab.id]!.pathname = nextPathname
+          this.geogebraStates[tab.id]!.filename = tab.filename
+        }
         if (savedStateById.has(tab.id)) {
           tab.isSaved = savedStateById.get(tab.id)!
         }
@@ -917,7 +1110,7 @@ export const useEditorStore = defineStore('editor', {
           currentFile
         // Must run while `currentFile` still points at the outgoing tab, so its
         // flushed edit is attributed to that tab and not lost on switch (#2938).
-        if (oldCurrentFile) {
+        if (oldCurrentFile && !oldCurrentFile.isDrawing && !oldCurrentFile.isGeoGebra) {
           this.flushActiveEditor()
         }
         window.DIRNAME = pathname ? window.path.dirname(pathname) : ''
@@ -929,22 +1122,122 @@ export const useEditorStore = defineStore('editor', {
           this.updateTabIdToIndex()
         }
 
-        bus.emit('file-changed', {
-          id,
-          markdown,
-          cursor,
-          muyaIndexCursor,
-          renderCursor: true,
-          history,
-          scrollTop,
-          blocks
-        })
+        if (!currentFile.isDrawing && !currentFile.isGeoGebra) {
+          bus.emit('file-changed', {
+            id,
+            markdown,
+            cursor,
+            muyaIndexCursor,
+            renderCursor: true,
+            history,
+            scrollTop,
+            blocks
+          })
+        }
       }
 
       this.UPDATE_LINE_ENDING_MENU()
       if (didUpdateCurrentFile) {
         debouncedSendBufferedState()
       }
+    },
+
+    /**
+     * Open a Draw.io document through the same tab model as Markdown files.
+     * The blank markdown field is deliberate: Draw.io owns the XML in its
+     * BrowserView and Muya must never render that XML as a document.
+     */
+    OPEN_DRAWIO_TAB({ filePath, title }: { filePath: string; title?: string }): void {
+      const existingTab = this.tabs.find((tab) =>
+        window.fileUtils.isSamePathSync(tab.pathname, filePath)
+      )
+      if (existingTab) {
+        existingTab.isDrawing = true
+        if (!this.drawioStates[existingTab.id]) {
+          this.drawioStates[existingTab.id] = {
+            id: existingTab.id,
+            pathname: existingTab.pathname,
+            filename: existingTab.filename,
+            modified: false,
+            isSaved: existingTab.isSaved,
+            isSaving: false
+          }
+        }
+        this.UPDATE_CURRENT_FILE(existingTab)
+        return
+      }
+
+      const drawingTab = createDocumentState({
+        pathname: filePath,
+        filename: title || window.path.basename(filePath),
+        markdown: '',
+        isSaved: true,
+        isDrawing: true
+      })
+      this.drawioStates[drawingTab.id] = {
+        id: drawingTab.id,
+        pathname: filePath,
+        filename: title || window.path.basename(filePath),
+        modified: false,
+        isSaved: true,
+        isSaving: false
+      }
+      this.UPDATE_CURRENT_FILE(drawingTab)
+    },
+
+    OPEN_GEOGEBRA_TAB({
+      filePath,
+      title,
+      mode = 'graphing'
+    }: {
+      filePath: string
+      title?: string
+      mode?: GeoGebraMode
+    }): void {
+      const existingTab = this.tabs.find((tab) =>
+        window.fileUtils.isSamePathSync(tab.pathname, filePath)
+      )
+      if (existingTab) {
+        existingTab.isGeoGebra = true
+        // The mode emitted after opening is the main process' mode detected
+        // from the actual .ggb archive. It must replace any stale buffered
+        // value so a restart cannot keep presenting a 3D file as 2D.
+        existingTab.geoGebraMode = mode
+        if (!this.geogebraStates[existingTab.id]) {
+          this.geogebraStates[existingTab.id] = {
+            id: existingTab.id,
+            pathname: existingTab.pathname,
+            filename: existingTab.filename,
+            modified: false,
+            isSaved: existingTab.isSaved,
+            isSaving: false,
+            mode
+          }
+        } else {
+          this.geogebraStates[existingTab.id].mode = mode
+        }
+        this.UPDATE_CURRENT_FILE(existingTab)
+        return
+      }
+
+      const tab = createDocumentState({
+        pathname: filePath,
+        filename: title || window.path.basename(filePath),
+        markdown: '',
+        isSaved: true,
+        isGeoGebra: true,
+        geoGebraMode: mode
+      })
+      this.geogebraStates[tab.id] = {
+        id: tab.id,
+        pathname: filePath,
+        filename: title || window.path.basename(filePath),
+        modified: false,
+        isSaved: true,
+        isSaving: false,
+        mode
+      }
+      this.UPDATE_CURRENT_FILE(tab)
     },
 
     // This events are only used during window creation.
@@ -1051,6 +1344,22 @@ export const useEditorStore = defineStore('editor', {
       const target = file ?? this.currentFile
       if (target === null) return
 
+      if (target.isDrawing && !target.isSaved) {
+        void window.electron.ipcRenderer
+          .invoke('mt::drawio::save-request', target.pathname)
+          .then(() => this.FORCE_CLOSE_TAB(target))
+          .catch((error) => console.error('Failed to save Draw.io tab before closing', error))
+        return
+      }
+
+      if (target.isGeoGebra && !target.isSaved) {
+        void window.electron.ipcRenderer
+          .invoke('mt::geogebra::save-request', target.pathname)
+          .then(() => this.FORCE_CLOSE_TAB(target))
+          .catch((error) => console.error('Failed to save GeoGebra tab before closing', error))
+        return
+      }
+
       if (target.isSaved) {
         this.FORCE_CLOSE_TAB(target)
       } else {
@@ -1105,13 +1414,32 @@ export const useEditorStore = defineStore('editor', {
         autoSaveTimers.delete(file.id)
       }
 
+      if (file.isDrawing) {
+        delete this.drawioStates[file.id]
+        if (file.pathname) {
+          void window.electron.ipcRenderer.invoke('mt::drawio::close-file', file.pathname)
+        }
+      }
+
+      if (file.isGeoGebra) {
+        delete this.geogebraStates[file.id]
+        if (file.pathname) {
+          void window.electron.ipcRenderer.invoke('mt::geogebra::close-file', file.pathname)
+        }
+      }
+
       this.updateTabIdToIndex() // Update before sending it out to prevent stale mappings.
 
       if (currentFile && file.id === currentFile.id) {
         const fileState: IFileState | null =
           this.tabs[index] ?? this.tabs[index - 1] ?? this.tabs[0] ?? null
         this.currentFile = fileState
-        if (fileState && typeof fileState.markdown === 'string') {
+        if (
+          fileState &&
+          !fileState.isDrawing &&
+          !fileState.isGeoGebra &&
+          typeof fileState.markdown === 'string'
+        ) {
           const { id, markdown, cursor, history, pathname, scrollTop, blocks, muyaIndexCursor } =
             fileState
           window.DIRNAME = pathname ? window.path.dirname(pathname) : ''
@@ -1143,6 +1471,20 @@ export const useEditorStore = defineStore('editor', {
     },
 
     CLOSE_UNSAVED_TAB(file: IFileState): void {
+      if (file.isDrawing) {
+        void window.electron.ipcRenderer
+          .invoke('mt::drawio::save-request', file.pathname)
+          .then(() => this.FORCE_CLOSE_TAB(file))
+          .catch((error) => console.error('Failed to save Draw.io tab before closing', error))
+        return
+      }
+      if (file.isGeoGebra) {
+        void window.electron.ipcRenderer
+          .invoke('mt::geogebra::save-request', file.pathname)
+          .then(() => this.FORCE_CLOSE_TAB(file))
+          .catch((error) => console.error('Failed to save GeoGebra tab before closing', error))
+        return
+      }
       const { id, pathname, filename, markdown } = file
       const options = getOptionsFromState(file)
       window.electron.ipcRenderer.send('mt::save-and-close-tabs', [
@@ -1183,6 +1525,20 @@ export const useEditorStore = defineStore('editor', {
         const closed = this.tabs[index]
         const { pathname } = closed ?? { pathname: '' }
 
+        if (closed?.isDrawing) {
+          delete this.drawioStates[closed.id]
+          if (pathname) {
+            void window.electron.ipcRenderer.invoke('mt::drawio::close-file', pathname)
+          }
+        }
+
+        if (closed?.isGeoGebra) {
+          delete this.geogebraStates[closed.id]
+          if (pathname) {
+            void window.electron.ipcRenderer.invoke('mt::geogebra::close-file', pathname)
+          }
+        }
+
         if (pathname) {
           window.electron.ipcRenderer.send('mt::window-tab-closed', pathname)
         }
@@ -1201,7 +1557,12 @@ export const useEditorStore = defineStore('editor', {
 
       if (this.currentFile == null && this.tabs.length > 0) {
         this.currentFile = this.tabs[tabIndex] ?? this.tabs[tabIndex - 1] ?? this.tabs[0] ?? null
-        if (this.currentFile && typeof this.currentFile.markdown === 'string') {
+        if (
+          this.currentFile &&
+          !this.currentFile.isDrawing &&
+          !this.currentFile.isGeoGebra &&
+          typeof this.currentFile.markdown === 'string'
+        ) {
           const { id, markdown, cursor, history, pathname, scrollTop, blocks, muyaIndexCursor } =
             this.currentFile
           window.DIRNAME = pathname ? window.path.dirname(pathname) : ''
@@ -1477,7 +1838,7 @@ export const useEditorStore = defineStore('editor', {
 
     TOGGLE_HEADING_NUMBERING(): void {
       const file = this.currentFile
-      if (!file) return
+      if (!file || file.isDrawing || file.isGeoGebra) return
       file.showHeadingNumbers = !file.showHeadingNumbers
       bus.emit('heading-numbering-display-changed')
       debouncedSendBufferedState()
@@ -1485,7 +1846,7 @@ export const useEditorStore = defineStore('editor', {
 
     TOGGLE_HEADING_NUMBERING_TOP_LEVEL(): void {
       const file = this.currentFile
-      if (!file || !file.showHeadingNumbers) return
+      if (!file || file.isDrawing || file.isGeoGebra || !file.showHeadingNumbers) return
       file.headingNumberingIncludesTopLevel = !file.headingNumberingIncludesTopLevel
       bus.emit('heading-numbering-display-changed')
       debouncedSendBufferedState()
@@ -1577,6 +1938,50 @@ export const useEditorStore = defineStore('editor', {
         tab.isSaved = true // An undo can trigger this
       }
       debouncedSendBufferedState()
+    },
+
+    HANDLE_DRAWIO_AUTO_SAVE({ id, pathname }: { id: string; pathname: string }): void {
+      const preferencesStore = usePreferencesStore()
+      if (!preferencesStore.autoSave || !id || !pathname) return
+
+      if (autoSaveTimers.has(id)) {
+        const timer = autoSaveTimers.get(id)
+        if (timer) clearTimeout(timer)
+        autoSaveTimers.delete(id)
+      }
+
+      const timer = setTimeout(() => {
+        autoSaveTimers.delete(id)
+        const tab = this.tabs.find((item) => item.id === id)
+        const state = this.drawioStates[id]
+        if (tab?.isDrawing && state?.modified && !state.isSaving) {
+          void window.electron.ipcRenderer
+            .invoke('mt::drawio::save-request', pathname)
+            .catch((error) => console.error('Draw.io 自动保存失败', error))
+        }
+      }, preferencesStore.autoSaveDelay)
+      autoSaveTimers.set(id, timer)
+    },
+
+    HANDLE_GEOGEBRA_AUTO_SAVE({ id, pathname }: { id: string; pathname: string }): void {
+      const preferencesStore = usePreferencesStore()
+      if (!preferencesStore.autoSave || !id || !pathname) return
+      if (autoSaveTimers.has(id)) {
+        const timer = autoSaveTimers.get(id)
+        if (timer) clearTimeout(timer)
+        autoSaveTimers.delete(id)
+      }
+      const timer = setTimeout(() => {
+        autoSaveTimers.delete(id)
+        const tab = this.tabs.find((item) => item.id === id)
+        const state = this.geogebraStates[id]
+        if (tab?.isGeoGebra && state?.modified && !state.isSaving) {
+          void window.electron.ipcRenderer
+            .invoke('mt::geogebra::save-request', pathname)
+            .catch((error) => console.error('GeoGebra 自动保存失败', error))
+        }
+      }, preferencesStore.autoSaveDelay)
+      autoSaveTimers.set(id, timer)
     },
 
     HANDLE_AUTO_SAVE({ id, filename, pathname, markdown, options }: AutoSavePayload): void {
@@ -2143,6 +2548,9 @@ interface BufferedTabState {
   scrollTop: number
   showHeadingNumbers: boolean
   headingNumberingIncludesTopLevel: boolean
+  isDrawing: boolean
+  isGeoGebra: boolean
+  geoGebraMode?: GeoGebraMode
 }
 
 const createBufferedTabState = (tab: Partial<IFileState> & { id: string }): BufferedTabState => {
@@ -2164,7 +2572,10 @@ const createBufferedTabState = (tab: Partial<IFileState> & { id: string }): Buff
     muyaIndexCursor: toSerializableValue(tab.muyaIndexCursor, defaultFileState.muyaIndexCursor),
     scrollTop: tab.scrollTop ?? defaultFileState.scrollTop,
     showHeadingNumbers: tab.showHeadingNumbers === true,
-    headingNumberingIncludesTopLevel: tab.headingNumberingIncludesTopLevel === true
+    headingNumberingIncludesTopLevel: tab.headingNumberingIncludesTopLevel === true,
+    isDrawing: tab.isDrawing === true,
+    isGeoGebra: tab.isGeoGebra === true,
+    geoGebraMode: tab.geoGebraMode
   }
 }
 

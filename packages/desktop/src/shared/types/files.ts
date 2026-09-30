@@ -91,6 +91,49 @@ export interface IFileState {
   // Muya block tree; only populated for the actively edited tab.
   blocks?: unknown
   isMixedLineEndings?: boolean
+  // Draw.io documents are real editor tabs, but their XML must never be
+  // handed to Muya as Markdown.
+  isDrawing?: boolean
+  isGeoGebra?: boolean
+  geoGebraMode?: GeoGebraMode
+}
+
+export type GeoGebraMode = 'graphing' | '3d' | 'geometry' | 'cas' | 'probability' | 'scientific'
+
+/** Runtime state for one Draw.io tab. The XML stays inside its BrowserView. */
+export interface IDrawioState {
+  id: string
+  pathname: string
+  filename: string
+  modified: boolean
+  isSaved: boolean
+  isSaving: boolean
+  saveError?: string
+  lastSavedHash?: string
+}
+
+export interface IGeoGebraState {
+  id: string
+  pathname: string
+  filename: string
+  modified: boolean
+  isSaved: boolean
+  isSaving: boolean
+  mode: GeoGebraMode
+  saveError?: string
+  lastSavedHash?: string
+}
+
+export interface UnsavedDrawioFile {
+  id: string
+  filename: string
+  pathname: string
+}
+
+export interface UnsavedGeoGebraFile {
+  id: string
+  filename: string
+  pathname: string
 }
 
 /**

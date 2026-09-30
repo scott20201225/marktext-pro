@@ -27,6 +27,8 @@ interface TreeFile {
   isDirectory: false
   isFile: true
   isMarkdown: boolean
+  isDrawing?: boolean
+  isGeoGebra?: boolean
 }
 
 type AddFileInput = Omit<TreeFile, 'id'>
@@ -103,7 +105,16 @@ export const addFile = (tree: TreeFolder, file: AddFileInput, sortBy: string = '
   }
 
   // Add file to related directory.
-  if (!currentFolder.files.find((f) => window.fileUtils.isSamePathSync(f.pathname, pathname))) {
+  const existingFile = currentFolder.files.find((f) => window.fileUtils.isSamePathSync(f.pathname, pathname))
+  if (existingFile) {
+    existingFile.name = name
+    existingFile.pathname = pathname
+    existingFile.birthTime = file.birthTime
+    existingFile.mtimeMs = file.mtimeMs
+    existingFile.isMarkdown = file.isMarkdown
+    existingFile.isDrawing = file.isDrawing
+    existingFile.isGeoGebra = file.isGeoGebra
+  } else {
     // Remove file content from object.
     const fileCopy: TreeFile = {
       id: getUniqueId(),
@@ -112,6 +123,8 @@ export const addFile = (tree: TreeFolder, file: AddFileInput, sortBy: string = '
       isDirectory: file.isDirectory,
       isFile: file.isFile,
       isMarkdown: file.isMarkdown,
+      isDrawing: file.isDrawing,
+      isGeoGebra: file.isGeoGebra,
       name: file.name,
       pathname: file.pathname
     }

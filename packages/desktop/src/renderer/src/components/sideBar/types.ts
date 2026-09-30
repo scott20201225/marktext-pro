@@ -19,6 +19,8 @@ export interface TreeFileNode {
   isDirectory: false
   isFile: true
   isMarkdown: boolean
+  isDrawing?: boolean
+  isGeoGebra?: boolean
 }
 
 export interface TreeFolderNode {

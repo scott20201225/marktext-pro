@@ -110,9 +110,13 @@ const { clipboard } = storeToRefs(projectStore)
 
 const createInputPlaceholder = computed(() => {
   const cache = createCache.value as { type?: string }
-  return cache.type === 'directory'
-    ? t('sideBar.tree.enterDirectoryName')
-    : t('sideBar.tree.enterMarkdownFileName')
+  if (cache.type === 'directory') {
+    return t('sideBar.tree.enterDirectoryName')
+  }
+  if (cache.type === 'drawing' || cache.type === 'geogebra') {
+    return t('sideBar.tree.documentNamePlaceholder')
+  }
+  return t('sideBar.tree.enterMarkdownFileName')
 })
 
 const handleInputFocus = (): void => {
@@ -132,7 +136,9 @@ const handleInputFocus = (): void => {
 }
 
 const handleInputEnter = (): void => {
-  projectStore.CREATE_FILE_DIRECTORY(createName.value)
+  const name = createName.value
+  createName.value = ''
+  projectStore.CREATE_FILE_DIRECTORY(name)
 }
 
 const handleInputEnterFromKeyboard = (): void => {
@@ -222,9 +228,10 @@ onMounted(() => {
     height: 30px;
     padding-right: 15px;
     gap: 6px;
+    color: var(--tree-text-color, var(--sideBarTitleColor));
     & > .icon-arrow {
       flex-shrink: 0;
-      color: var(--sideBarIconColor);
+      color: var(--tree-icon-color, var(--sideBarIconColor));
       margin-right: 5px;
       transition: transform 0.25s ease-out;
       transform: rotate(90deg);
@@ -241,6 +248,7 @@ onMounted(() => {
 .folder-name > input.rename {
   flex: 1;
   min-width: 0;
+  color: var(--tree-text-color, var(--sideBarTitleColor));
 }
 .folder-action-button {
   display: inline-flex;
@@ -253,12 +261,12 @@ onMounted(() => {
   border: none;
   border-radius: 4px;
   background: transparent;
-  color: var(--sideBarIconColor);
+  color: var(--tree-icon-color, var(--sideBarIconColor));
   cursor: pointer;
 }
 .folder-action-button:hover {
   background: var(--sideBarItemHoverBgColor);
-  color: var(--sideBarTitleColor);
+  color: var(--tree-text-color, var(--sideBarTitleColor));
 }
 .new-input,
 input.rename {
@@ -266,7 +274,7 @@ input.rename {
   height: 22px;
   margin: 5px 0;
   padding: 0 6px;
-  color: var(--sideBarColor);
+  color: var(--tree-text-color, var(--sideBarTitleColor));
   border: 1px solid var(--floatBorderColor);
   background: var(--floatBorderColor);
   width: 70%;

@@ -29,7 +29,8 @@
       "closeTab": "タブを閉じる",
       "closeWindow": "ウィンドウを閉じる",
       "quit": "終了",
-      "preferences": "環境設定"
+      "preferences": "環境設定",
+      "preview": "プレビュー"
     },
     "edit": {
       "edit": "編集",
@@ -221,7 +222,7 @@
     "addToDictionary": "辞書に追加",
     "editDictionary": "辞書を編集...",
     "sideBar": {
-      "newFile": "新しいファイル",
+      "newFile": "New Markdown",
       "newDirectory": "新しいフォルダ",
       "copy": "コピー",
       "copyPath": "パスをコピー",
@@ -229,7 +230,8 @@
       "paste": "貼り付け",
       "rename": "名前を変更",
       "moveToTrash": "ゴミ箱に移動",
-      "showInFolder": "フォルダで表示"
+      "showInFolder": "フォルダで表示",
+      "newDrawing": "新規図面"
     },
     "tabs": {
       "close": "閉じる",
@@ -273,12 +275,12 @@
       "saveAll": "すべて保存",
       "closeAll": "すべて閉じる",
       "emptyProject": "空のプロジェクト",
-      "createFile": "ファイルを作成",
+      "createFile": "New Markdown",
       "openFolder": "フォルダを開く",
       "workspaceActions": "ワークスペースの操作",
       "nodeActions": "操作",
       "enterDirectoryName": "フォルダー名を入力",
-      "enterMarkdownFileName": ".md ファイル名を入力"
+      "enterMarkdownFileName": "Enter Markdown file name"
     },
     "toc": {
       "title": "目次"
@@ -382,7 +384,7 @@
   },
   "recent": {
     "noTabsOpen": "開いているタブがありません。",
-    "newFile": "新しいファイル"
+    "newFile": "New Markdown"
   },
   "import": {
     "title": "インポートまたは開く",

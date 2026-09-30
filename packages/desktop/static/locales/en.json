@@ -29,7 +29,8 @@
       "closeTab": "Close Tab",
       "closeWindow": "Close Window",
       "quit": "Quit",
-      "preferences": "Preferences"
+      "preferences": "Preferences",
+      "preview": "Preview"
     },
     "edit": {
       "edit": "Edit",
@@ -221,7 +222,7 @@
     "addToDictionary": "Add to Dictionary",
     "editDictionary": "Edit Dictionary...",
     "sideBar": {
-      "newFile": "New File",
+      "newFile": "New Markdown",
       "newDirectory": "New Directory",
       "copy": "Copy",
       "copyPath": "Copy Path",
@@ -229,7 +230,9 @@
       "paste": "Paste",
       "rename": "Rename",
       "moveToTrash": "Move To Trash",
-      "showInFolder": "Show In Folder"
+      "showInFolder": "Show In Folder",
+      "newDrawing": "New Drawing",
+      "newGeoGebra": "New GeoGebra"
     },
     "tabs": {
       "close": "Close",
@@ -273,12 +276,20 @@
       "saveAll": "Save All",
       "closeAll": "Close All",
       "emptyProject": "Empty project",
-      "createFile": "Create File",
+      "createFile": "New Markdown",
       "openFolder": "Open Folder",
       "workspaceActions": "Workspace actions",
       "nodeActions": "Actions",
       "enterDirectoryName": "Enter folder name",
-      "enterMarkdownFileName": "Enter .md file name"
+      "enterMarkdownFileName": "Enter Markdown file name",
+      "documentNamePlaceholder": "Note name",
+      "geoGebraMode": "GeoGebra mode",
+      "geoGebraGraphing": "Graphing",
+      "geoGebra3d": "3D Calculator",
+      "geoGebraGeometry": "Geometry",
+      "geoGebraCas": "CAS",
+      "geoGebraProbability": "Probability",
+      "geoGebraScientific": "Scientific"
     },
     "toc": {
       "title": "Table Of Contents"
@@ -382,7 +393,7 @@
   },
   "recent": {
     "noTabsOpen": "You have no tabs open.",
-    "newFile": "New File"
+    "newFile": "New Markdown"
   },
   "import": {
     "title": "Import or Open",

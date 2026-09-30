@@ -28,7 +28,9 @@ import type {
   SerializedStat,
   LineEnding,
   FileChangeDetail,
-  UnsavedFile
+  UnsavedFile,
+  UnsavedDrawioFile,
+  GeoGebraMode
 } from './files'
 import type { BufferedState as BufferedStateType } from './bufferedState'
 import type { MenuTemplate, MenuPopupPosition } from './menu'
@@ -68,6 +70,34 @@ export interface GitHubDesktopShowOptions {
   localePayload?: GitHubDesktopLocalePayload
 }
 
+export interface DrawioBounds {
+  x: number
+  y: number
+  width: number
+  height: number
+}
+
+export interface DrawioConfiguration {
+  language: string
+  dark: boolean
+  theme: string
+  colors: Record<string, string>
+}
+
+export interface GeoGebraConfiguration {
+  language: string
+  dark: boolean
+  theme: string
+  colors: Record<string, string>
+}
+
+export interface DrawioExportPayload {
+  format: string
+  filename?: string
+  data?: string
+  xml?: string
+}
+
 // =================================================================
 // Invoke channels (renderer → main, returns Promise<T>)
 // =================================================================
@@ -78,6 +108,28 @@ export interface IpcInvokeChannels {
   'mt::clipboard::guess-file-path': { args: []; ret: string | null }
   'mt::clipboard::read-text': { args: []; ret: string }
   'mt::cmd::exists': { args: [name: string]; ret: boolean }
+  'mt::drawio::close': { args: []; ret: void }
+  'mt::drawio::configure': { args: [configuration: DrawioConfiguration]; ret: void }
+  'mt::drawio::export': { args: [payload: DrawioExportPayload]; ret: void }
+  'mt::drawio::open': {
+    args: [pathname: string, configuration?: DrawioConfiguration]
+    ret: void
+  }
+  'mt::drawio::presentation': { args: [payload: DrawioExportPayload]; ret: void }
+  'mt::drawio::print': { args: [payload: DrawioExportPayload]; ret: void }
+  'mt::drawio::preview': { args: [payload: DrawioExportPayload]; ret: void }
+  'mt::drawio::save': { args: [xml: string]; ret: void }
+  'mt::drawio::save-request': { args: [filePath: string]; ret: void }
+  'mt::drawio::close-file': { args: [filePath: string]; ret: void }
+  'mt::drawio::show': { args: [bounds: DrawioBounds]; ret: void }
+  'mt::geogebra::open': {
+    args: [pathname: string, mode?: GeoGebraMode, configuration?: GeoGebraConfiguration]
+    ret: void
+  }
+  'mt::geogebra::configure': { args: [configuration: GeoGebraConfiguration]; ret: void }
+  'mt::geogebra::save-request': { args: [filePath: string]; ret: void }
+  'mt::geogebra::close-file': { args: [filePath: string]; ret: void }
+  'mt::geogebra::show': { args: [bounds: DrawioBounds]; ret: void }
   'mt::fonts::list': { args: []; ret: string[] }
   'mt::github-desktop::show': {
     args: [options: GitHubDesktopShowOptions]
@@ -169,7 +221,10 @@ export interface IpcSendChannels {
   'mt::check-for-update': []
   'mt::clipboard::write-text': [text: string]
   'mt::close-window': []
-  'mt::close-window-confirm': [unsavedFiles: UnsavedFile[]]
+  'mt::close-window-confirm': [
+    unsavedFiles: UnsavedFile[],
+    unsavedDrawioFiles?: UnsavedDrawioFile[]
+  ]
   'mt::cmd-close-window': []
   'mt::cmd-import-file': []
   'mt::cmd-new-editor-window': []
@@ -255,6 +310,15 @@ export interface IpcSendChannels {
   'mt::window-tab-closed': [pathname: string]
   'mt::window-toggle-always-on-top': []
   'mt::window-zoom-delta': [direction: 'in' | 'out']
+  'mt::drawio::hide': []
+  'mt::drawio::state': [payload: { modified: boolean }]
+  'mt::geogebra::hide': []
+  'mt::geogebra::set-bounds': [bounds: DrawioBounds]
+  'mt::geogebra::state': [payload: { modified?: boolean }]
+  'mt::drawio-menu-mode': [enabled: boolean]
+  'mt::geogebra-menu-mode': [enabled: boolean]
+  'mt::drawio::set-bounds': [bounds: DrawioBounds]
+  'mt::drawio-autosave-changed': [enabled: boolean]
   'mt::window::drop': [payload: unknown]
   'screen-capture': [payload: unknown]
   'set-user-preference': [partial: unknown]
@@ -293,6 +357,39 @@ export interface IpcMainEventChannels {
   'mt::about-dialog': []
   'mt::ask-for-close': []
   'mt::bootstrap-editor': [config: BootstrapEditorConfig]
+  'mt::drawio::init': [
+    payload: { filePath: string; frameUrl: string; xml: string; title: string; autoSave: boolean }
+  ]
+  'mt::drawio::configure': [payload: { frameUrl: string; xml: string }]
+  'mt::drawio::opened': [payload: { filePath: string; title: string }]
+  'mt::drawio::closed': [payload?: { filePath?: string }]
+  'mt::drawio::autosave-changed': [enabled: boolean]
+  'mt::drawio::request-exit': []
+  'mt::drawio::invoke-action': [actionName: string]
+  'mt::drawio::request-save': []
+  'mt::drawio::state': [
+    payload: {
+      filePath: string
+      modified: boolean
+      isSaved: boolean
+      isSaving: boolean
+      saveError?: string
+      lastSavedHash?: string
+    }
+  ]
+  'mt::geogebra::opened': [payload: { filePath: string; title: string; mode: GeoGebraMode }]
+  'mt::geogebra::closed': [payload?: { filePath?: string }]
+  'mt::geogebra::state': [
+    payload: {
+      filePath: string
+      mode: GeoGebraMode
+      modified: boolean
+      isSaved: boolean
+      isSaving: boolean
+      saveError?: string
+      lastSavedHash?: string
+    }
+  ]
   'mt::cm-copy-as-html': []
   'mt::cm-copy-as-rich': []
   'mt::cm-insert-paragraph': [direction: 'before' | 'after']

@@ -29,7 +29,8 @@
       "closeTab": "Sekmeyi Kapat",
       "closeWindow": "Pencereyi Kapat",
       "quit": "Çıkış",
-      "preferences": "Tercihler"
+      "preferences": "Tercihler",
+      "preview": "Önizleme"
     },
     "edit": {
       "edit": "Düzen",
@@ -221,7 +222,7 @@
     "addToDictionary": "Sözlüğe Ekle",
     "editDictionary": "Sözlüğü Düzenle...",
     "sideBar": {
-      "newFile": "Yeni Dosya",
+      "newFile": "New Markdown",
       "newDirectory": "Yeni Klasör",
       "copy": "Kopyala",
       "copyPath": "Yolu kopyala",
@@ -229,7 +230,8 @@
       "paste": "Yapıştır",
       "rename": "Yeniden Adlandır",
       "moveToTrash": "Çöp Kutusuna Taşı",
-      "showInFolder": "Klasörde Göster"
+      "showInFolder": "Klasörde Göster",
+      "newDrawing": "Yeni çizim"
     },
     "tabs": {
       "close": "Kapat",
@@ -273,12 +275,12 @@
       "saveAll": "Tümünü Kaydet",
       "closeAll": "Tümünü Kapat",
       "emptyProject": "Boş proje",
-      "createFile": "Dosya Oluştur",
+      "createFile": "New Markdown",
       "openFolder": "Klasör Aç",
       "workspaceActions": "Çalışma alanı işlemleri",
       "nodeActions": "İşlemler",
       "enterDirectoryName": "Klasör adını girin",
-      "enterMarkdownFileName": ".md dosya adını girin"
+      "enterMarkdownFileName": "Enter Markdown file name"
     },
     "toc": {
       "title": "İçindekiler"
@@ -382,7 +384,7 @@
   },
   "recent": {
     "noTabsOpen": "Açık sekmeniz yok.",
-    "newFile": "Yeni Dosya"
+    "newFile": "New Markdown"
   },
   "import": {
     "title": "İçe Aktar veya Aç",

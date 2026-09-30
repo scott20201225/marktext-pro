@@ -29,7 +29,8 @@
       "closeTab": "Fermer l'onglet",
       "closeWindow": "Fermer la fenêtre",
       "quit": "Quitter",
-      "preferences": "Préférences"
+      "preferences": "Préférences",
+      "preview": "Aperçu"
     },
     "edit": {
       "edit": "Édition",
@@ -221,7 +222,7 @@
     "addToDictionary": "Ajouter au dictionnaire",
     "editDictionary": "Modifier le dictionnaire...",
     "sideBar": {
-      "newFile": "Nouveau fichier",
+      "newFile": "New Markdown",
       "newDirectory": "Nouveau dossier",
       "copy": "Copier",
       "copyPath": "Copier le chemin",
@@ -229,7 +230,8 @@
       "paste": "Coller",
       "rename": "Renommer",
       "moveToTrash": "Déplacer vers la corbeille",
-      "showInFolder": "Afficher dans le dossier"
+      "showInFolder": "Afficher dans le dossier",
+      "newDrawing": "Nouveau dessin"
     },
     "tabs": {
       "close": "Fermer",
@@ -273,12 +275,12 @@
       "saveAll": "Tout enregistrer",
       "closeAll": "Tout fermer",
       "emptyProject": "Projet vide",
-      "createFile": "Créer un fichier",
+      "createFile": "New Markdown",
       "openFolder": "Ouvrir un dossier",
       "workspaceActions": "Actions de l'espace de travail",
       "nodeActions": "Actions",
       "enterDirectoryName": "Saisir le nom du dossier",
-      "enterMarkdownFileName": "Saisir le nom du fichier .md"
+      "enterMarkdownFileName": "Enter Markdown file name"
     },
     "toc": {
       "title": "Table des matières"
@@ -382,7 +384,7 @@
   },
   "recent": {
     "noTabsOpen": "Vous n'avez aucun onglet ouvert.",
-    "newFile": "Nouveau fichier"
+    "newFile": "New Markdown"
   },
   "import": {
     "title": "Importer ou ouvrir",
