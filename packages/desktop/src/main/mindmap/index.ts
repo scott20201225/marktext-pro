@@ -94,21 +94,28 @@ const normalizeBounds = (bounds: Rectangle): Rectangle => ({
   height: Math.max(1, Math.round(bounds.height))
 })
 
+let lastKnownMindMapConfig: MindMapConfiguration | null = null
+
 const getOrCreateWindowEntry = (win: BrowserWindow): MindMapWindowEntry => {
   const existing = views.get(win.id)
   if (existing) return existing
-  const defaultThemeInfo = getMindMapThemeInfo('light')
+  const baseTheme = lastKnownMindMapConfig?.theme || 'light'
+  const defaultThemeInfo = getMindMapThemeInfo(baseTheme)
   const entry: MindMapWindowEntry = {
     documents: new Map(),
     activePath: null,
     visible: false,
     configuration: {
-      language: 'zh',
-      dark: false,
-      theme: 'light',
-      mindMapTheme: defaultThemeInfo.mindMapTheme,
-      backgroundColor: defaultThemeInfo.backgroundColor,
-      themeConfig: defaultThemeInfo.themeConfig
+      language: lastKnownMindMapConfig?.language || 'zh',
+      dark:
+        typeof lastKnownMindMapConfig?.dark === 'boolean'
+          ? lastKnownMindMapConfig.dark
+          : defaultThemeInfo.isDark,
+      theme: baseTheme,
+      mindMapTheme: lastKnownMindMapConfig?.mindMapTheme || defaultThemeInfo.mindMapTheme,
+      backgroundColor: lastKnownMindMapConfig?.backgroundColor || defaultThemeInfo.backgroundColor,
+      themeConfig: lastKnownMindMapConfig?.themeConfig || defaultThemeInfo.themeConfig,
+      colors: lastKnownMindMapConfig?.colors
     }
   }
   views.set(win.id, entry)
@@ -159,6 +166,9 @@ const createDocumentEntry = (
   viewOwners.set(view.webContents.id, { windowId: win.id, filePath })
   view.webContents.on('did-fail-load', (_event, code, description, url) => {
     log.error(`思维导图加载失败: ${code} ${description} @ ${url}`)
+  })
+  view.webContents.on('console-message', (_event, level, message, line, sourceId) => {
+    log.info(`[MindMap webContents][level:${level}] ${message} (${sourceId}:${line})`)
   })
   view.webContents.on('render-process-gone', (_event, details) => {
     log.error('思维导图渲染进程异常退出:', details)
@@ -484,6 +494,7 @@ export const closeMindMapDocument = (win: BrowserWindow, filePath: string): void
 }
 
 export const configureMindMap = (win: BrowserWindow, configuration: MindMapConfiguration): void => {
+  lastKnownMindMapConfig = { ...configuration }
   const windowEntry = views.get(win.id)
   if (!windowEntry) return
   windowEntry.configuration = { ...windowEntry.configuration, ...configuration }
@@ -584,6 +595,12 @@ export const printMindMapDocument = async (win: BrowserWindow): Promise<void> =>
   } catch (err) {
     log.error('思维导图页面直接打印失败:', err)
   }
+}
+
+export const isPartitionDirectory = (dir: string | null | undefined): boolean => {
+  if (!dir || typeof dir !== 'string') return false
+  const base = path.basename(dir)
+  return base.startsWith('AREA_')
 }
 
 export const getAvailableImportFilePath = async (
