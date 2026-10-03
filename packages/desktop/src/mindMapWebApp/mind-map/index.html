@@ -443,43 +443,35 @@
       --mm-text-disabled: rgba(0, 0, 0, 0.3);
     }
 
-    /* Element UI Loading 遮罩与文字 Spinner 全局皮肤深度适配 */
+    /* Element UI Loading 遮罩与文字 Spinner 全局彻底隐藏，消除任何白底与文字闪现 */
     .el-loading-mask,
     .el-loading-mask.is-fullscreen,
     .container .el-loading-mask,
     .editContainer .el-loading-mask,
     body.isDark .el-loading-mask,
     body.isDark .el-loading-mask.is-fullscreen {
-      background-color: var(--mm-ui-bg) !important;
-      color: var(--mm-panel-text) !important;
-      transition: opacity 0.05s ease !important;
+      display: none !important;
+      opacity: 0 !important;
+      visibility: hidden !important;
+      pointer-events: none !important;
+      width: 0 !important;
+      height: 0 !important;
+      z-index: -9999 !important;
+      background-color: transparent !important;
+      transition: none !important;
     }
     .el-loading-fade-enter-active,
     .el-loading-fade-leave-active {
-      transition: opacity 0.05s ease !important;
+      display: none !important;
+      transition: none !important;
     }
     .el-loading-spinner,
-    body.isDark .el-loading-spinner {
-      color: var(--mm-panel-text) !important;
-    }
-    .el-loading-spinner .el-loading-text,
-    body.isDark .el-loading-spinner .el-loading-text {
-      color: var(--mm-panel-text) !important;
-      font-size: 14px !important;
-      font-weight: 500 !important;
-      margin-top: 10px !important;
-    }
-    .el-loading-spinner .path,
-    body.isDark .el-loading-spinner .path {
-      stroke: var(--mm-theme-color) !important;
-      stroke-width: 3 !important;
-    }
-    .el-loading-spinner i,
-    .el-loading-spinner .el-icon-loading,
-    body.isDark .el-loading-spinner i,
-    body.isDark .el-loading-spinner .el-icon-loading {
-      color: var(--mm-theme-color) !important;
-      font-size: 28px !important;
+    body.isDark .el-loading-spinner,
+    .el-loading-text,
+    body.isDark .el-loading-text {
+      display: none !important;
+      opacity: 0 !important;
+      visibility: hidden !important;
     }
 
     /* 区域 1：顶部浮动工具栏 */
@@ -2663,45 +2655,32 @@
   <script src="dist/js/app.js?720fe4d863ea0fdcc0fb"></script>
   <script>
     (function() {
-      const patchLoading = function(serviceFn) {
-        if (!serviceFn) return serviceFn;
-        return function(options) {
-          if (!window.__enableMindMapLoading) {
-            return {
-              close: () => {},
-              setText: () => {}
-            };
-          }
-          const opts = Object.assign({}, options);
-          const rootComputed = getComputedStyle(document.documentElement);
-          const uiBg = rootComputed.getPropertyValue('--mm-ui-bg').trim() || (document.documentElement.classList.contains('isDark') ? '#1a1b26' : '#ffffff');
-          if (!opts.background || opts.background === 'rgba(0, 0, 0, 0.7)') {
-            opts.background = uiBg;
-          }
-          return serviceFn.call(this, opts);
+      const silentLoading = function() {
+        return {
+          close: function() {},
+          setText: function() {},
+          visible: false
         };
       };
 
-      if (window.ELEMENT && window.ELEMENT.Loading && !window.ELEMENT.Loading.__marknotepro_patched) {
+      if (window.ELEMENT && window.ELEMENT.Loading) {
         window.ELEMENT.Loading.__marknotepro_patched = true;
-        window.ELEMENT.Loading.service = patchLoading(window.ELEMENT.Loading.service);
+        window.ELEMENT.Loading.service = silentLoading;
       }
-      const Vue = window.$bus ? window.$bus.constructor : null;
-      if (Vue && !window.__marknotepro_theme_mixin_applied) {
+      const Vue = window.$bus ? window.$bus.constructor : (window.Vue || null);
+      if (Vue) {
         window.__marknotepro_theme_mixin_applied = true;
-        if (Vue.prototype && Vue.prototype.$loading && !Vue.prototype.$loading.__marknotepro_patched) {
-          Vue.prototype.$loading = patchLoading(Vue.prototype.$loading);
-          Vue.prototype.$loading.__marknotepro_patched = true;
-        }
-        if (Vue.prototype && Vue.prototype.$bus) {
-          const protoBusEmit = Vue.prototype.$bus.$emit;
-          Vue.prototype.$bus.$emit = function(event, ...args) {
-            if (event === 'localStorageExceeded') {
-              console.warn('[MarkNotePro] Silenced localStorageExceeded on Vue.prototype.$bus');
-              return;
-            }
-            return protoBusEmit.apply(this, arguments);
-          };
+        if (Vue.prototype) {
+          Vue.prototype.$loading = silentLoading;
+          if (Vue.prototype.$bus) {
+            const protoBusEmit = Vue.prototype.$bus.$emit;
+            Vue.prototype.$bus.$emit = function(event, ...args) {
+              if (event === 'localStorageExceeded') {
+                return;
+              }
+              return protoBusEmit.apply(this, arguments);
+            };
+          }
         }
       }
     })();

@@ -176,7 +176,7 @@ describe('SideBar directory targeting & automatic parent folder selection', () =
       isSaved: true,
       cursor: { line: 0, ch: 0 },
       history: { index: 0, stack: [] }
-    })
+    } as any)
 
     expect(projectStore.activeItem?.pathname).toBe('/workspace/root/notes')
   })
