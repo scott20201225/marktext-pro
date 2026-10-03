@@ -67,6 +67,8 @@
     >
       <div
         class="title"
+        :class="{ active: isRootActive }"
+        @click.stop="handleRootClick"
         @contextmenu.prevent="handleRootContextMenu"
       >
         <el-icon
@@ -108,6 +110,7 @@
       <div
         v-show="showDirectories"
         class="tree-wrapper"
+        @click="handleTreeWrapperClick"
         @contextmenu.prevent.stop="handleTreeWrapperContextMenu"
       >
         <folder
@@ -219,10 +222,34 @@ const editorStore = useEditorStore()
 const preferencesStore = usePreferencesStore()
 
 // Computed properties
-const { createCache } = storeToRefs(projectStore)
-const { renameCache } = storeToRefs(projectStore)
-const { clipboard } = storeToRefs(projectStore)
+const { createCache, renameCache, clipboard, activeItem } = storeToRefs(projectStore)
 const { openedFilesInSidebar } = storeToRefs(preferencesStore)
+
+const isRootActive = computed<boolean>(() => {
+  if (!props.projectTree) return false
+  const active = activeItem.value
+  if (!active || !active.pathname) return false
+  return window.fileUtils?.isSamePathSync
+    ? window.fileUtils.isSamePathSync(active.pathname, props.projectTree.pathname)
+    : active.pathname === props.projectTree.pathname
+})
+
+const handleRootClick = (): void => {
+  if (!props.projectTree) return
+  projectStore.CHANGE_ACTIVE_ITEM(props.projectTree)
+}
+
+const handleTreeWrapperClick = (event: MouseEvent): void => {
+  const target = event.target as HTMLElement | null
+  if (
+    target &&
+    !target.closest('.side-bar-folder, .side-bar-file, .empty-project, .new-input, input.rename')
+  ) {
+    if (props.projectTree) {
+      projectStore.CHANGE_ACTIVE_ITEM(props.projectTree)
+    }
+  }
+}
 
 // The createCache state is `{ dirname, type }` while an input is shown, and
 // `{}` otherwise. Expose a typed accessor for the template so we don't have
@@ -237,7 +264,7 @@ const createInputPlaceholder = computed(() => {
   if (cache.type === 'directory') {
     return t('sideBar.tree.enterDirectoryName')
   }
-  if (cache.type === 'drawing' || cache.type === 'geogebra') {
+  if (cache.type === 'drawing' || cache.type === 'geogebra' || cache.type === 'mindmap') {
     return t('sideBar.tree.documentNamePlaceholder')
   }
   return t('sideBar.tree.enterMarkdownFileName')
@@ -359,7 +386,9 @@ onMounted(() => {
   document.addEventListener('click', (event) => {
     const target = event.target as HTMLElement | null
     if (target && target.tagName !== 'INPUT') {
-      projectStore.CHANGE_ACTIVE_ITEM({})
+      if (!target.closest('.side-bar, .tree-view, .context-menu, .project-tree')) {
+        projectStore.CHANGE_ACTIVE_ITEM({})
+      }
       projectStore.createCache = {}
       projectStore.renameCache = null
     }
@@ -497,6 +526,21 @@ onMounted(() => {
   display: flex;
   align-items: center;
   color: var(--tree-text-color);
+  cursor: default;
+  user-select: none;
+}
+
+.project-tree > .title:hover {
+  background: var(--sideBarItemHoverBgColor);
+}
+
+.project-tree > .title.active {
+  background: var(--sideBarItemHoverBgColor);
+  color: var(--themeColor);
+}
+
+.project-tree > .title.active > span {
+  color: var(--themeColor);
 }
 
 .project-tree > .title > span {

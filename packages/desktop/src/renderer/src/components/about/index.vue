@@ -41,7 +41,7 @@
 </template>
 
 <script setup lang="ts">
-import { ref, onMounted, onBeforeUnmount } from 'vue'
+import { ref, onMounted, onBeforeUnmount, watch } from 'vue'
 import { useMainStore } from '@/store'
 import bus from '../../bus'
 import MarkTextProLogo from '../../assets/images/logo.png'
@@ -53,6 +53,14 @@ const name = 'MarkTextPro'
 const copyright = t('about.copyright', { year: new Date().getFullYear() })
 const copyrightContributors = t('about.copyrightContributors')
 const showAboutDialog = ref(false)
+
+watch(showAboutDialog, (visible) => {
+  if (visible) {
+    bus.emit('host-overlay:show', 'about-dialog')
+  } else {
+    bus.emit('host-overlay:hide', 'about-dialog')
+  }
+})
 
 const store = useMainStore()
 
@@ -67,6 +75,7 @@ onMounted(() => {
 
 onBeforeUnmount(() => {
   bus.off('aboutDialog', showDialog)
+  bus.emit('host-overlay:hide', 'about-dialog')
 })
 </script>
 

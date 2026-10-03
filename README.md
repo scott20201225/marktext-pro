@@ -3,8 +3,8 @@
 <h1 align="center">MarkTextPro</h1>
 
 <div align="center">
-  <strong>集成 Git 的 Markdown 文件编辑管理器</strong><br>
-  面向本地文件夹、外部 Markdown 文件和 Git 仓库的轻量编辑管理工具。<br>
+  <strong>集成 Git 的多模态 Markdown 文件编辑管理器</strong><br>
+  面向本地文件夹、外部文件、代码项目与 Git 仓库的轻量自由编辑管理工具。<br>
   <sub>支持 Linux、macOS、Windows。</sub>
 </div>
 
@@ -30,6 +30,8 @@
     <span> | </span>
     <a href="#产品选择">产品选择</a>
     <span> | </span>
+    <a href="#内置创作引擎drawio-geogebra-与-mindmap">内置创作引擎</a>
+    <span> | </span>
     <a href="#文件工作区模型">工作区模型</a>
     <span> | </span>
     <a href="#git-联动">Git 联动</a>
@@ -42,14 +44,14 @@
 
 ## 产品定位
 
-MarkTextPro 是一款集成 Git 的 Markdown 文件编辑管理器。它保留自由文件夹管理方式，适合编辑外部 Markdown、维护项目文档、整理本地资料，也适合把一个普通文件夹直接变成可以提交、同步、回滚的 Git 工作区。
+MarkTextPro 是一款集成 Git 的多模态 Markdown 文件编辑管理器。它保留原生自由文件夹管理方式，适合编辑外部 Markdown、维护项目文档、整理本地资料，也适合在真实代码仓库中直接创建与编辑架构图、数学建模或思维导图，并无缝使用 Git 进行版本提交、同步与回滚。
 
 ## 产品选择
 
-MarkTextPro 和 MarkNotePro 是两个相互独立、但能力互补的产品。
+MarkTextPro 和 MarkNotePro 是两个相互独立、但能力互补的产品。两个产品均原生具备 **Markdown 写作**、**Draw.io 绘图**、**GeoGebra 数学套件**与 **MindMap 思维导图**四大核心创作引擎。
 
-- MarkTextPro：集成 Git 的 Markdown 文件编辑管理器，强调自由文件夹、外部 Markdown 文件、项目文档和临时编辑。
-- MarkNotePro：集成 Git 的本地 Markdown 笔记工具，强调笔记工作区、分区组、分区、笔记和长期知识管理。
+- **MarkTextPro**：集成 Git 的多模态文件编辑管理器，强调自由文件夹结构、外部独立文档、代码项目协作与临时编辑。
+- **MarkNotePro**：集成 Git 的结构化本地笔记工作台，强调笔记工作区、分区组、分区、笔记层级与长期知识管理。
 
 相关地址：
 
@@ -60,14 +62,14 @@ MarkTextPro 和 MarkNotePro 是两个相互独立、但能力互补的产品。
 
 两者都集成 Git 工作区，都可以用于版本管理、远程同步和多设备协作；选择时更应该看你需要“自由文件编辑管理器”还是“结构化笔记工具”。
 
-下面是同一个项目在两个产品里的展示差异：MarkNotePro 只会展示符合笔记标准的目录和 Markdown 笔记，收敛为分区组 / 分区 / 笔记视图；MarkTextPro 则展示真实文件系统结构，更适合完整项目目录和外部文件管理。
+下面是同一个项目在两个产品里的展示差异：MarkNotePro 只会展示符合笔记标准的目录和知识文档，收敛为分区组 / 分区 / 笔记视图；MarkTextPro 则展示真实文件系统结构，更适合完整项目目录和外部文件管理。
 
 <table>
   <tr>
     <td align="center">
       <img src="docs/assets/screenshots/product-compare-note.png" alt="MarkNotePro 结构化笔记视图" width="100%">
       <br>
-      <sub>MarkNotePro：只展示符合笔记标准的目录和 Markdown 笔记</sub>
+      <sub>MarkNotePro：只展示符合笔记标准的目录和知识文档</sub>
     </td>
     <td align="center">
       <img src="docs/assets/screenshots/product-compare-text.png" alt="MarkTextPro 真实文件系统视图" width="100%">
@@ -79,43 +81,46 @@ MarkTextPro 和 MarkNotePro 是两个相互独立、但能力互补的产品。
 
 选择建议：
 
-| 使用场景 | 推荐产品 |
+| 使用场景 / 需求 | 推荐产品 |
 | --- | --- |
-| 你主要编辑外部 Markdown 文件、项目 README、技术文档或临时文件 | MarkTextPro |
-| 你希望在真实文件夹或代码仓库中直接新建与编辑 Draw.io 架构图或 GeoGebra 数学模型 | MarkTextPro |
-| 你希望保留真实文件夹结构，不希望被笔记层级约束 | MarkTextPro |
-| 你需要一个更自由的本地 Markdown 文件编辑管理器 | MarkTextPro |
-| 你希望像管理笔记本一样管理长期笔记、知识库、项目资料 | MarkNotePro |
-| 你接受并需要分区组、分区、笔记这种固定笔记层级 | MarkNotePro |
-| 你希望侧边栏只呈现笔记体系，减少普通文件夹带来的干扰 | MarkNotePro |
+| 你主要在真实文件夹、代码仓库中工作，或频繁编辑外部独立文档与项目 README | MarkTextPro |
+| 你需要在自由文件夹或项目仓库中直接新建与编辑 Markdown、Draw.io 架构图、GeoGebra 数学模型或 MindMap 思维导图 | MarkTextPro |
+| 你希望保留真实文件系统目录结构，不希望被笔记层级约束 | MarkTextPro |
+| 你需要一个更自由的本地多模态文件与项目工作区管理器 | MarkTextPro |
+| 你希望像管理笔记本一样管理长期笔记、结构化知识库与项目资料 | MarkNotePro |
+| 你需要在结构化笔记中直接进行 Markdown 写作、绘制 Draw.io 架构图/流程图、使用 GeoGebra 数学建模，或绘制 MindMap 思维导图 | MarkNotePro |
+| 你接受并需要工作区、分区组、分区、文档这种结构化层级 | MarkNotePro |
+| 你希望侧边栏只呈现笔记体系，减少普通杂乱文件夹带来的干扰 | MarkNotePro |
 
 ## 核心能力
 
-- **本地文件夹管理**：直接打开文件夹，按真实目录结构管理 Markdown、Draw.io 绘图与 GeoGebra 数学文档。
-- **外部文档编辑**：可以打开工作区外的 `.md`、`.drawio`、`.ggb` 文件，适合临时查看、编辑和专业处理。
-- **多标签与多类型协同编辑**：支持多个 Markdown、Draw.io 绘图与 GeoGebra 文档同时打开、平滑切换与保活编辑。
+- **本地文件夹管理**：直接打开文件夹，按真实目录结构混合管理 Markdown、Draw.io 绘图、GeoGebra 数学模型与 MindMap 思维导图。
+- **外部文档快速编辑**：可以打开工作区外的 `.md`、`.drawio`、`.ggb`、`.smm` 文件，适合临时查看、快速编辑和专业处理。
+- **多标签与多类型协同编辑**：支持多个 Markdown、Draw.io 绘图、GeoGebra 与思维导图文档同时打开、平滑切换与保活编辑。
 - **内置 Draw.io 专业绘图引擎**：本地离线集成完整 Draw.io 编辑器，支持直接创建、编辑、自动保存 `.drawio` 图表文件，自动同步应用语言与亮/暗色主题，支持导出 PNG、JPEG、SVG、PDF、HTML、XML 等格式。
 - **内置 GeoGebra 数学与几何套件**：本地离线集成官方 GeoGebra 全功能引擎，支持**绘图计算**、**几何**、**3D 计算器**、**CAS（计算机代数）**、**概率统计**与**科学计算器**六大模式，深度适配应用全部亮/暗主题，支持导出 `.ggb`、`.png`、`.svg`、`.pdf`、`.stl`（3D 打印）及直接打印。
+- **内置 MindMap 专业思维导图引擎**：本地离线集成全功能思维导图工作台，原生支持**思维导图**、**逻辑结构图**、**目录组织图**、**组织结构图**、**时间轴**、**鱼骨图**等 6 种经典脑图结构；自适应应用亮/暗色主题，支持节点富文本、LaTeX 数学公式、节点图标/贴纸、超链接、关联线、概要节点、外框、备注与标签；提供大纲编辑与快捷键面板，支持导入 XMind / Markdown / .smm 并支持导出 PNG、SVG、PDF、Markdown、JSON 及直接调用系统打印。
 - **Markdown 所见即所得编辑**：支持标题、列表、任务、表格、引用、代码块、数学公式、Mermaid、警告块（Callouts）等常用 Markdown 能力。
 - **表格增强**：支持表格批量编辑、复制粘贴、与 Excel 互操作等高频办公能力。
-- **工作区附件与自包含资源**：当 Markdown 位于工作区内时，本地图片可复制到工作区附件目录并使用相对路径；GeoGebra 插入的图片等资源自动内嵌封装于 `.ggb` 文件中，跨端移动不丢失。
+- **工作区附件与自包含资源**：当 Markdown 位于工作区内时，本地图片可复制到工作区附件目录并使用相对路径；GeoGebra 与 MindMap 中插入的图片等资源自动内嵌封装于文档中，跨端移动不丢失。
 - **工作区内链跳转与路径复制**：支持在侧边栏一键复制文档相对路径或 Markdown 链接，并在文档间快速链接互通。
 - **隐藏开发噪音目录**：工作区树默认隐藏 `.git`、`.idea`、`.vscode`、`.vs`、`.claude`、`.codex`、`node_modules` 等常见工具目录。
 - **集成 Git 工作区**：内置 Git 操作界面，支持仓库添加、克隆、变更查看、提交、分支、拉取、推送等操作。
 - **文件工作区与 Git 仓库联动**：可以从 Git 仓库切换文件工作区，也可以在工作区根目录重命名后同步更新 Git 仓库路径。
 
-## 内置创作引擎：Draw.io 与 GeoGebra
+## 内置创作引擎：Draw.io、GeoGebra 与 MindMap
 
-除了 Markdown 写作，MarkTextPro 还将工程图表与理工科数学建模能力直接纳入同一个自由文件工作区，所有引擎均随客户端本地打包、**100% 离线可用**，无需依赖外部网页或云端账号：
+除了 Markdown 写作，MarkTextPro 还将工程图表、理工科数学建模与思维导图能力直接纳入同一个自由文件工作区，所有引擎均随客户端本地打包、**100% 离线可用**，无需依赖外部网页或云端账号：
 
 | 创作引擎 | 文件后缀 | 支持模式与核心特性 | 主题与导出支持 |
 | --- | --- | --- | --- |
 | **Draw.io 绘图引擎** | `.drawio` | 流程图、系统架构图、UML、ER 图、网络拓扑图、思维导图等完整图形库；支持多标签页保活切换、快捷键保存与自动保存状态同步 | 自动跟随应用语言与亮/暗色主题；支持导出 `PNG`、`JPEG`、`SVG`、`PDF`、`HTML`、`XML` |
 | **GeoGebra 数学套件** | `.ggb` | <ul><li>**绘图计算（Graphing）**：函数图像、导数积分、滑动条、数值表格与完整几何作图工具集</li><li>**几何（Geometry）**：尺规作图、多边形、圆锥曲线、度量与几何变换</li><li>**3D 计算器（3D Graphing）**：空间曲面、立体几何、空间向量与平面交线</li><li>**CAS 计算机代数**：符号微积分、方程精确求解、因式分解与矩阵运算</li><li>**概率统计（Probability）**：正态/二项/泊松等概率分布可视化与区间概率计算</li><li>**科学计算器（Scientific）**：函数定义、数值表格对照与科学运算</li></ul> | 深度适配全部亮/暗色主题（含画布背景、网格、坐标轴、黑色几何对象与公式反色自适应）；插入的图片自动内嵌封装于 `.ggb` 包内；支持导出 `.ggb`、`.png`、`.svg`、`.pdf`、`.stl`（3D 打印）及直接打印 |
+| **MindMap 思维导图** | `.smm` | <ul><li>**6 种专业结构**：思维导图、逻辑结构图、目录组织图、组织结构图、时间轴、鱼骨图，支持在新建或编辑时自由切换</li><li>**丰富节点元素**：自由节点、节点富文本、LaTeX 数学公式、节点图标/贴纸、超链接、关联线、概要节点、外框、备注与自定义标签</li><li>**高效编辑辅助**：大纲视图双向同步编辑、节点搜索与批量替换、直观便捷的快捷键面板</li><li>**智能导入导出**：支持导入 `.xmind`、`.md`、`.smm`、`.json`、`.mind` 格式；支持导出 `PNG`、`SVG`、`PDF`、`Markdown`、`JSON` 以及直接调用系统打印</li></ul> | 自动跟随应用深浅色模式与背景自适应；支持导出多种通用格式及直接打印 |
 
 ## 文件工作区模型
 
-MarkTextPro 的工作区就是一个真实文件夹。它不会强制分区组、分区、笔记层级，而是尊重本地目录结构；同时支持在任意文件夹下混合管理 Markdown、Draw.io 绘图与 GeoGebra 文档，并过滤掉对日常创作无意义的开发噪音目录，保持侧边栏清爽。
+MarkTextPro 的工作区就是一个真实文件夹。它不会强制分区组、分区、笔记层级，而是尊重本地目录结构；同时支持在任意文件夹下混合管理 Markdown、Draw.io 绘图、GeoGebra 数学模型与 MindMap 思维导图，并过滤掉对日常创作无意义的开发噪音目录，保持侧边栏清爽。
 
 ```mermaid
 flowchart TD
@@ -123,6 +128,7 @@ flowchart TD
   Folder --> Markdown["Markdown 文件 (.md)"]
   Folder --> Drawio["Draw.io 绘图 (.drawio)"]
   Folder --> GGB["GeoGebra 数学文档 (.ggb)"]
+  Folder --> MindMap["MindMap 思维导图 (.smm)"]
   Folder --> Other["其它普通文件"]
   Root --> Attach["Attachments 附件目录"]
   Root -. "默认隐藏" .-> Git[".git"]
@@ -134,7 +140,7 @@ flowchart TD
 工作区规则：
 
 - 文件夹名称和文件名称按真实文件系统显示。
-- 支持直接打开 Markdown、Draw.io（`.drawio`）与 GeoGebra（`.ggb`）进行可视化编辑，其它普通文件作为项目上下文存在。
+- 支持直接打开 Markdown、Draw.io（`.drawio`）、GeoGebra（`.ggb`）与思维导图（`.smm`）进行可视化编辑，其它普通文件作为项目上下文存在。
 - 剪切、粘贴、重命名、删除文件或文件夹时，会同步处理已打开标签的路径指向。
 - 删除工作区内文件时，相关编辑标签会同步关闭，避免继续编辑已不存在的文件。
 - 根目录重命名后，会同步更新受管 Git 仓库路径。
@@ -271,6 +277,6 @@ MarkTextPro 集成了以下开源与第三方核心组件，各组件遵循其�
 
 - **draw.io (diagrams.net)**：遵循 [Apache License 2.0](https://www.apache.org/licenses/LICENSE-2.0)（`Copyright (c) 2005-present JGraph Ltd`）。
 - **GeoGebra**：遵循 [GeoGebra License](https://www.geogebra.org/license)（源码遵循 **GPLv3**，软件、文档与语言资源遵循 **GeoGebra Non-Commercial License Agreement / CC BY-NC-SA 3.0**，仅限非商业用途免费使用，商业用途须同时遵守 GeoGebra 官方商业许可要求）。
+- **simple-mind-map (思绪思维导图)**：遵循 [MIT License](https://github.com/wanglin2/mind-map/blob/main/LICENSE)（`Copyright (c) 2021-2023 The MindMap Team / wanglin2`）。
 - **GitHub Desktop**：遵循 MIT License（`Copyright (c) GitHub, Inc.`）。
 - **MarkText & Muya**：遵循 MIT License（`Copyright (c) 2017-present Luo Ran & MarkText Contributors`）。
-

@@ -29,6 +29,7 @@ interface TreeFile {
   isMarkdown: boolean
   isDrawing?: boolean
   isGeoGebra?: boolean
+  isMindMap?: boolean
 }
 
 type AddFileInput = Omit<TreeFile, 'id'>
@@ -114,6 +115,7 @@ export const addFile = (tree: TreeFolder, file: AddFileInput, sortBy: string = '
     existingFile.isMarkdown = file.isMarkdown
     existingFile.isDrawing = file.isDrawing
     existingFile.isGeoGebra = file.isGeoGebra
+    existingFile.isMindMap = file.isMindMap
   } else {
     // Remove file content from object.
     const fileCopy: TreeFile = {
@@ -125,6 +127,7 @@ export const addFile = (tree: TreeFolder, file: AddFileInput, sortBy: string = '
       isMarkdown: file.isMarkdown,
       isDrawing: file.isDrawing,
       isGeoGebra: file.isGeoGebra,
+      isMindMap: file.isMindMap,
       name: file.name,
       pathname: file.pathname
     }
@@ -278,4 +281,62 @@ export const unlinkDirectory = (tree: TreeFolder, dir: { pathname: string }): vo
   if (index !== -1) {
     currentFolder.splice(index, 1)
   }
+}
+
+/**
+ * Find a folder node in the tree by its full pathname.
+ */
+export const findFolderNodeByPath = (
+  tree: TreeFolder | null,
+  targetPath: string | null | undefined
+): TreeFolder | null => {
+  if (!tree || !targetPath) return null
+  const normalizedTarget = window.path?.normalize ? window.path.normalize(targetPath) : targetPath
+  const normalizedTree = window.path?.normalize ? window.path.normalize(tree.pathname) : tree.pathname
+
+  if (
+    window.fileUtils?.isSamePathSync
+      ? window.fileUtils.isSamePathSync(normalizedTree, normalizedTarget)
+      : normalizedTree === normalizedTarget
+  ) {
+    return tree
+  }
+
+  const isChild =
+    typeof window.fileUtils?.isChildOfDirectory === 'function'
+      ? window.fileUtils.isChildOfDirectory(normalizedTree, normalizedTarget)
+      : normalizedTarget.startsWith(normalizedTree)
+
+  if (!isChild) return null
+
+  const subDirectories = getSubdirectoriesFromRoot(tree.pathname, normalizedTarget)
+  let currentFolder: TreeFolder = tree
+  let currentSubFolders: TreeFolder[] = tree.folders
+  let currentPath = tree.pathname
+
+  for (const directoryName of subDirectories) {
+    const childPath = `${currentPath}${PATH_SEPARATOR}${directoryName}`
+    const childFolder = currentSubFolders.find((f) =>
+      window.fileUtils?.isSamePathSync
+        ? window.fileUtils.isSamePathSync(f.pathname, childPath)
+        : f.pathname === childPath
+    )
+    if (!childFolder) {
+      return {
+        id: getUniqueId(),
+        pathname: normalizedTarget,
+        name: window.path?.basename ? window.path.basename(normalizedTarget) : directoryName,
+        isDirectory: true,
+        isFile: false,
+        isMarkdown: false,
+        folders: [],
+        files: []
+      }
+    }
+    currentPath = childPath
+    currentFolder = childFolder
+    currentSubFolders = childFolder.folders
+  }
+
+  return currentFolder
 }

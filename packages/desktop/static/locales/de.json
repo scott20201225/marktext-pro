@@ -231,7 +231,8 @@
       "rename": "Umbenennen",
       "moveToTrash": "In Papierkorb verschieben",
       "showInFolder": "Im Ordner anzeigen",
-      "newDrawing": "Neue Zeichnung"
+      "newDrawing": "Neue Zeichnung",
+      "newMindMap": "Neue Mindmap"
     },
     "tabs": {
       "close": "Schließen",
@@ -280,7 +281,14 @@
       "workspaceActions": "Arbeitsbereich-Aktionen",
       "nodeActions": "Aktionen",
       "enterDirectoryName": "Ordnernamen eingeben",
-      "enterMarkdownFileName": "Enter Markdown file name"
+      "enterMarkdownFileName": "Enter Markdown file name",
+      "mindMapStructure": "Mindmap-Struktur",
+      "mindMapLogicalStructure": "Logische Struktur",
+      "mindMapMindMap": "Mindmap",
+      "mindMapOrganizationStructure": "Organisationsstruktur",
+      "mindMapCatalogOrganization": "Katalogorganisation",
+      "mindMapTimeline": "Zeitleiste",
+      "mindMapFishbone": "Fischgrätendiagramm"
     },
     "toc": {
       "title": "Inhaltsverzeichnis"

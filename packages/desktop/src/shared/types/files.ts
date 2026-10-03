@@ -96,9 +96,19 @@ export interface IFileState {
   isDrawing?: boolean
   isGeoGebra?: boolean
   geoGebraMode?: GeoGebraMode
+  isMindMap?: boolean
+  mindMapStructure?: MindMapStructure
 }
 
 export type GeoGebraMode = 'graphing' | '3d' | 'geometry' | 'cas' | 'probability' | 'scientific'
+
+export type MindMapStructure =
+  | 'logicalStructure'
+  | 'mindMap'
+  | 'organizationStructure'
+  | 'catalogOrganization'
+  | 'timeline'
+  | 'fishbone'
 
 /** Runtime state for one Draw.io tab. The XML stays inside its BrowserView. */
 export interface IDrawioState {
@@ -124,6 +134,17 @@ export interface IGeoGebraState {
   lastSavedHash?: string
 }
 
+export interface IMindMapState {
+  id: string
+  pathname: string
+  filename: string
+  modified: boolean
+  isSaved: boolean
+  isSaving: boolean
+  saveError?: string
+  lastSavedHash?: string
+}
+
 export interface UnsavedDrawioFile {
   id: string
   filename: string
@@ -131,6 +152,12 @@ export interface UnsavedDrawioFile {
 }
 
 export interface UnsavedGeoGebraFile {
+  id: string
+  filename: string
+  pathname: string
+}
+
+export interface UnsavedMindMapFile {
   id: string
   filename: string
   pathname: string
@@ -212,4 +239,4 @@ export interface PageOptions {
   [key: string]: unknown
 }
 
-export type ExportType = 'pdf' | 'html' | 'styledHtml' | 'docx' | 'png' | 'jpeg'
+export type ExportType = 'pdf' | 'html' | 'styledHtml' | 'docx' | 'png' | 'jpeg' | 'md'

@@ -231,7 +231,8 @@
       "rename": "重新命名",
       "moveToTrash": "移到垃圾桶",
       "showInFolder": "在資料夾中顯示",
-      "newDrawing": "新增繪圖"
+      "newDrawing": "新增繪圖",
+      "newMindMap": "新建心智圖"
     },
     "tabs": {
       "close": "關閉",
@@ -271,6 +272,8 @@
       "showMoreMatches": "顯示更多符合項目"
     },
     "tree": {
+      "selectWorkspaceFirst": "請先選擇工作區",
+      "selectWorkspaceFirstDetail": "請在左側側邊欄中先打開或選擇一個工作區資料夾，然後再執行匯入操作。",
       "openedFiles": "已開啟的檔案",
       "saveAll": "全部儲存",
       "closeAll": "全部關閉",
@@ -281,7 +284,14 @@
       "nodeActions": "操作",
       "enterDirectoryName": "輸入資料夾名稱",
       "enterMarkdownFileName": "輸入 Markdown 檔案名稱",
-      "documentNamePlaceholder": "輸入筆記名稱"
+      "documentNamePlaceholder": "輸入筆記名稱",
+      "mindMapStructure": "思維導圖結構",
+      "mindMapLogicalStructure": "邏輯結構圖",
+      "mindMapMindMap": "思維導圖",
+      "mindMapOrganizationStructure": "組織結構圖",
+      "mindMapCatalogOrganization": "目錄組織圖",
+      "mindMapTimeline": "時間軸",
+      "mindMapFishbone": "魚骨圖"
     },
     "toc": {
       "title": "目錄"

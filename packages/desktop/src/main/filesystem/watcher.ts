@@ -30,6 +30,8 @@ const isDrawioFile = (pathname: string): boolean =>
 
 const isGeoGebraFile = (pathname: string): boolean => path.extname(pathname).toLowerCase() === '.ggb'
 
+const isMindMapFile = (pathname: string): boolean => path.extname(pathname).toLowerCase() === '.smm'
+
 type WatchType = 'dir' | 'file'
 
 interface IgnoreEntry {
@@ -62,6 +64,7 @@ const add = async(
   const isMarkdown = hasMarkdownExtension(pathname)
   const isDrawing = isDrawioFile(pathname)
   const isGeoGebra = isGeoGebraFile(pathname)
+  const isMindMap = isMindMapFile(pathname)
   const file: {
     pathname: string
     name: string
@@ -72,6 +75,7 @@ const add = async(
     isMarkdown: boolean
     isDrawing: boolean
     isGeoGebra: boolean
+    isMindMap: boolean
     data?: Awaited<ReturnType<typeof loadMarkdownFile>>
   } = {
     pathname,
@@ -82,7 +86,8 @@ const add = async(
     mtimeMs,
     isMarkdown,
     isDrawing,
-    isGeoGebra
+    isGeoGebra,
+    isMindMap
   }
   if (isMarkdown) {
     // HACK: But this should be removed completely in #1034/#1035.
@@ -107,7 +112,7 @@ const add = async(
       }
     }
   }
-  if (isMarkdown || isDrawing || isGeoGebra) {
+  if (isMarkdown || isDrawing || isGeoGebra || isMindMap) {
     win.webContents.send(EVENT_NAME[type], {
       type: 'add',
       change: file
@@ -149,6 +154,7 @@ const change = async(
   const isMarkdown = hasMarkdownExtension(pathname)
   const isDrawing = isDrawioFile(pathname)
   const isGeoGebra = isGeoGebraFile(pathname)
+  const isMindMap = isMindMapFile(pathname)
   if (isMarkdown) {
     try {
       const [data, stats] = await Promise.all([
@@ -169,7 +175,7 @@ const change = async(
         })
       }
     }
-  } else if (isDrawing || isGeoGebra) {
+  } else if (isDrawing || isGeoGebra || isMindMap) {
     try {
       const stats = await fsPromises.stat(pathname)
       win.webContents.send('mt::update-object-tree', {
@@ -256,7 +262,8 @@ class Watcher {
         return (
           !hasMarkdownExtension(pathname) &&
           !isDrawioFile(pathname) &&
-          !isGeoGebraFile(pathname)
+          !isGeoGebraFile(pathname) &&
+          !isMindMapFile(pathname)
         )
       },
       ignoreInitial: type === 'file',

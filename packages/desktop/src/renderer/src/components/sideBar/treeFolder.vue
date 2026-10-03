@@ -4,9 +4,9 @@
       ref="folderEl"
       class="folder-name"
       :style="{ 'padding-left': `${depth * 6 + 10}px` }"
-      :class="[{ active: folder.id === activeItem.id }]"
+      :class="[{ active: isFolderActive }]"
       :title="folder.pathname"
-      @click="folderNameClick"
+      @click.stop="folderNameClick"
       @dblclick="folderNameDoubleClick"
     >
       <el-icon
@@ -108,12 +108,21 @@ const { createCache } = storeToRefs(projectStore)
 const { activeItem } = storeToRefs(projectStore)
 const { clipboard } = storeToRefs(projectStore)
 
+const isFolderActive = computed<boolean>(() => {
+  const active = activeItem.value
+  if (!active || !active.pathname) return false
+  if (active.id && props.folder.id && active.id === props.folder.id) return true
+  return window.fileUtils?.isSamePathSync
+    ? window.fileUtils.isSamePathSync(active.pathname, props.folder.pathname)
+    : active.pathname === props.folder.pathname
+})
+
 const createInputPlaceholder = computed(() => {
   const cache = createCache.value as { type?: string }
   if (cache.type === 'directory') {
     return t('sideBar.tree.enterDirectoryName')
   }
-  if (cache.type === 'drawing' || cache.type === 'geogebra') {
+  if (cache.type === 'drawing' || cache.type === 'geogebra' || cache.type === 'mindmap') {
     return t('sideBar.tree.documentNamePlaceholder')
   }
   return t('sideBar.tree.enterMarkdownFileName')
@@ -241,6 +250,13 @@ onMounted(() => {
     }
     &:hover {
       background: var(--sideBarItemHoverBgColor);
+    }
+    &.active {
+      background: var(--sideBarItemHoverBgColor);
+      color: var(--themeColor);
+    }
+    &.active > span {
+      color: var(--themeColor);
     }
   }
 }

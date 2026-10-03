@@ -232,7 +232,8 @@
       "moveToTrash": "移动到废纸篓",
       "showInFolder": "在文件夹中显示",
       "newDrawing": "新建绘图",
-      "newGeoGebra": "新建 GeoGebra"
+      "newGeoGebra": "新建 GeoGebra",
+      "newMindMap": "新建思维导图"
     },
     "tabs": {
       "close": "关闭",
@@ -272,6 +273,8 @@
       "showMoreMatches": "显示更多匹配"
     },
     "tree": {
+      "selectWorkspaceFirst": "请先选择工作区",
+      "selectWorkspaceFirstDetail": "请在左侧侧边栏中先打开或选择一个工作区文件夹，然后再执行导入操作。",
       "openedFiles": "已打开的文件",
       "saveAll": "保存全部",
       "closeAll": "关闭全部",
@@ -289,7 +292,14 @@
       "geoGebraGeometry": "几何",
       "geoGebraCas": "CAS",
       "geoGebraProbability": "概率",
-      "geoGebraScientific": "Scientific"
+      "geoGebraScientific": "Scientific",
+      "mindMapStructure": "思维导图结构",
+      "mindMapLogicalStructure": "逻辑结构图",
+      "mindMapMindMap": "思维导图",
+      "mindMapOrganizationStructure": "组织结构图",
+      "mindMapCatalogOrganization": "目录组织图",
+      "mindMapTimeline": "时间轴",
+      "mindMapFishbone": "鱼骨图"
     },
     "toc": {
       "title": "目录"
