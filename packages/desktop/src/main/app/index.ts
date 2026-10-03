@@ -269,22 +269,32 @@ class App {
       }
     }
 
-    // We should NOT restore the previous buffer or open a folder if the user just wants to double click to open a file
     let isRestorePathway = false
-    if (_openFilesCache.length === 0) {
-      if (startUpAction === 'restoreAll') {
+    const hasExplicitFolderInCache = _openFilesCache.some((item) => item.isDir)
+
+    if (startUpAction === 'restoreAll') {
+      if (_openFilesCache.length === 0) {
         // Restore based off the previous buffer
         isRestorePathway = true
-      } else if (startUpAction === 'folder' && defaultDirectoryToOpen) {
-        const info = normalizeOpenPath(defaultDirectoryToOpen)
-        if (info) {
-          _openFilesCache.unshift(info as PathInfo)
-        }
-      } else if (startUpAction === 'openLastFolder' && lastOpenedFolder) {
+      } else if (!hasExplicitFolderInCache && lastOpenedFolder) {
         const info = normalizeOpenPath(lastOpenedFolder)
-        if (info) {
+        if (info && info.isDir) {
           _openFilesCache.unshift(info as PathInfo)
         }
+      }
+    } else if (startUpAction === 'folder' && defaultDirectoryToOpen && !hasExplicitFolderInCache) {
+      const info = normalizeOpenPath(defaultDirectoryToOpen)
+      if (info && info.isDir) {
+        _openFilesCache.unshift(info as PathInfo)
+      }
+    } else if (
+      (startUpAction === 'openLastFolder' || !startUpAction) &&
+      lastOpenedFolder &&
+      !hasExplicitFolderInCache
+    ) {
+      const info = normalizeOpenPath(lastOpenedFolder)
+      if (info && info.isDir) {
+        _openFilesCache.unshift(info as PathInfo)
       }
     }
 
@@ -419,17 +429,17 @@ class App {
         const bufferStoreList = Object.values(bufferStores) as BufferStoreInfo[]
         const bufferStoreInfo = this._mergeBufferStoresForSingleWindow(bufferStoreList)
         if (!bufferStoreInfo) {
-          this._createEditorWindow()
+          const defaultRootDir = this._getDefaultRootDirectory()
+          this._createEditorWindow(defaultRootDir)
           return
         }
 
         this._createEditorWindow(null, [], [], {}, bufferStoreInfo)
       } else if (_openFilesCache.length) {
-        // We should wipe the buffer store if not it will keep creating new windows whenever we open files via double click in the file manager
-        editorBufferStore.clearBufferStoresWithAllSaved()
         this._openFilesToOpen()
       } else {
-        this._createEditorWindow()
+        const defaultRootDir = this._getDefaultRootDirectory()
+        this._createEditorWindow(defaultRootDir)
       }
     }
 
@@ -609,6 +619,30 @@ class App {
   }
 
   /**
+   * Return the default workspace root directory configured in preferences, if any.
+   */
+  private _getDefaultRootDirectory(): string | null {
+    const { preferences } = this._accessor
+    const rawPreferences = preferences.getAll()
+    const { startUpAction, defaultDirectoryToOpen, lastOpenedFolder } = rawPreferences
+    if (
+      startUpAction === 'folder' &&
+      defaultDirectoryToOpen &&
+      fs.existsSync(defaultDirectoryToOpen)
+    ) {
+      return defaultDirectoryToOpen
+    }
+    if (
+      (startUpAction === 'openLastFolder' || startUpAction === 'restoreAll' || !startUpAction) &&
+      lastOpenedFolder &&
+      fs.existsSync(lastOpenedFolder)
+    ) {
+      return lastOpenedFolder
+    }
+    return null
+  }
+
+  /**
    * Open the path list in the best window(s).
    *
    * @param pathsToOpen The path list to open.
@@ -625,22 +659,6 @@ class App {
         directorySet.add(path)
       } else {
         fileSet.add(path)
-      }
-    }
-
-    for (const pathname of [...fileSet]) {
-      if (isDrawioFile(pathname)) {
-        fileSet.delete(pathname)
-        const activeEditor = _windowManager.getActiveEditor()
-        void openDrawioFile(pathname, activeEditor?.browserWindow)
-      } else if (isGeoGebraFile(pathname)) {
-        fileSet.delete(pathname)
-        const activeEditor = _windowManager.getActiveEditor()
-        void openGeoGebraFile(pathname, activeEditor?.browserWindow)
-      } else if (isMindMapFile(pathname)) {
-        fileSet.delete(pathname)
-        const activeEditor = _windowManager.getActiveEditor()
-        void openMindMapFile(pathname, activeEditor?.browserWindow)
       }
     }
 
@@ -669,7 +687,8 @@ class App {
         directoriesToOpen[0].fileList.push(...filesToOpen)
         directoriesToOpen.length = 1
       } else {
-        directoriesToOpen.push({ rootDirectory: null, fileList: [...filesToOpen] })
+        const defaultRootDir = this._getDefaultRootDirectory()
+        directoriesToOpen.push({ rootDirectory: defaultRootDir, fileList: [...filesToOpen] })
       }
       filesToOpen.length = 0
     }
@@ -727,7 +746,8 @@ class App {
             }
             // else: fallthrough
           }
-          this._createEditorWindow(null, fileList)
+          const defaultRootDir = this._getDefaultRootDirectory()
+          this._createEditorWindow(defaultRootDir, fileList)
         }
       }
 
@@ -747,7 +767,8 @@ class App {
         }
       }
       if (filesToOpen.length) {
-        this._createEditorWindow(null, filesToOpen)
+        const defaultRootDir = this._getDefaultRootDirectory()
+        this._createEditorWindow(defaultRootDir, filesToOpen)
       }
       for (const item of directoriesToOpen) {
         const { rootDirectory, fileList } = item
