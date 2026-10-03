@@ -231,7 +231,8 @@
       "rename": "名前を変更",
       "moveToTrash": "ゴミ箱に移動",
       "showInFolder": "フォルダで表示",
-      "newDrawing": "新規図面"
+      "newDrawing": "新規図面",
+      "newMindMap": "新規マインドマップ"
     },
     "tabs": {
       "close": "閉じる",
@@ -280,7 +281,14 @@
       "workspaceActions": "ワークスペースの操作",
       "nodeActions": "操作",
       "enterDirectoryName": "フォルダー名を入力",
-      "enterMarkdownFileName": "Enter Markdown file name"
+      "enterMarkdownFileName": "Enter Markdown file name",
+      "mindMapStructure": "マインドマップ構造",
+      "mindMapLogicalStructure": "論理構造図",
+      "mindMapMindMap": "マインドマップ",
+      "mindMapOrganizationStructure": "組織構造図",
+      "mindMapCatalogOrganization": "カタログ組織図",
+      "mindMapTimeline": "タイムライン",
+      "mindMapFishbone": "魚骨図"
     },
     "toc": {
       "title": "目次"

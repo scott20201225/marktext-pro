@@ -52,7 +52,11 @@ const showDrawio = async (): Promise<void> => {
 }
 
 const resumeAfterHostOverlay = (): void => {
-  if (currentFile.value?.isDrawing) void showDrawio()
+  if (currentFile.value?.isDrawing) {
+    void showDrawio().then(() => {
+      if (surfaceRef.value) surfaceRef.value.style.backgroundImage = ''
+    })
+  }
 }
 
 const syncBounds = (): void => {
@@ -86,6 +90,7 @@ onMounted(() => {
   })
   window.addEventListener('resize', syncBounds)
   window.addEventListener('marknotepro:resume-native-editor', resumeAfterHostOverlay)
+  window.addEventListener('marktextpro:resume-native-editor', resumeAfterHostOverlay)
   themeObserver = new MutationObserver(() => syncConfiguration())
   themeObserver.observe(document.body, { attributes: true, attributeFilter: ['class'] })
 })
@@ -116,11 +121,13 @@ watch(
 )
 
 onBeforeUnmount(() => {
+  if (surfaceRef.value) surfaceRef.value.style.backgroundImage = ''
   if (boundsSyncAnimationFrame) window.cancelAnimationFrame(boundsSyncAnimationFrame)
   themeObserver?.disconnect()
   themeObserver = null
   window.removeEventListener('resize', syncBounds)
   window.removeEventListener('marknotepro:resume-native-editor', resumeAfterHostOverlay)
+  window.removeEventListener('marktextpro:resume-native-editor', resumeAfterHostOverlay)
   removeOpenedListener?.()
   removeOpenedListener = null
   window.electron.ipcRenderer.send('mt::drawio::hide')

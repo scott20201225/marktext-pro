@@ -231,7 +231,8 @@
       "rename": "Rename",
       "moveToTrash": "Move To Trash",
       "showInFolder": "Show In Folder",
-      "newDrawing": "Nuovo disegno"
+      "newDrawing": "Nuovo disegno",
+      "newMindMap": "Nuova Mappa Mentale"
     },
     "tabs": {
       "close": "Close",
@@ -280,7 +281,14 @@
       "workspaceActions": "Azioni dell'area di lavoro",
       "nodeActions": "Azioni",
       "enterDirectoryName": "Inserisci il nome della cartella",
-      "enterMarkdownFileName": "Enter Markdown file name"
+      "enterMarkdownFileName": "Enter Markdown file name",
+      "mindMapStructure": "Struttura della mappa mentale",
+      "mindMapLogicalStructure": "Struttura logica",
+      "mindMapMindMap": "Mappa mentale",
+      "mindMapOrganizationStructure": "Struttura organizzativa",
+      "mindMapCatalogOrganization": "Organizzazione catalogo",
+      "mindMapTimeline": "Cronologia",
+      "mindMapFishbone": "Diagramma a lisca di pesce"
     },
     "toc": {
       "title": "Table Of Contents"

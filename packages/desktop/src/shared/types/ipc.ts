@@ -91,6 +91,16 @@ export interface GeoGebraConfiguration {
   colors: Record<string, string>
 }
 
+export interface MindMapConfiguration {
+  language: string
+  dark: boolean
+  theme: string
+  mindMapTheme?: string
+  backgroundColor?: string
+  themeConfig?: Record<string, unknown>
+  colors?: Record<string, string>
+}
+
 export interface DrawioExportPayload {
   format: string
   filename?: string
@@ -108,6 +118,7 @@ export interface IpcInvokeChannels {
   'mt::clipboard::guess-file-path': { args: []; ret: string | null }
   'mt::clipboard::read-text': { args: []; ret: string }
   'mt::cmd::exists': { args: [name: string]; ret: boolean }
+  'mt::drawio::capture-snapshot': { args: []; ret: string | null }
   'mt::drawio::close': { args: []; ret: void }
   'mt::drawio::configure': { args: [configuration: DrawioConfiguration]; ret: void }
   'mt::drawio::export': { args: [payload: DrawioExportPayload]; ret: void }
@@ -122,6 +133,7 @@ export interface IpcInvokeChannels {
   'mt::drawio::save-request': { args: [filePath: string]; ret: void }
   'mt::drawio::close-file': { args: [filePath: string]; ret: void }
   'mt::drawio::show': { args: [bounds: DrawioBounds]; ret: void }
+  'mt::geogebra::capture-snapshot': { args: []; ret: string | null }
   'mt::geogebra::open': {
     args: [pathname: string, mode?: GeoGebraMode, configuration?: GeoGebraConfiguration]
     ret: void
@@ -130,7 +142,31 @@ export interface IpcInvokeChannels {
   'mt::geogebra::save-request': { args: [filePath: string]; ret: void }
   'mt::geogebra::close-file': { args: [filePath: string]; ret: void }
   'mt::geogebra::show': { args: [bounds: DrawioBounds]; ret: void }
+  'mt::mindmap::open': {
+    args: [pathname: string, configuration?: MindMapConfiguration]
+    ret: void
+  }
+  'mt::mindmap::configure': { args: [configuration: MindMapConfiguration]; ret: void }
+  'mt::mindmap::save': { args: [data: unknown]; ret: void }
+  'mt::mindmap::save-request': { args: [filePath: string]; ret: void }
+  'mt::mindmap::close-file': { args: [filePath: string]; ret: void }
+  'mt::mindmap::show': { args: [bounds: DrawioBounds]; ret: void }
+  'mt::mindmap::capture-snapshot': { args: []; ret: string | null }
+  'mt::mindmap::ready': {
+    args: []
+    ret: {
+      filePath: string
+      data?: unknown
+      isDark?: boolean
+      theme?: string
+      mindMapTheme?: string
+      backgroundColor?: string
+      themeConfig?: Record<string, unknown>
+      colors?: Record<string, string>
+    }
+  }
   'mt::fonts::list': { args: []; ret: string[] }
+  'mt::github-desktop::capture-snapshot': { args: []; ret: string | null }
   'mt::github-desktop::show': {
     args: [options: GitHubDesktopShowOptions]
     ret: void
@@ -317,6 +353,10 @@ export interface IpcSendChannels {
   'mt::geogebra::state': [payload: { modified?: boolean }]
   'mt::drawio-menu-mode': [enabled: boolean]
   'mt::geogebra-menu-mode': [enabled: boolean]
+  'mt::mindmap-menu-mode': [enabled: boolean]
+  'mt::mindmap::hide': []
+  'mt::mindmap::set-bounds': [bounds: DrawioBounds]
+  'mt::mindmap::state': [payload: { modified?: boolean; data?: unknown }]
   'mt::drawio::set-bounds': [bounds: DrawioBounds]
   'mt::drawio-autosave-changed': [enabled: boolean]
   'mt::window::drop': [payload: unknown]
@@ -390,6 +430,42 @@ export interface IpcMainEventChannels {
       lastSavedHash?: string
     }
   ]
+  'mt::mindmap::opened': [payload: { filePath: string; title: string }]
+  'mt::mindmap::closed': [payload?: { filePath?: string }]
+  'mt::mindmap::state': [
+    payload: {
+      filePath: string
+      modified: boolean
+      isSaved: boolean
+      isSaving: boolean
+      saveError?: string
+      lastSavedHash?: string
+    }
+  ]
+  'mt::mindmap::init': [
+    payload: {
+      filePath?: string
+      data?: unknown
+      language?: string
+      isDark?: boolean
+      theme?: string
+      mindMapTheme?: string
+      backgroundColor?: string
+      themeConfig?: Record<string, unknown>
+      colors?: Record<string, string>
+    }
+  ]
+  'mt::mindmap::set-theme': [
+    payload: {
+      isDark: boolean
+      theme?: string
+      mindMapTheme?: string
+      backgroundColor?: string
+      themeConfig?: Record<string, unknown>
+      colors?: Record<string, string>
+    }
+  ]
+  'mt::mindmap::request-save': []
   'mt::cm-copy-as-html': []
   'mt::cm-copy-as-rich': []
   'mt::cm-insert-paragraph': [direction: 'before' | 'after']

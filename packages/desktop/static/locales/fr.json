@@ -231,7 +231,8 @@
       "rename": "Renommer",
       "moveToTrash": "Déplacer vers la corbeille",
       "showInFolder": "Afficher dans le dossier",
-      "newDrawing": "Nouveau dessin"
+      "newDrawing": "Nouveau dessin",
+      "newMindMap": "Nouvelle Carte Mentale"
     },
     "tabs": {
       "close": "Fermer",
@@ -280,7 +281,14 @@
       "workspaceActions": "Actions de l'espace de travail",
       "nodeActions": "Actions",
       "enterDirectoryName": "Saisir le nom du dossier",
-      "enterMarkdownFileName": "Enter Markdown file name"
+      "enterMarkdownFileName": "Enter Markdown file name",
+      "mindMapStructure": "Structure de carte mentale",
+      "mindMapLogicalStructure": "Structure logique",
+      "mindMapMindMap": "Carte mentale",
+      "mindMapOrganizationStructure": "Structure d'organisation",
+      "mindMapCatalogOrganization": "Organisation de catalogue",
+      "mindMapTimeline": "Chronologie",
+      "mindMapFishbone": "Diagramme en arête de poisson"
     },
     "toc": {
       "title": "Table des matières"

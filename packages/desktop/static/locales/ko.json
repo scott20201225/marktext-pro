@@ -231,7 +231,8 @@
       "rename": "이름 바꾸기",
       "moveToTrash": "휴지통으로 이동",
       "showInFolder": "폴더에서 보기",
-      "newDrawing": "새 그림"
+      "newDrawing": "새 그림",
+      "newMindMap": "새 마인드맵"
     },
     "tabs": {
       "close": "닫기",
@@ -280,7 +281,14 @@
       "workspaceActions": "작업 영역 작업",
       "nodeActions": "작업",
       "enterDirectoryName": "폴더 이름 입력",
-      "enterMarkdownFileName": "Enter Markdown file name"
+      "enterMarkdownFileName": "Enter Markdown file name",
+      "mindMapStructure": "마인드맵 구조",
+      "mindMapLogicalStructure": "논리 구조도",
+      "mindMapMindMap": "마인드맵",
+      "mindMapOrganizationStructure": "조직 구조도",
+      "mindMapCatalogOrganization": "카탈로그 조직도",
+      "mindMapTimeline": "타임라인",
+      "mindMapFishbone": "어골도"
     },
     "toc": {
       "title": "목차"

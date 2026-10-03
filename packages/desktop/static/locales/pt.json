@@ -231,7 +231,8 @@
       "rename": "Renomear",
       "moveToTrash": "Mover para Lixeira",
       "showInFolder": "Mostrar na Pasta",
-      "newDrawing": "Novo desenho"
+      "newDrawing": "Novo desenho",
+      "newMindMap": "Novo Mapa Mental"
     },
     "tabs": {
       "close": "Fechar",
@@ -280,7 +281,14 @@
       "workspaceActions": "Ações do espaço de trabalho",
       "nodeActions": "Ações",
       "enterDirectoryName": "Digite o nome da pasta",
-      "enterMarkdownFileName": "Enter Markdown file name"
+      "enterMarkdownFileName": "Enter Markdown file name",
+      "mindMapStructure": "Estrutura do mapa mental",
+      "mindMapLogicalStructure": "Estrutura lógica",
+      "mindMapMindMap": "Mapa mental",
+      "mindMapOrganizationStructure": "Estrutura organizacional",
+      "mindMapCatalogOrganization": "Organização do catálogo",
+      "mindMapTimeline": "Linha do tempo",
+      "mindMapFishbone": "Diagrama de espinha de peixe"
     },
     "toc": {
       "title": "Índice"

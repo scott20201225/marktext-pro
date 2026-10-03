@@ -6,7 +6,8 @@ import {
   addDirectory,
   unlinkDirectory,
   resortTree,
-  updateFileMtime
+  updateFileMtime,
+  findFolderNodeByPath
 } from './treeCtrl'
 import { usePreferencesStore } from './preferences'
 import bus from '../bus'
@@ -19,8 +20,9 @@ import { useEditorStore } from './editor'
 import { debouncedSendBufferedState } from './bufferedState'
 import { getDrawioConfiguration } from '../util/drawioConfiguration'
 import { getGeoGebraConfiguration } from '../util/geogebraConfiguration'
+import { getMindMapConfiguration } from '../util/mindmapConfiguration'
 import type { TreeNode } from '../components/sideBar/types'
-import type { FileChangeDetail, GeoGebraMode } from '@shared/types/files'
+import type { FileChangeDetail, GeoGebraMode, MindMapStructure } from '@shared/types/files'
 
 type ProjectTree = TreeNode
 type TreeChange = FileChangeDetail
@@ -67,8 +69,9 @@ interface OpenProjectOptions {
 
 interface CreateCacheEntry {
   dirname: string
-  type: 'file' | 'drawing' | 'geogebra' | 'directory' | string
+  type: 'file' | 'drawing' | 'geogebra' | 'mindmap' | 'directory' | string
   geoGebraMode?: GeoGebraMode
+  mindMapStructure?: MindMapStructure
 }
 
 interface ClipboardEntry {
@@ -115,6 +118,7 @@ export const useProjectStore = defineStore('project', () => {
     if (!tree) return
 
     projectTree.value = tree
+    activeItem.value = tree
 
     const layout = {
       rightColumn: 'files',
@@ -147,6 +151,7 @@ export const useProjectStore = defineStore('project', () => {
       OPEN_PROJECT(rootDirectory, { scheduleBufferUpdate: false })
     } else {
       projectTree.value = null
+      activeItem.value = {}
       pendingTreeEvents.value = []
     }
   }
@@ -206,6 +211,13 @@ export const useProjectStore = defineStore('project', () => {
         break
       case 'unlinkDir':
         unlinkDirectory(projectTree.value!, change)
+        if (
+          activeItem.value?.pathname &&
+          (window.fileUtils.isSamePathSync(activeItem.value.pathname, change.pathname) ||
+            window.fileUtils.isChildOfDirectory(change.pathname, activeItem.value.pathname))
+        ) {
+          activeItem.value = projectTree.value ?? {}
+        }
         break
       case 'change':
         if (change?.mtimeMs !== undefined) {
@@ -230,6 +242,41 @@ export const useProjectStore = defineStore('project', () => {
     activeItem.value = item
   }
 
+  function SELECT_FOLDER_BY_PATH(pathname: string | null | undefined): void {
+    if (!projectTree.value || !pathname) return
+    const folder = findFolderNodeByPath(projectTree.value, pathname)
+    if (folder) {
+      activeItem.value = folder
+    }
+  }
+
+  function SELECT_PARENT_FOLDER_FOR_FILE(filePath: string | null | undefined): void {
+    if (!projectTree.value || !filePath) return
+    const normalizedFile = window.path?.normalize ? window.path.normalize(filePath) : filePath
+    const rootPath = window.path?.normalize
+      ? window.path.normalize(projectTree.value.pathname)
+      : projectTree.value.pathname
+
+    const isChild =
+      typeof window.fileUtils?.isChildOfDirectory === 'function'
+        ? window.fileUtils.isChildOfDirectory(rootPath, normalizedFile)
+        : normalizedFile.startsWith(rootPath)
+    const isSame =
+      typeof window.fileUtils?.isSamePathSync === 'function'
+        ? window.fileUtils.isSamePathSync(rootPath, normalizedFile)
+        : rootPath === normalizedFile
+
+    // If the file is NOT inside the workspace, do nothing (do not change current selected folder)
+    if (!isChild && !isSame) {
+      return
+    }
+
+    const parentDir = window.path?.dirname ? window.path.dirname(normalizedFile) : ''
+    if (!parentDir) return
+
+    SELECT_FOLDER_BY_PATH(parentDir)
+  }
+
   function CHANGE_CLIPBOARD(data: ClipboardEntry | null): void {
     clipboard.value = data
   }
@@ -252,22 +299,33 @@ export const useProjectStore = defineStore('project', () => {
     bus.on('SIDEBAR::new', (payload: unknown) => {
       const request =
         typeof payload === 'object' && payload !== null
-          ? (payload as { type?: unknown; geoGebraMode?: unknown })
+          ? (payload as { type?: unknown; geoGebraMode?: unknown; structure?: unknown })
           : { type: payload }
       const type = String(request.type ?? '')
-      const { pathname, isDirectory } = activeItem.value
-      const dirname = isDirectory ? pathname : window.path.dirname(pathname)
+      const { pathname, isDirectory } = activeItem.value || {}
+      let dirname = ''
+      if (pathname) {
+        dirname = isDirectory ? pathname : window.path.dirname(pathname)
+      } else if (projectTree.value?.pathname) {
+        dirname = projectTree.value.pathname
+      }
+      if (!dirname) return
+
       createCache.value = {
         dirname,
         type,
         ...(type === 'geogebra'
           ? { geoGebraMode: (request.geoGebraMode ?? 'graphing') as GeoGebraMode }
+          : {}),
+        ...(type === 'mindmap'
+          ? { mindMapStructure: (request.structure ?? 'logicalStructure') as MindMapStructure }
           : {})
       }
       bus.emit('SIDEBAR::show-new-input')
     })
     bus.on('SIDEBAR::remove', () => {
-      const { pathname } = activeItem.value
+      const { pathname } = activeItem.value || {}
+      if (!pathname) return
       const editorStore = useEditorStore()
       window.electron.ipcRenderer.invoke('mt::fs-trash-item', pathname).then(() => {
         editorStore.CLOSE_TABS_BY_PATH(pathname)
@@ -280,14 +338,20 @@ export const useProjectStore = defineStore('project', () => {
       })
     })
     bus.on('SIDEBAR::copy-cut', (type: unknown) => {
-      const { pathname: src } = activeItem.value
+      const { pathname: src } = activeItem.value || {}
+      if (!src) return
       clipboard.value = { type: String(type), src }
     })
     bus.on('SIDEBAR::paste', () => {
       const cb = clipboard.value
-      const { pathname, isDirectory } = activeItem.value
-      const dirname = isDirectory ? pathname : window.path.dirname(pathname)
-      if (cb && cb.src) {
+      const { pathname, isDirectory } = activeItem.value || {}
+      let dirname = ''
+      if (pathname) {
+        dirname = isDirectory ? pathname : window.path.dirname(pathname)
+      } else if (projectTree.value?.pathname) {
+        dirname = projectTree.value.pathname
+      }
+      if (cb && cb.src && dirname) {
         const editorStore = useEditorStore()
         const src = cb.src
         cb.dest = dirname + PATH_SEPARATOR + window.path.basename(cb.src)
@@ -341,6 +405,7 @@ export const useProjectStore = defineStore('project', () => {
     }
 
     const geoGebraMode = cache.geoGebraMode ?? 'graphing'
+    const mindMapStructure = cache.mindMapStructure ?? 'logicalStructure'
     const inputName = name.trim()
     if (!inputName) {
       return
@@ -363,6 +428,11 @@ export const useProjectStore = defineStore('project', () => {
       fileType = 'file'
       if (!storedName.toLowerCase().endsWith('.ggb')) {
         storedName += '.ggb'
+      }
+    } else if (type === 'mindmap') {
+      fileType = 'file'
+      if (!storedName.toLowerCase().endsWith('.smm')) {
+        storedName += '.smm'
       }
     } else {
       fileType = 'directory'
@@ -398,6 +468,15 @@ export const useProjectStore = defineStore('project', () => {
             geoGebraMode,
             getGeoGebraConfiguration()
           )
+        } else if (type === 'mindmap') {
+          return window.electron.ipcRenderer.invoke(
+            'mt::mindmap::open',
+            fullName,
+            {
+              ...getMindMapConfiguration(),
+              initialStructure: mindMapStructure
+            }
+          )
         }
       })
       .catch((err) => {
@@ -419,6 +498,8 @@ export const useProjectStore = defineStore('project', () => {
       nextName += '.drawio'
     } else if (/\.ggb$/i.test(src) && !/\.ggb$/i.test(nextName)) {
       nextName += '.ggb'
+    } else if (/\.smm$/i.test(src) && !/\.smm$/i.test(nextName)) {
+      nextName += '.smm'
     }
     const dirname = window.path.dirname(src)
     const dest = dirname + PATH_SEPARATOR + nextName
@@ -458,6 +539,8 @@ export const useProjectStore = defineStore('project', () => {
     LISTEN_FOR_LOAD_PROJECT,
     LISTEN_FOR_UPDATE_PROJECT,
     CHANGE_ACTIVE_ITEM,
+    SELECT_FOLDER_BY_PATH,
+    SELECT_PARENT_FOLDER_FOR_FILE,
     CHANGE_CLIPBOARD,
     ASK_FOR_OPEN_PROJECT,
     LISTEN_FOR_SIDEBAR_CONTEXT_MENU,

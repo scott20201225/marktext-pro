@@ -5,12 +5,12 @@
     class="side-bar-file"
     :style="{
       'padding-left': `${depth * 6 + 10}px`,
-      opacity: file.isMarkdown || file.isDrawing || file.isGeoGebra ? 1 : 0.75
+      opacity: file.isMarkdown || file.isDrawing || file.isGeoGebra || file.isMindMap ? 1 : 0.75
     }"
     :class="[
-      { current: currentFile?.pathname === file.pathname, active: file.id === activeItem.id }
+      { current: currentFile?.pathname === file.pathname, active: isFileActive }
     ]"
-    @click="handleFileClick"
+    @click.stop="handleFileClick"
   >
     <file-icon :name="file.name" />
     <input
@@ -38,7 +38,7 @@
 </template>
 
 <script setup lang="ts">
-import { ref, onMounted, nextTick } from 'vue'
+import { ref, onMounted, nextTick, computed } from 'vue'
 import { storeToRefs } from 'pinia'
 import { useProjectStore } from '@/store/project'
 import { useEditorStore } from '@/store/editor'
@@ -50,6 +50,7 @@ import type { TreeFileNode } from './types'
 import { useI18n } from 'vue-i18n'
 import { getDrawioConfiguration } from '@/util/drawioConfiguration'
 import { getGeoGebraConfiguration } from '@/util/geogebraConfiguration'
+import { getMindMapConfiguration } from '@/util/mindmapConfiguration'
 
 const props = defineProps<{
   file: TreeFileNode
@@ -70,10 +71,19 @@ const { clipboard } = storeToRefs(projectStore)
 const { currentFile, tabs } = storeToRefs(editorStore)
 let skipNextBlur = false
 
+const isFileActive = computed<boolean>(() => {
+  const active = activeItem.value
+  if (!active || !active.pathname) return false
+  if (active.id && props.file.id && active.id === props.file.id) return true
+  return window.fileUtils?.isSamePathSync
+    ? window.fileUtils.isSamePathSync(active.pathname, props.file.pathname)
+    : active.pathname === props.file.pathname
+})
+
 // from fileMixins
 const handleFileClick = (): void => {
-  const { isMarkdown, isDrawing, isGeoGebra, pathname } = props.file
-  projectStore.CHANGE_ACTIVE_ITEM(props.file)
+  const { isMarkdown, isDrawing, isGeoGebra, isMindMap, pathname } = props.file
+  projectStore.SELECT_PARENT_FOLDER_FOR_FILE(pathname)
   if (isDrawing || /\.drawio$/i.test(pathname)) {
     void window.electron.ipcRenderer.invoke(
       'mt::drawio::open',
@@ -88,6 +98,14 @@ const handleFileClick = (): void => {
       pathname,
       undefined,
       getGeoGebraConfiguration()
+    )
+    return
+  }
+  if (isMindMap || /\.smm$/i.test(pathname)) {
+    void window.electron.ipcRenderer.invoke(
+      'mt::mindmap::open',
+      pathname,
+      getMindMapConfiguration()
     )
     return
   }
@@ -194,6 +212,9 @@ onMounted(() => {
 }
 .side-bar-file.current::before {
   height: 100%;
+}
+.side-bar-file.active {
+  background: var(--sideBarItemHoverBgColor);
 }
 .side-bar-file.active > .file-name {
   color: var(--tree-text-color, var(--sideBarTitleColor));

@@ -50,7 +50,11 @@ const showGeoGebra = async (): Promise<void> => {
 }
 
 const resumeAfterHostOverlay = (): void => {
-  if (currentFile.value?.isGeoGebra) void showGeoGebra()
+  if (currentFile.value?.isGeoGebra) {
+    void showGeoGebra().then(() => {
+      if (surfaceRef.value) surfaceRef.value.style.backgroundImage = ''
+    })
+  }
 }
 
 const syncBounds = (): void => {
@@ -103,6 +107,7 @@ onMounted(() => {
   })
   window.addEventListener('resize', handleWindowResize)
   window.addEventListener('marknotepro:resume-native-editor', resumeAfterHostOverlay)
+  window.addEventListener('marktextpro:resume-native-editor', resumeAfterHostOverlay)
   if (surfaceRef.value) {
     resizeObserver = new ResizeObserver(syncBoundsAfterLayout)
     resizeObserver.observe(surfaceRef.value)
@@ -115,9 +120,11 @@ watch([rightColumn, sideBarWidth, showSideBar], () => {
 })
 
 onBeforeUnmount(() => {
+  if (surfaceRef.value) surfaceRef.value.style.backgroundImage = ''
   if (boundsSyncAnimationFrame) window.cancelAnimationFrame(boundsSyncAnimationFrame)
   window.removeEventListener('resize', handleWindowResize)
   window.removeEventListener('marknotepro:resume-native-editor', resumeAfterHostOverlay)
+  window.removeEventListener('marktextpro:resume-native-editor', resumeAfterHostOverlay)
   resizeObserver?.disconnect()
   resizeObserver = null
   removeOpenedListener?.()

@@ -27,6 +27,12 @@ import {
   saveDrawioDocuments
 } from '../../drawio'
 import { isGeoGebraFile, openGeoGebraFile } from '../../geogebra'
+import {
+  createMindMapFile,
+  isMindMapFile,
+  openMindMapFile,
+  saveMindMapDocuments
+} from '../../mindmap'
 import { normalizeAndResolvePath, writeFile } from '../../filesystem'
 import { writeMarkdownFile } from '../../filesystem/markdown'
 import { getPath, getRecommendTitleFromMarkdownString } from '../../utils'
@@ -37,7 +43,12 @@ import {
 } from '../../utils/linkOpenWith'
 import pandoc from '../../utils/pandoc'
 import { t } from '../../i18n'
-import type { ExportType, UnsavedDrawioFile, UnsavedFile } from '@shared/types/files'
+import type {
+  ExportType,
+  UnsavedDrawioFile,
+  UnsavedFile,
+  UnsavedMindMapFile
+} from '@shared/types/files'
 
 type Win = BrowserWindow | null | undefined
 
@@ -501,9 +512,10 @@ const handleResponseForSave = async (
 const showUnsavedFilesMessage = async (
   win: BrowserWindow,
   files: UnsavedFile[],
-  drawioFiles: UnsavedDrawioFile[] = []
+  drawioFiles: UnsavedDrawioFile[] = [],
+  mindMapFiles: UnsavedMindMapFile[] = []
 ): Promise<{ needSave: boolean } | null> => {
-  const allFiles = [...files, ...drawioFiles]
+  const allFiles = [...files, ...drawioFiles, ...mindMapFiles]
   const { response } = await dialog.showMessageBox(win, {
     type: 'warning',
     buttons: [t('dialog.save'), t('dialog.dontSave'), t('dialog.cancel')],
@@ -682,12 +694,22 @@ ipcMain.on(
 
 ipcMain.on(
   'mt::close-window-confirm',
-  async (e, unsavedFiles: UnsavedFile[], unsavedDrawioFiles: UnsavedDrawioFile[] = []) => {
+  async (
+    e,
+    unsavedFiles: UnsavedFile[],
+    unsavedDrawioFiles: UnsavedDrawioFile[] = [],
+    unsavedMindMapFiles: UnsavedMindMapFile[] = []
+  ) => {
     const win = BrowserWindow.fromWebContents(e.sender)
     if (!win) {
       return
     }
-    const userResult = await showUnsavedFilesMessage(win, unsavedFiles, unsavedDrawioFiles)
+    const userResult = await showUnsavedFilesMessage(
+      win,
+      unsavedFiles,
+      unsavedDrawioFiles,
+      unsavedMindMapFiles
+    )
     if (!userResult) {
       return
     }
@@ -709,6 +731,10 @@ ipcMain.on(
         saveDrawioDocuments(
           win,
           unsavedDrawioFiles.map((file) => file.pathname)
+        ),
+        saveMindMapDocuments(
+          win,
+          unsavedMindMapFiles.map((file) => file.pathname)
         )
       ])
         .then(() => {
@@ -750,7 +776,12 @@ ipcMain.on('mt::window::drop', async (e, fileList: string[]) => {
     return
   }
   for (const file of fileList) {
-    if (isMarkdownFile(file) || isDrawioFile(file) || isGeoGebraFile(file)) {
+    if (
+      isMarkdownFile(file) ||
+      isDrawioFile(file) ||
+      isGeoGebraFile(file) ||
+      isMindMapFile(file)
+    ) {
       openFileOrFolder(win, file)
       continue
     }
@@ -907,7 +938,10 @@ ipcMain.on('mt::format-link-click', async (e, { data, dirname }: FormatLinkPaylo
     const isWorkspaceDocument =
       !!workspaceRoot &&
       isChildOfDirectory(workspaceRoot, pathname) &&
-      (isMarkdownFile(pathname) || isDrawioFile(pathname) || isGeoGebraFile(pathname))
+      (isMarkdownFile(pathname) ||
+        isDrawioFile(pathname) ||
+        isGeoGebraFile(pathname) ||
+        isMindMapFile(pathname))
 
     if (isWorkspaceDocument) {
       openFileOrFolder(win, pathname)
@@ -919,7 +953,7 @@ ipcMain.on('mt::format-link-click', async (e, { data, dirname }: FormatLinkPaylo
       if (innerWin) {
         openFileOrFolder(innerWin, pathname)
       }
-    } else if (isDrawioFile(pathname) || isGeoGebraFile(pathname)) {
+    } else if (isDrawioFile(pathname) || isGeoGebraFile(pathname) || isMindMapFile(pathname)) {
       const openedWithApplication = localTarget
         ? await openLocalLinkWithApplication(win, localTarget)
         : false
@@ -1015,15 +1049,16 @@ export const openFile = async (win: BrowserWindow | null): Promise<void> => {
     properties: ['openFile', 'multiSelections'],
     filters: [
       {
-        name: 'Markdown, Draw.io & GeoGebra',
-        extensions: [...MARKDOWN_EXTENSIONS, 'drawio', 'ggb']
+        name: 'Markdown, Draw.io, GeoGebra & MindMap',
+        extensions: [...MARKDOWN_EXTENSIONS, 'drawio', 'ggb', 'smm']
       }
     ]
   })
 
   if (Array.isArray(filePaths) && filePaths.length > 0) {
     const markdownFiles = filePaths.filter(
-      (filePath) => !isDrawioFile(filePath) && !isGeoGebraFile(filePath)
+      (filePath) =>
+        !isDrawioFile(filePath) && !isGeoGebraFile(filePath) && !isMindMapFile(filePath)
     )
     if (markdownFiles.length) ipcMain.emit('app-open-files-by-id', win.id, markdownFiles)
     for (const filePath of filePaths.filter(isDrawioFile)) {
@@ -1032,11 +1067,18 @@ export const openFile = async (win: BrowserWindow | null): Promise<void> => {
     for (const filePath of filePaths.filter(isGeoGebraFile)) {
       void openGeoGebraFile(filePath, win)
     }
+    for (const filePath of filePaths.filter(isMindMapFile)) {
+      void openMindMapFile(filePath, win)
+    }
   }
 }
 
 export const newDrawioFile = (win: Win): void => {
   void createDrawioFile(win)
+}
+
+export const newMindMapFile = (win: Win): void => {
+  void createMindMapFile(win)
 }
 
 export const openFolder = async (win: BrowserWindow | null): Promise<void> => {
@@ -1058,6 +1100,8 @@ export const openFileOrFolder = (win: BrowserWindow, pathname: string): void => 
     void openDrawioFile(resolvedPath, win)
   } else if (isGeoGebraFile(resolvedPath)) {
     void openGeoGebraFile(resolvedPath, win)
+  } else if (isMindMapFile(resolvedPath)) {
+    void openMindMapFile(resolvedPath, win)
   } else if (isFile(resolvedPath)) {
     ipcMain.emit('app-open-file-by-id', win.id, resolvedPath)
   } else if (isDirectory(resolvedPath)) {

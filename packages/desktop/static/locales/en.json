@@ -232,7 +232,8 @@
       "moveToTrash": "Move To Trash",
       "showInFolder": "Show In Folder",
       "newDrawing": "New Drawing",
-      "newGeoGebra": "New GeoGebra"
+      "newGeoGebra": "New GeoGebra",
+      "newMindMap": "New Mind Map"
     },
     "tabs": {
       "close": "Close",
@@ -272,6 +273,8 @@
       "showMoreMatches": "Show more matches"
     },
     "tree": {
+      "selectWorkspaceFirst": "Please select a workspace first",
+      "selectWorkspaceFirstDetail": "Please open or select a workspace folder in the left sidebar before importing.",
       "openedFiles": "Opened files",
       "saveAll": "Save All",
       "closeAll": "Close All",
@@ -289,7 +292,14 @@
       "geoGebraGeometry": "Geometry",
       "geoGebraCas": "CAS",
       "geoGebraProbability": "Probability",
-      "geoGebraScientific": "Scientific"
+      "geoGebraScientific": "Scientific",
+      "mindMapStructure": "Mind Map Structure",
+      "mindMapLogicalStructure": "Logical Structure",
+      "mindMapMindMap": "Mind Map",
+      "mindMapOrganizationStructure": "Organization Structure",
+      "mindMapCatalogOrganization": "Catalog Organization",
+      "mindMapTimeline": "Timeline",
+      "mindMapFishbone": "Fishbone"
     },
     "toc": {
       "title": "Table Of Contents"

@@ -74,6 +74,7 @@ const documentStateKeys = [
   'isSaved',
   'isDrawing',
   'isGeoGebra',
+  'isMindMap',
   'geoGebraMode',
   'pathname',
   'filename',
