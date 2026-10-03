@@ -169,6 +169,12 @@ fileAssociations:
     mimeType: text/markdown
     role: Editor
     icon: icons/md.ico
+  - ext: mdx
+    name: Markdown
+    description: MDX document
+    mimeType: text/markdown
+    role: Editor
+    icon: icons/md.ico
   - ext: drawio
     name: Drawio
     description: Draw.io Diagram
@@ -234,6 +240,13 @@ linux:
   category: 'Office;TextEditor;Utility'
   mimeTypes:
     - 'text/markdown'
+    - 'text/x-markdown'
+    - 'text/plain'
+    - 'application/vnd.jgraph.mxfile'
+    - 'application/x-drawio'
+    - 'application/vnd.geogebra.file'
+    - 'application/json'
+    - 'application/x-simple-mind-map'
   icon: 'static/icon.png'
   desktop:
     entry:
@@ -264,6 +277,9 @@ linux:
     - ext: 'mdtext'
       name: 'Markdown'
       description: 'Markdown document'
+    - ext: 'mdx'
+      name: 'Markdown'
+      description: 'MDX document'
     - ext: 'drawio'
       name: 'Drawio'
       description: 'Draw.io Diagram'
