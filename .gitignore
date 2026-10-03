@@ -1,11 +1,12 @@
 node_modules
 packages/*/node_modules
-dist
+/dist
 out
 packages/*/out
 packages/*/dist
-packages/desktop/src/githubDesktop/upstream/vendor/desktop-trampoline/build
-packages/desktop/src/githubDesktop/upstream/vendor/windows-argv-parser/build
+packages/desktop/src/githubDesktop/upstream/vendor/**/dist/
+packages/desktop/src/githubDesktop/upstream/vendor/**/build/
+!packages/desktop/src/mindMapWebApp/mind-map/dist
 packages/desktop/build/embedded-git
 .DS_Store
 .eslintcache
