@@ -169,6 +169,24 @@ fileAssociations:
     mimeType: text/markdown
     role: Editor
     icon: icons/md.ico
+  - ext: drawio
+    name: Drawio
+    description: Draw.io Diagram
+    mimeType: application/vnd.jgraph.mxfile
+    role: Editor
+    icon: icons/md.ico
+  - ext: ggb
+    name: GeoGebra
+    description: GeoGebra Worksheet
+    mimeType: application/vnd.geogebra.file
+    role: Editor
+    icon: icons/md.ico
+  - ext: smm
+    name: Simple Mind Map
+    description: Simple Mind Map Document
+    mimeType: application/json
+    role: Editor
+    icon: icons/md.ico
 win:
   executableName: marktextpro
   artifactName: 'marktextpro-win-${arch}-${version}.${ext}'
@@ -246,3 +264,12 @@ linux:
     - ext: 'mdtext'
       name: 'Markdown'
       description: 'Markdown document'
+    - ext: 'drawio'
+      name: 'Drawio'
+      description: 'Draw.io Diagram'
+    - ext: 'ggb'
+      name: 'GeoGebra'
+      description: 'GeoGebra Worksheet'
+    - ext: 'smm'
+      name: 'Simple Mind Map'
+      description: 'Simple Mind Map Document'
