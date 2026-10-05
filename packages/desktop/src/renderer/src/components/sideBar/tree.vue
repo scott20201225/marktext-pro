@@ -264,7 +264,7 @@ const createInputPlaceholder = computed(() => {
   if (cache.type === 'directory') {
     return t('sideBar.tree.enterDirectoryName')
   }
-  if (cache.type === 'drawing' || cache.type === 'geogebra' || cache.type === 'mindmap') {
+  if (cache.type === 'drawing' || cache.type === 'geogebra' || cache.type === 'mindmap' || cache.type === 'kdbx') {
     return t('sideBar.tree.documentNamePlaceholder')
   }
   return t('sideBar.tree.enterMarkdownFileName')

@@ -29,6 +29,7 @@
       "muya/*": ["../muyajs/*"],
       "@muyajs/core": ["./src/types/muya-core.d.ts"],
       "@shared/*": ["./src/shared/*"],
+      "kdbxweb": ["./src/types/kdbxweb.d.ts"],
       "main_renderer/*": ["./src/main/*"]
     }
   }

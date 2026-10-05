@@ -31,6 +31,7 @@ const isDrawioFile = (pathname: string): boolean =>
 const isGeoGebraFile = (pathname: string): boolean => path.extname(pathname).toLowerCase() === '.ggb'
 
 const isMindMapFile = (pathname: string): boolean => path.extname(pathname).toLowerCase() === '.smm'
+const isKdbxFile = (pathname: string): boolean => path.extname(pathname).toLowerCase() === '.kdbx'
 
 type WatchType = 'dir' | 'file'
 
@@ -65,6 +66,7 @@ const add = async(
   const isDrawing = isDrawioFile(pathname)
   const isGeoGebra = isGeoGebraFile(pathname)
   const isMindMap = isMindMapFile(pathname)
+  const isKdbx = isKdbxFile(pathname)
   const file: {
     pathname: string
     name: string
@@ -76,6 +78,7 @@ const add = async(
     isDrawing: boolean
     isGeoGebra: boolean
     isMindMap: boolean
+    isKdbx: boolean
     data?: Awaited<ReturnType<typeof loadMarkdownFile>>
   } = {
     pathname,
@@ -87,7 +90,8 @@ const add = async(
     isMarkdown,
     isDrawing,
     isGeoGebra,
-    isMindMap
+    isMindMap,
+    isKdbx
   }
   if (isMarkdown) {
     // HACK: But this should be removed completely in #1034/#1035.
@@ -112,7 +116,7 @@ const add = async(
       }
     }
   }
-  if (isMarkdown || isDrawing || isGeoGebra || isMindMap) {
+  if (isMarkdown || isDrawing || isGeoGebra || isMindMap || isKdbx) {
     win.webContents.send(EVENT_NAME[type], {
       type: 'add',
       change: file
@@ -155,6 +159,7 @@ const change = async(
   const isDrawing = isDrawioFile(pathname)
   const isGeoGebra = isGeoGebraFile(pathname)
   const isMindMap = isMindMapFile(pathname)
+  const isKdbx = isKdbxFile(pathname)
   if (isMarkdown) {
     try {
       const [data, stats] = await Promise.all([
@@ -175,7 +180,7 @@ const change = async(
         })
       }
     }
-  } else if (isDrawing || isGeoGebra || isMindMap) {
+  } else if (isDrawing || isGeoGebra || isMindMap || isKdbx) {
     try {
       const stats = await fsPromises.stat(pathname)
       win.webContents.send('mt::update-object-tree', {
@@ -263,7 +268,8 @@ class Watcher {
           !hasMarkdownExtension(pathname) &&
           !isDrawioFile(pathname) &&
           !isGeoGebraFile(pathname) &&
-          !isMindMapFile(pathname)
+          !isMindMapFile(pathname) &&
+          !isKdbxFile(pathname)
         )
       },
       ignoreInitial: type === 'file',

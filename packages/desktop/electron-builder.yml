@@ -193,6 +193,12 @@ fileAssociations:
     mimeType: application/json
     role: Editor
     icon: icons/md.ico
+  - ext: kdbx
+    name: KeePass KDBX Password Vault
+    description: KeePass compatible encrypted password vault
+    mimeType: application/x-keepass2
+    role: Editor
+    icon: icons/md.ico
 win:
   executableName: marktextpro
   artifactName: 'marktextpro-win-${arch}-${version}.${ext}'
@@ -247,6 +253,7 @@ linux:
     - 'application/vnd.geogebra.file'
     - 'application/json'
     - 'application/x-simple-mind-map'
+    - 'application/x-keepass2'
   icon: 'static/icon.png'
   desktop:
     entry:
@@ -289,3 +296,6 @@ linux:
     - ext: 'smm'
       name: 'Simple Mind Map'
       description: 'Simple Mind Map Document'
+    - ext: 'kdbx'
+      name: 'KeePass KDBX Password Vault'
+      description: 'KeePass compatible encrypted password vault'
