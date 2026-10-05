@@ -5,7 +5,7 @@
     class="side-bar-file"
     :style="{
       'padding-left': `${depth * 6 + 10}px`,
-      opacity: file.isMarkdown || file.isDrawing || file.isGeoGebra || file.isMindMap ? 1 : 0.75
+      opacity: file.isMarkdown || file.isDrawing || file.isGeoGebra || file.isMindMap || file.isKdbx ? 1 : 0.75
     }"
     :class="[
       { current: currentFile?.pathname === file.pathname, active: isFileActive }
@@ -82,7 +82,7 @@ const isFileActive = computed<boolean>(() => {
 
 // from fileMixins
 const handleFileClick = (): void => {
-  const { isMarkdown, isDrawing, isGeoGebra, isMindMap, pathname } = props.file
+  const { isMarkdown, isDrawing, isGeoGebra, isMindMap, isKdbx, pathname } = props.file
   projectStore.SELECT_PARENT_FOLDER_FOR_FILE(pathname)
   if (isDrawing || /\.drawio$/i.test(pathname)) {
     void window.electron.ipcRenderer.invoke(
@@ -107,6 +107,10 @@ const handleFileClick = (): void => {
       pathname,
       getMindMapConfiguration()
     )
+    return
+  }
+  if (isKdbx || /\.kdbx$/i.test(pathname)) {
+    void window.electron.ipcRenderer.invoke('mt::kdbx::open', pathname)
     return
   }
   if (!isMarkdown) return

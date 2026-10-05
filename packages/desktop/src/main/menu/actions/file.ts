@@ -33,6 +33,7 @@ import {
   openMindMapFile,
   saveMindMapDocuments
 } from '../../mindmap'
+import { isKdbxFile, openKdbxFile, saveKdbxDocuments } from '../../kdbx'
 import { normalizeAndResolvePath, writeFile } from '../../filesystem'
 import { writeMarkdownFile } from '../../filesystem/markdown'
 import { getPath, getRecommendTitleFromMarkdownString } from '../../utils'
@@ -47,7 +48,8 @@ import type {
   ExportType,
   UnsavedDrawioFile,
   UnsavedFile,
-  UnsavedMindMapFile
+  UnsavedMindMapFile,
+  UnsavedKdbxFile
 } from '@shared/types/files'
 
 type Win = BrowserWindow | null | undefined
@@ -513,9 +515,10 @@ const showUnsavedFilesMessage = async (
   win: BrowserWindow,
   files: UnsavedFile[],
   drawioFiles: UnsavedDrawioFile[] = [],
-  mindMapFiles: UnsavedMindMapFile[] = []
+  mindMapFiles: UnsavedMindMapFile[] = [],
+  kdbxFiles: UnsavedKdbxFile[] = []
 ): Promise<{ needSave: boolean } | null> => {
-  const allFiles = [...files, ...drawioFiles, ...mindMapFiles]
+  const allFiles = [...files, ...drawioFiles, ...mindMapFiles, ...kdbxFiles]
   const { response } = await dialog.showMessageBox(win, {
     type: 'warning',
     buttons: [t('dialog.save'), t('dialog.dontSave'), t('dialog.cancel')],
@@ -698,7 +701,8 @@ ipcMain.on(
     e,
     unsavedFiles: UnsavedFile[],
     unsavedDrawioFiles: UnsavedDrawioFile[] = [],
-    unsavedMindMapFiles: UnsavedMindMapFile[] = []
+    unsavedMindMapFiles: UnsavedMindMapFile[] = [],
+    unsavedKdbxFiles: UnsavedKdbxFile[] = []
   ) => {
     const win = BrowserWindow.fromWebContents(e.sender)
     if (!win) {
@@ -708,7 +712,8 @@ ipcMain.on(
       win,
       unsavedFiles,
       unsavedDrawioFiles,
-      unsavedMindMapFiles
+      unsavedMindMapFiles,
+      unsavedKdbxFiles
     )
     if (!userResult) {
       return
@@ -735,6 +740,10 @@ ipcMain.on(
         saveMindMapDocuments(
           win,
           unsavedMindMapFiles.map((file) => file.pathname)
+        ),
+        saveKdbxDocuments(
+          win,
+          unsavedKdbxFiles.map((file) => file.pathname)
         )
       ])
         .then(() => {
@@ -941,7 +950,8 @@ ipcMain.on('mt::format-link-click', async (e, { data, dirname }: FormatLinkPaylo
       (isMarkdownFile(pathname) ||
         isDrawioFile(pathname) ||
         isGeoGebraFile(pathname) ||
-        isMindMapFile(pathname))
+        isMindMapFile(pathname) ||
+        isKdbxFile(pathname))
 
     if (isWorkspaceDocument) {
       openFileOrFolder(win, pathname)
@@ -953,7 +963,7 @@ ipcMain.on('mt::format-link-click', async (e, { data, dirname }: FormatLinkPaylo
       if (innerWin) {
         openFileOrFolder(innerWin, pathname)
       }
-    } else if (isDrawioFile(pathname) || isGeoGebraFile(pathname) || isMindMapFile(pathname)) {
+    } else if (isDrawioFile(pathname) || isGeoGebraFile(pathname) || isMindMapFile(pathname) || isKdbxFile(pathname)) {
       const openedWithApplication = localTarget
         ? await openLocalLinkWithApplication(win, localTarget)
         : false
@@ -1049,8 +1059,8 @@ export const openFile = async (win: BrowserWindow | null): Promise<void> => {
     properties: ['openFile', 'multiSelections'],
     filters: [
       {
-        name: 'Markdown, Draw.io, GeoGebra & MindMap',
-        extensions: [...MARKDOWN_EXTENSIONS, 'drawio', 'ggb', 'smm']
+        name: 'Markdown, Draw.io, GeoGebra, MindMap & KDBX',
+        extensions: [...MARKDOWN_EXTENSIONS, 'drawio', 'ggb', 'smm', 'kdbx']
       }
     ]
   })
@@ -1058,7 +1068,7 @@ export const openFile = async (win: BrowserWindow | null): Promise<void> => {
   if (Array.isArray(filePaths) && filePaths.length > 0) {
     const markdownFiles = filePaths.filter(
       (filePath) =>
-        !isDrawioFile(filePath) && !isGeoGebraFile(filePath) && !isMindMapFile(filePath)
+        !isDrawioFile(filePath) && !isGeoGebraFile(filePath) && !isMindMapFile(filePath) && !isKdbxFile(filePath)
     )
     if (markdownFiles.length) ipcMain.emit('app-open-files-by-id', win.id, markdownFiles)
     for (const filePath of filePaths.filter(isDrawioFile)) {
@@ -1069,6 +1079,9 @@ export const openFile = async (win: BrowserWindow | null): Promise<void> => {
     }
     for (const filePath of filePaths.filter(isMindMapFile)) {
       void openMindMapFile(filePath, win)
+    }
+    for (const filePath of filePaths.filter(isKdbxFile)) {
+      void openKdbxFile(filePath, win)
     }
   }
 }
@@ -1102,6 +1115,8 @@ export const openFileOrFolder = (win: BrowserWindow, pathname: string): void => 
     void openGeoGebraFile(resolvedPath, win)
   } else if (isMindMapFile(resolvedPath)) {
     void openMindMapFile(resolvedPath, win)
+  } else if (isKdbxFile(resolvedPath)) {
+    void openKdbxFile(resolvedPath, win)
   } else if (isFile(resolvedPath)) {
     ipcMain.emit('app-open-file-by-id', win.id, resolvedPath)
   } else if (isDirectory(resolvedPath)) {

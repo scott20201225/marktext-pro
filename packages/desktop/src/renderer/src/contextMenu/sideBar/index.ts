@@ -2,6 +2,7 @@ import {
   SEPARATOR,
   getNewFile,
   getNewDrawing,
+  getNewKdbx,
   getNewGeoGebraMenu,
   getNewMindMapMenu,
   getNewDirectory,
@@ -22,6 +23,7 @@ export const showContextMenu = (
   const contextItems: ContextMenuItem[] = [
     getNewFile(),
     getNewDrawing(),
+    getNewKdbx(),
     getNewGeoGebraMenu(),
     getNewMindMapMenu(),
     getNewDirectory(),

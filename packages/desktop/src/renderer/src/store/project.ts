@@ -27,6 +27,8 @@ import type { FileChangeDetail, GeoGebraMode, MindMapStructure } from '@shared/t
 type ProjectTree = TreeNode
 type TreeChange = FileChangeDetail
 
+const isKdbxPath = (pathname: string): boolean => /\.kdbx$/i.test(pathname)
+
 const normalizeProjectRoot = (pathname: string | null | undefined): string => {
   return pathname ? window.path.normalize(pathname) : ''
 }
@@ -69,7 +71,7 @@ interface OpenProjectOptions {
 
 interface CreateCacheEntry {
   dirname: string
-  type: 'file' | 'drawing' | 'geogebra' | 'mindmap' | 'directory' | string
+  type: 'file' | 'drawing' | 'geogebra' | 'mindmap' | 'kdbx' | 'directory' | string
   geoGebraMode?: GeoGebraMode
   mindMapStructure?: MindMapStructure
 }
@@ -434,6 +436,11 @@ export const useProjectStore = defineStore('project', () => {
       if (!storedName.toLowerCase().endsWith('.smm')) {
         storedName += '.smm'
       }
+    } else if (type === 'kdbx') {
+      fileType = 'file'
+      if (!storedName.toLowerCase().endsWith('.kdbx')) {
+        storedName += '.kdbx'
+      }
     } else {
       fileType = 'directory'
     }
@@ -448,6 +455,11 @@ export const useProjectStore = defineStore('project', () => {
         type: 'error',
         message: `A ${type} named "${storedName}" already exists in this folder.`
       })
+      return
+    }
+
+    if (type === 'kdbx') {
+      bus.emit('KDBX::create-request', { filePath: fullName })
       return
     }
 
@@ -500,6 +512,8 @@ export const useProjectStore = defineStore('project', () => {
       nextName += '.ggb'
     } else if (/\.smm$/i.test(src) && !/\.smm$/i.test(nextName)) {
       nextName += '.smm'
+    } else if (isKdbxPath(src) && !/\.kdbx$/i.test(nextName)) {
+      nextName += '.kdbx'
     }
     const dirname = window.path.dirname(src)
     const dest = dirname + PATH_SEPARATOR + nextName
@@ -508,6 +522,7 @@ export const useProjectStore = defineStore('project', () => {
       : false
     rename(src, dest).then(() => {
       editorStore.RENAME_IF_NEEDED({ src, dest })
+      window.electron.ipcRenderer.send('mt::sidebar-path-renamed', { src, dest })
       window.electron.ipcRenderer.send('mt::workspace-path-renamed', { src, dest })
       window.electron.ipcRenderer.send('mt::github-desktop::workspace-path-renamed', { src, dest })
       if (isRootRename) {
