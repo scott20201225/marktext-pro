@@ -105,6 +105,27 @@
   --notificationWarningBg: #ff8800;
   --notificationErrorColor: #ffffff;
   --notificationErrorBg: #ff6969;
+
+  /* Keep Element Plus controls, including checkboxes, on the active skin. */
+  --el-color-primary: var(--themeColor);
+  --el-color-danger: var(--deleteColor);
+  --el-bg-color: var(--editorBgColor);
+  --el-bg-color-page: var(--editorBgColor);
+  --el-bg-color-overlay: var(--floatBgColor);
+  --el-fill-color-blank: var(--floatBgColor);
+  --el-fill-color: var(--inputBgColor);
+  --el-fill-color-light: var(--floatHoverColor);
+  --el-fill-color-lighter: var(--floatHoverColor);
+  --el-fill-color-extra-light: var(--floatHoverColor);
+  --el-text-color-primary: var(--editorColor80);
+  --el-text-color-regular: var(--editorColor);
+  --el-text-color-secondary: var(--editorColor50);
+  --el-text-color-placeholder: var(--editorColor50);
+  --el-border-color: var(--floatBorderColor);
+  --el-border-color-light: var(--floatBorderColor);
+  --el-border-color-lighter: var(--floatBorderColor);
+  --el-border-color-extra-light: var(--floatBorderColor);
+  --el-mask-color: var(--maskColor);
 }
 
 ::-webkit-scrollbar,
