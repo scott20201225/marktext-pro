@@ -233,7 +233,8 @@
       "showInFolder": "在文件夹中显示",
       "newDrawing": "新建绘图",
       "newGeoGebra": "新建 GeoGebra",
-      "newMindMap": "新建思维导图"
+      "newMindMap": "新建思维导图",
+      "newKdbx": "新建密码库"
     },
     "tabs": {
       "close": "关闭",
