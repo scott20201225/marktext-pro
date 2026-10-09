@@ -76,6 +76,8 @@ const documentStateKeys = [
   'isGeoGebra',
   'isMindMap',
   'isKdbx',
+  'isTerminal',
+  'terminalSessionId',
   'geoGebraMode',
   'pathname',
   'filename',
