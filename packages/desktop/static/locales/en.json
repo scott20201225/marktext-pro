@@ -233,7 +233,8 @@
       "showInFolder": "Show In Folder",
       "newDrawing": "New Drawing",
       "newGeoGebra": "New GeoGebra",
-      "newMindMap": "New Mind Map"
+      "newMindMap": "New Mind Map",
+      "newKdbx": "New Password Vault"
     },
     "tabs": {
       "close": "Close",

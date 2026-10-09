@@ -232,7 +232,9 @@
       "moveToTrash": "移到垃圾桶",
       "showInFolder": "在資料夾中顯示",
       "newDrawing": "新增繪圖",
-      "newMindMap": "新建心智圖"
+      "newGeoGebra": "新建 GeoGebra",
+      "newMindMap": "新建心智圖",
+      "newKdbx": "新建密碼庫"
     },
     "tabs": {
       "close": "關閉",
