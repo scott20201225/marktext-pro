@@ -22,10 +22,10 @@ export const showContextMenu = (
 ): void => {
   const contextItems: ContextMenuItem[] = [
     getNewFile(),
-    getNewDrawing(),
-    getNewKdbx(),
-    getNewGeoGebraMenu(),
     getNewMindMapMenu(),
+    getNewDrawing(),
+    getNewGeoGebraMenu(),
+    getNewKdbx(),
     getNewDirectory(),
     SEPARATOR,
     getCOPY(),

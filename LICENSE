@@ -69,7 +69,12 @@ MarkTextPro 集成了以下优秀的开源与第三方项目，各组件原始�
    - License: MIT License
    - Notice: MarkTextPro 在 `packages/desktop/src/kdbxWebApp/kdbxweb/LICENSE` 保留其完整 MIT 许可证文本，并以本地源码方式集成 KDBX 文件读写与加密能力。
 
-6. MarkText & Muya (Upstream Base)
+6. Tabby (Terminal & Theme Palette)
+   - Copyright: Copyright (c) 2017-present Eugenia Kim (Eugeny) (https://github.com/Eugeny/tabby)
+   - License: MIT License (https://github.com/Eugeny/tabby/blob/master/LICENSE)
+   - Notice: MarkTextPro 内置的终端会话管理与色盘体系参考并集成了 Tabby 开源项目的终端协议与主题调色板实现，遵循 MIT 许可证。
+
+7. MarkText & Muya (Upstream Base)
    - Copyright (c) 2017-present Luo Ran
    - Copyright (c) 2018-present MarkText Contributors
    - License: MIT License

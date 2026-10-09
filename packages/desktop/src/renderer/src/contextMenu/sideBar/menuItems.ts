@@ -28,7 +28,7 @@ export const getNewDrawing = () => ({
 })
 
 export const getNewKdbx = () => ({
-  label: t('kdbx.createVault'),
+  label: t('contextMenu.sideBar.newKdbx'),
   id: 'newKdbxMenuItem',
   click(_menuItem: unknown, _browserWindow: unknown) {
     contextMenu.newKdbx()
