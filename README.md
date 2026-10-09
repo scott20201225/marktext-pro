@@ -97,9 +97,9 @@ MarkTextPro 和 MarkNotePro 是两个相互独立、但能力互补的产品。�
 - **本地文件夹管理**：直接打开文件夹，按真实目录结构混合管理 Markdown、Draw.io 绘图、GeoGebra 数学模型、MindMap 思维导图与 KDBX 密码库（含 2FA & SSH 直连）。
 - **外部文档快速编辑**：可以打开工作区外的 `.md`、`.drawio`、`.ggb`、`.smm`、`.kdbx` 文件，适合临时查看、快速编辑和专业处理。
 - **多标签与多类型协同编辑**：支持多个 Markdown、Draw.io 绘图、GeoGebra、思维导图与 KDBX 密钥库同时打开、平滑切换与保活编辑。
-- **内置 Draw.io 专业绘图引擎**：本地离线集成完整 Draw.io 编辑器，支持直接创建、编辑、自动保存 `.drawio` 图表文件，自动同步应用语言与亮/暗色主题，支持导出 PNG、JPEG、SVG、PDF、HTML、XML 等格式。
-- **内置 GeoGebra 数学与几何套件**：本地离线集成官方 GeoGebra 全功能引擎，支持**绘图计算**、**几何**、**3D 计算器**、**CAS（计算机代数）**、**概率统计**与**科学计算器**六大模式，深度适配应用全部亮/暗主题，支持导出 `.ggb`、`.png`、`.svg`、`.pdf`、`.stl`（3D 打印）及直接打印。
-- **内置 MindMap 专业思维导图引擎**：本地离线集成全功能思维导图工作台，原生支持**思维导图**、**逻辑结构图**、**目录组织图**、**组织结构图**、**时间轴**、**鱼骨图**等 6 种经典脑图结构；自适应应用亮/暗色主题，支持节点富文本、LaTeX 数学公式、节点图标/贴纸、超链接、关联线、概要节点、外框、备注与标签；提供大纲编辑与快捷键面板，支持导入 XMind / Markdown / .smm 并支持导出 PNG、SVG、PDF、Markdown、JSON 及直接调用系统打印。
+- **内置 Draw.io 专业绘图引擎**：本地离线集成完整 Draw.io 编辑器，支持直接创建、编辑、自动保存 `.drawio` 图表文件，支持导出 PNG、JPEG、SVG、PDF、HTML、XML 等格式。
+- **内置 GeoGebra 数学与几何套件**：本地离线集成官方 GeoGebra 全功能引擎，支持**绘图计算**、**几何**、**3D 计算器**、**CAS（计算机代数）**、**概率统计**与**科学计算器**六大模式，支持导出 `.ggb`、`.png`、`.svg`、`.pdf`、`.stl`（3D 打印）及直接打印。
+- **内置 MindMap 专业思维导图引擎**：本地离线集成全功能思维导图工作台，原生支持**思维导图**、**逻辑结构图**、**目录组织图**、**组织结构图**、**时间轴**、**鱼骨图**等 6 种经典脑图结构；支持节点富文本、LaTeX 数学公式、节点图标/贴纸、超链接、关联线、概要节点、外框、备注与标签；提供大纲编辑与快捷键面板，支持导入 XMind / Markdown / .smm 并支持导出 PNG、SVG、PDF、Markdown、JSON 及直接调用系统打印。
 - **内置 KDBX 加密密码库（含 2FA & SSH 终端直连）**：基于 KDBXWeb 在本地创建、解锁和保存 KeePass 兼容的 `.kdbx` 密码库；支持分组、密钥条目、自定义字段、标签、附件、历史记录、回收站与主密码重置，并支持受提取码保护的批量密钥导入导出。深度集成 **2FA 双因素动态口令**（支持二维码扫描、截图粘贴与 URI 批量导入，实时倒计时与防重放）以及 **SSH / 终端快捷直连**（一键打开终端、图形化 SFTP 文件管理器与 ZMODEM 传输）。
 - **Markdown 所见即所得编辑**：支持标题、列表、任务、表格、引用、代码块、数学公式、Mermaid、警告块（Callouts）等常用 Markdown 能力。
 - **表格增强**：支持表格批量编辑、复制粘贴、与 Excel 互操作等高频办公能力。
@@ -113,11 +113,11 @@ MarkTextPro 和 MarkNotePro 是两个相互独立、但能力互补的产品。�
 
 除了 Markdown 写作，MarkTextPro 还将工程图表、理工科数学建模与思维导图能力直接纳入同一个自由文件工作区，所有引擎均随客户端本地打包、**100% 离线可用**，无需依赖外部网页或云端账号：
 
-| 创作引擎 | 文件后缀 | 支持模式与核心特性 | 主题与导出支持 |
+| 创作引擎 | 文件后缀 | 支持模式与核心特性 | 导出与格式支持 |
 | --- | --- | --- | --- |
-| **Draw.io 绘图引擎** | `.drawio` | 流程图、系统架构图、UML、ER 图、网络拓扑图、思维导图等完整图形库；支持多标签页保活切换、快捷键保存与自动保存状态同步 | 自动跟随应用语言与亮/暗色主题；支持导出 `PNG`、`JPEG`、`SVG`、`PDF`、`HTML`、`XML` |
-| **GeoGebra 数学套件** | `.ggb` | <ul><li>**绘图计算（Graphing）**：函数图像、导数积分、滑动条、数值表格与完整几何作图工具集</li><li>**几何（Geometry）**：尺规作图、多边形、圆锥曲线、度量与几何变换</li><li>**3D 计算器（3D Graphing）**：空间曲面、立体几何、空间向量与平面交线</li><li>**CAS 计算机代数**：符号微积分、方程精确求解、因式分解与矩阵运算</li><li>**概率统计（Probability）**：正态/二项/泊松等概率分布可视化与区间概率计算</li><li>**科学计算器（Scientific）**：函数定义、数值表格对照与科学运算</li></ul> | 深度适配全部亮/暗色主题（含画布背景、网格、坐标轴、黑色几何对象与公式反色自适应）；插入的图片自动内嵌封装于 `.ggb` 包内；支持导出 `.ggb`、`.png`、`.svg`、`.pdf`、`.stl`（3D 打印）及直接打印 |
-| **MindMap 思维导图** | `.smm` | <ul><li>**6 种专业结构**：思维导图、逻辑结构图、目录组织图、组织结构图、时间轴、鱼骨图，支持在新建或编辑时自由切换</li><li>**丰富节点元素**：自由节点、节点富文本、LaTeX 数学公式、节点图标/贴纸、超链接、关联线、概要节点、外框、备注与自定义标签</li><li>**高效编辑辅助**：大纲视图双向同步编辑、节点搜索与批量替换、直观便捷的快捷键面板</li><li>**智能导入导出**：支持导入 `.xmind`、`.md`、`.smm`、`.json`、`.mind` 格式；支持导出 `PNG`、`SVG`、`PDF`、`Markdown`、`JSON` 以及直接调用系统打印</li></ul> | 自动跟随应用深浅色模式与背景自适应；支持导出多种通用格式及直接打印 |
+| **Draw.io 绘图引擎** | `.drawio` | 流程图、系统架构图、UML、ER 图、网络拓扑图、思维导图等完整图形库；支持多标签页保活切换、快捷键保存与自动保存状态同步 | 支持导出 `PNG`、`JPEG`、`SVG`、`PDF`、`HTML`、`XML` 等格式 |
+| **GeoGebra 数学套件** | `.ggb` | <ul><li>**绘图计算（Graphing）**：函数图像、导数积分、滑动条、数值表格与完整几何作图工具集</li><li>**几何（Geometry）**：尺规作图、多边形、圆锥曲线、度量与几何变换</li><li>**3D 计算器（3D Graphing）**：空间曲面、立体几何、空间向量与平面交线</li><li>**CAS 计算机代数**：符号微积分、方程精确求解、因式分解与矩阵运算</li><li>**概率统计（Probability）**：正态/二项/泊松等概率分布可视化与区间概率计算</li><li>**科学计算器（Scientific）**：函数定义、数值表格对照与科学运算</li></ul> | 插入的图片自动内嵌封装于 `.ggb` 包内；支持导出 `.ggb`、`.png`、`.svg`、`.pdf`、`.stl`（3D 打印）及直接打印 |
+| **MindMap 思维导图** | `.smm` | <ul><li>**6 种专业结构**：思维导图、逻辑结构图、目录组织图、组织结构图、时间轴、鱼骨图，支持在新建或编辑时自由切换</li><li>**丰富节点元素**：自由节点、节点富文本、LaTeX 数学公式、节点图标/贴纸、超链接、关联线、概要节点、外框、备注与自定义标签</li><li>**高效编辑辅助**：大纲视图双向同步编辑、节点搜索与批量替换、直观便捷的快捷键面板</li><li>**智能导入导出**：支持导入 `.xmind`、`.md`、`.smm`、`.json`、`.mind` 格式；支持导出 `PNG`、`SVG`、`PDF`、`Markdown`、`JSON` 以及直接调用系统打印</li></ul> | 支持导出多种通用格式及直接打印 |
 | **KDBX 加密密码库** | `.kdbx` | KeePass 兼容加密密码库，支持创建与解锁、分组、标签、历史版本、自定义字段、附件、回收站、批量导入导出与主密码重置；内置 2FA 动态口令计算与识别，以及 SSH / 终端会话一键快捷直连 | 密钥库由独立主密码加密保护；内置 KDBXWeb 与专业终端工作台，支持在工作区和外部路径直接打开 |
 
 ## KDBX 加密密码库（含 2FA 与 SSH 直连支持）
@@ -308,5 +308,6 @@ MarkTextPro 集成了以下开源与第三方核心组件，各组件遵循其�
 - **GeoGebra**：遵循 [GeoGebra License](https://www.geogebra.org/license)（源码遵循 **GPLv3**，软件、文档与语言资源遵循 **GeoGebra Non-Commercial License Agreement / CC BY-NC-SA 3.0**，仅限非商业用途免费使用，商业用途须同时遵守 GeoGebra 官方商业许可要求）。
 - **simple-mind-map (思绪思维导图)**：遵循 [MIT License](https://github.com/wanglin2/mind-map/blob/main/LICENSE)（`Copyright (c) 2021-2023 The MindMap Team / wanglin2`）。
 - **KDBXWeb**：遵循 [MIT License](https://github.com/keeweb/kdbxweb/blob/master/LICENSE)（`Copyright (C) 2021-2025 Antelle`），其完整许可证文本保留在 `packages/desktop/src/kdbxWebApp/kdbxweb/LICENSE`。
+- **Tabby**：遵循 [MIT License](https://github.com/Eugeny/tabby/blob/master/LICENSE)（`Copyright (c) 2017-present Eugenia Kim (Eugeny)`）。MarkTextPro 的终端会话与色盘配置参考其开源实现。
 - **GitHub Desktop**：遵循 MIT License（`Copyright (c) GitHub, Inc.`）。
 - **MarkText & Muya**：遵循 MIT License（`Copyright (c) 2017-present Luo Ran & MarkText Contributors`）。
