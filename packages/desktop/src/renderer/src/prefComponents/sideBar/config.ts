@@ -4,7 +4,8 @@ import {
   Document as MarkdownIcon,
   Brush as ThemeIcon,
   Reading as SpellIcon,
-  Operation as KeyBindingIcon
+  Operation as KeyBindingIcon,
+  Monitor as TerminalIcon
 } from '@element-plus/icons-vue'
 
 import preferences from '../../../../main/preferences/schema.json'
@@ -100,6 +101,12 @@ export const getCategory = (): PrefCategory[] => [
     label: 'keybindings',
     icon: KeyBindingIcon,
     path: '/preference/keybindings'
+  },
+  {
+    name: t('preferences.categories.terminal') || '终端设置',
+    label: 'terminal',
+    icon: TerminalIcon,
+    path: '/preference/terminal'
   }
 ]
 

@@ -19,6 +19,7 @@ import { defineStore } from 'pinia'
 import { usePreferencesStore } from './preferences'
 import { useProjectStore } from './project'
 import { useLayoutStore } from './layout'
+import { useTerminalStore } from './terminal'
 import { useMainStore } from '.'
 import { t } from '../i18n'
 import { debouncedSendBufferedState, sendBufferedState } from './bufferedState'
@@ -642,6 +643,9 @@ export const useEditorStore = defineStore('editor', {
         if (this.currentFile.pathname) void window.electron.ipcRenderer.invoke('mt::kdbx::save', this.currentFile.pathname)
         return
       }
+      if (this.currentFile.isTerminal) {
+        return
+      }
       this.flushActiveEditor()
       const projectStore = useProjectStore()
       const { id, filename, pathname, markdown } = this.currentFile
@@ -788,6 +792,8 @@ export const useEditorStore = defineStore('editor', {
                   !file.isDrawing &&
                   !file.isGeoGebra &&
                   !file.isMindMap &&
+                  !file.isKdbx &&
+                  !file.isTerminal &&
                   !file.isSaved
               )
               .map((file) => {
@@ -1282,7 +1288,9 @@ export const useEditorStore = defineStore('editor', {
           oldCurrentFile &&
           !oldCurrentFile.isDrawing &&
           !oldCurrentFile.isGeoGebra &&
-          !oldCurrentFile.isMindMap
+          !oldCurrentFile.isMindMap &&
+          !oldCurrentFile.isKdbx &&
+          !oldCurrentFile.isTerminal
         ) {
           this.flushActiveEditor()
         }
@@ -1295,7 +1303,13 @@ export const useEditorStore = defineStore('editor', {
           this.updateTabIdToIndex()
         }
 
-        if (!currentFile.isDrawing && !currentFile.isGeoGebra && !currentFile.isMindMap) {
+        if (
+          !currentFile.isDrawing &&
+          !currentFile.isGeoGebra &&
+          !currentFile.isMindMap &&
+          !currentFile.isKdbx &&
+          !currentFile.isTerminal
+        ) {
           bus.emit('file-changed', {
             id,
             markdown,
@@ -1306,6 +1320,9 @@ export const useEditorStore = defineStore('editor', {
             scrollTop,
             blocks
           })
+        } else if (currentFile.isTerminal && currentFile.terminalSessionId) {
+          const terminalStore = useTerminalStore()
+          terminalStore.activeSessionId = currentFile.terminalSessionId
         }
       }
 
@@ -1375,6 +1392,47 @@ export const useEditorStore = defineStore('editor', {
         locked: true, modified: false, isSaved: true, isSaving: false
       }
       this.UPDATE_CURRENT_FILE(tab)
+    },
+
+    OPEN_TERMINAL_TAB({
+      sessionId,
+      title,
+      config,
+      kdbxEntryId
+    }: {
+      sessionId: string
+      title?: string
+      config?: any
+      kdbxEntryId?: string
+    }): void {
+      const existingTab = this.tabs.find(
+        (tab) => tab.isTerminal && tab.terminalSessionId === sessionId
+      )
+      if (existingTab) {
+        if (title && existingTab.filename !== title) {
+          existingTab.filename = title
+        }
+        if (config) {
+          existingTab.terminalConfig = config
+        }
+        if (kdbxEntryId) {
+          existingTab.terminalKdbxEntryId = kdbxEntryId
+        }
+        this.UPDATE_CURRENT_FILE(existingTab)
+        return
+      }
+
+      const terminalTab = createDocumentState({
+        pathname: `terminal://${sessionId}`,
+        filename: title || '终端',
+        markdown: '',
+        isSaved: true,
+        isTerminal: true,
+        terminalSessionId: sessionId,
+        terminalConfig: config,
+        terminalKdbxEntryId: kdbxEntryId
+      })
+      this.UPDATE_CURRENT_FILE(terminalTab)
     },
 
     /**
@@ -1688,6 +1746,13 @@ export const useEditorStore = defineStore('editor', {
         if (file.pathname) void window.electron.ipcRenderer.invoke('mt::kdbx::lock', file.pathname)
       }
 
+      if (file.isTerminal) {
+        if (file.terminalSessionId) {
+          const terminalStore = useTerminalStore()
+          void terminalStore.disconnect(file.terminalSessionId)
+        }
+      }
+
       this.updateTabIdToIndex() // Update before sending it out to prevent stale mappings.
 
       if (currentFile && file.id === currentFile.id) {
@@ -1700,6 +1765,7 @@ export const useEditorStore = defineStore('editor', {
           !fileState.isGeoGebra &&
           !fileState.isMindMap &&
           !fileState.isKdbx &&
+          !fileState.isTerminal &&
           typeof fileState.markdown === 'string'
         ) {
           const { id, markdown, cursor, history, pathname, scrollTop, blocks, muyaIndexCursor } =
@@ -1715,6 +1781,10 @@ export const useEditorStore = defineStore('editor', {
             scrollTop,
             blocks
           })
+        } else if (fileState?.isTerminal && fileState.terminalSessionId) {
+          const terminalStore = useTerminalStore()
+          terminalStore.activeSessionId = fileState.terminalSessionId
+          window.DIRNAME = ''
         } else {
           window.DIRNAME = ''
         }
@@ -1821,6 +1891,18 @@ export const useEditorStore = defineStore('editor', {
           }
         }
 
+        if (closed?.isKdbx) {
+          delete this.kdbxStates[closed.id]
+          if (pathname) void window.electron.ipcRenderer.invoke('mt::kdbx::lock', pathname)
+        }
+
+        if (closed?.isTerminal) {
+          if (closed.terminalSessionId) {
+            const terminalStore = useTerminalStore()
+            void terminalStore.disconnect(closed.terminalSessionId)
+          }
+        }
+
         if (pathname) {
           window.electron.ipcRenderer.send('mt::window-tab-closed', pathname)
         }
@@ -1844,6 +1926,8 @@ export const useEditorStore = defineStore('editor', {
           !this.currentFile.isDrawing &&
           !this.currentFile.isGeoGebra &&
           !this.currentFile.isMindMap &&
+          !this.currentFile.isKdbx &&
+          !this.currentFile.isTerminal &&
           typeof this.currentFile.markdown === 'string'
         ) {
           const { id, markdown, cursor, history, pathname, scrollTop, blocks, muyaIndexCursor } =
@@ -1859,6 +1943,10 @@ export const useEditorStore = defineStore('editor', {
             scrollTop,
             blocks
           })
+        } else if (this.currentFile?.isTerminal && this.currentFile.terminalSessionId) {
+          const terminalStore = useTerminalStore()
+          terminalStore.activeSessionId = this.currentFile.terminalSessionId
+          window.DIRNAME = ''
         }
       }
 
@@ -2955,7 +3043,7 @@ const createBufferedEditorState = (state: unknown): BufferedEditorState | null =
 
   return {
     currentFileId: s.currentFileId || s.currentFile?.id || null,
-    tabs: (s.tabs as Array<Partial<IFileState> & { id: string }>).map(createBufferedTabState),
+    tabs: (s.tabs as Array<Partial<IFileState> & { id: string }>).filter((t) => !t.isTerminal).map(createBufferedTabState),
     restoreWarnings: Array.isArray(s.restoreWarnings)
       ? (s.restoreWarnings as RestoreWarning[])
           .map(createBufferedRestoreWarning)
