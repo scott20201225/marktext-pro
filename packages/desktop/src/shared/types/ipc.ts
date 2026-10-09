@@ -34,6 +34,13 @@ import type {
   GeoGebraMode
 } from './files'
 import type { KdbxEntryDetail, KdbxEntryInput, KdbxEntryRevision, KdbxVaultSnapshot } from './kdbx'
+import type {
+  ITerminalConnectionConfig,
+  ITerminalSessionInfo,
+  IHardwareStats,
+  ISftpItem,
+  ISftpTransferProgress
+} from './terminal'
 import type { BufferedState as BufferedStateType } from './bufferedState'
 import type { MenuTemplate, MenuPopupPosition } from './menu'
 
@@ -259,6 +266,21 @@ export interface IpcInvokeChannels {
   'mt::spellchecker-switch-language': { args: [language: string]; ret: void }
   'mt::win::is-fullscreen': { args: []; ret: boolean }
   'mt::win::is-maximized': { args: []; ret: boolean }
+  'mt::terminal:connect': { args: [config: ITerminalConnectionConfig, cols?: number, rows?: number, existingSessionId?: string]; ret: ITerminalSessionInfo }
+  'mt::terminal:disconnect': { args: [sessionId: string]; ret: boolean }
+  'mt::terminal:sftp-list': { args: [sessionId: string, dirPath: string]; ret: ISftpItem[] }
+  'mt::terminal:sftp-upload': { args: [sessionId: string, localPath: string, remotePath: string]; ret: boolean }
+  'mt::terminal:sftp-download': { args: [sessionId: string, remotePath: string, localPath?: string]; ret: any }
+  'mt::terminal:sftp-mkdir': { args: [sessionId: string, remotePath: string]; ret: boolean }
+  'mt::terminal:sftp-delete': { args: [sessionId: string, remotePath: string, isDirectory: boolean]; ret: boolean }
+  'mt::terminal:sftp-rename': { args: [sessionId: string, oldPath: string, newPath: string]; ret: boolean }
+  'mt::terminal:sftp-read': { args: [sessionId: string, remotePath: string]; ret: string }
+  'mt::terminal:sftp-write': { args: [sessionId: string, remotePath: string, content: string]; ret: boolean }
+  'mt::terminal:list-serial-ports': { args: []; ret: Array<{ path: string; manufacturer?: string }> }
+  'mt::terminal:get-stored-servers': { args: []; ret: ITerminalConnectionConfig[] }
+  'mt::terminal:save-stored-server': { args: [config: ITerminalConnectionConfig]; ret: ITerminalConnectionConfig }
+  'mt::terminal:delete-stored-server': { args: [id: string]; ret: boolean }
+  'mt::terminal:test-latency': { args: [host: string, port?: number]; ret: number }
   // Main derives the BrowserWindow via BrowserWindow.fromWebContents(e.sender);
   // no need to pass windowId. Payload is the editor+project+layout snapshot.
   'update-buffer-state': { args: [payload: unknown]; ret: void }
@@ -388,6 +410,7 @@ export interface IpcSendChannels {
   'mt::geogebra-menu-mode': [enabled: boolean]
   'mt::mindmap-menu-mode': [enabled: boolean]
   'mt::kdbx-menu-mode': [enabled: boolean]
+  'mt::terminal-menu-mode': [enabled: boolean]
   'mt::mindmap::hide': []
   'mt::mindmap::set-bounds': [bounds: DrawioBounds]
   'mt::mindmap::state': [payload: { modified?: boolean; data?: unknown }]
@@ -407,6 +430,9 @@ export interface IpcSendChannels {
   'window-file-saved': [windowId: number, tabId: string]
   'window-reload-by-id': [windowId: number]
   'window-toggle-always-on-top': [windowId: number]
+  'mt::terminal:write': [payload: { sessionId: string; data: string }]
+  'mt::terminal:resize': [payload: { sessionId: string; cols: number; rows: number }]
+  'mt::terminal:2fa-answer': [payload: { promptId: string; code: string }]
 }
 
 // =================================================================
@@ -576,6 +602,11 @@ export interface IpcMainEventChannels {
   'mt::window-unmaximize': []
   'mt::window-zoom': [zoomLevel: number]
   'settings::change-tab': [tab: string]
+  'mt::terminal:data': [payload: { sessionId: string; data: string }]
+  'mt::terminal:status': [info: ITerminalSessionInfo]
+  'mt::terminal:stats': [payload: { sessionId: string; stats: IHardwareStats }]
+  'mt::terminal:2fa-prompt': [payload: { sessionId: string; promptId: string; prompt: string; instruction?: string }]
+  'mt::terminal:sftp-progress': [payload: { sessionId: string; progress: ISftpTransferProgress }]
 }
 
 // =================================================================

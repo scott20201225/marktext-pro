@@ -245,15 +245,73 @@ body {
   padding: 8px 6px;
 }
 
-input.el-input__inner {
+.el-input__wrapper,
+.el-select__wrapper {
   background: var(--inputBgColor);
-  border: 1px solid var(--editorColor10);
+  box-shadow: 0 0 0 1px var(--floatBorderColor) inset;
+}
+
+.el-input__inner,
+.el-textarea__inner,
+.el-select__selected-item,
+.el-select__placeholder {
+  color: var(--editorColor80);
+  -webkit-text-fill-color: currentColor;
+}
+
+.el-input__inner {
+  background: transparent !important;
+  border: 0 !important;
+  box-shadow: none !important;
+  outline: none !important;
+  padding: 0;
+}
+
+.el-textarea__inner {
+  background: var(--inputBgColor);
+  box-shadow: 0 0 0 1px var(--floatBorderColor) inset;
+}
+
+.el-input__prefix,
+.el-input__suffix,
+.el-select__caret {
+  color: var(--editorColor50);
+}
+
+.el-select-dropdown,
+.el-popper.el-select__popper {
+  border-color: var(--floatBorderColor);
+  background: var(--floatBgColor);
+}
+
+.el-select-dropdown__item,
+.el-select-dropdown__empty {
+  color: var(--editorColor);
+}
+
+.el-select-dropdown__item.hover,
+.el-select-dropdown__item:hover,
+.el-select-dropdown__item.is-selected {
+  background: var(--floatHoverColor);
+  color: var(--themeColor);
+}
+
+.el-message-box {
+  border: 1px solid var(--floatBorderColor);
+  background: var(--floatBgColor);
+  box-shadow: 0 8px 24px var(--floatShadow);
+}
+
+.el-message-box__title,
+.el-message-box__content,
+.el-message-box__message,
+.el-message-box__headerbtn {
   color: var(--editorColor80);
 }
 
 .el-input.is-focus .el-input__wrapper,
 .el-input__wrapper.is-focus {
-  box-shadow: 0 0 0 1px var(--themeColor) inset;
+  box-shadow: 0 0 0 1px var(--themeColor) inset !important;
 }
 
 .el-input-number.is-controls-right span.el-input-number__decrease,
@@ -449,3 +507,26 @@ button.button-primary:not(.custom):focus,
 .el-tabs__active-bar {
   background-color: var(--themeColor);
 }
+
+/* Element Plus overlays are shared by the KDBX editor and must inherit the app skin. */
+.el-select__selection .el-tag,
+.el-select__wrapper .el-tag {
+  --el-tag-bg-color: var(--floatHoverColor);
+  --el-tag-border-color: var(--floatBorderColor);
+  --el-tag-text-color: var(--editorColor);
+  background-color: var(--floatHoverColor);
+  border-color: var(--floatBorderColor);
+  color: var(--editorColor);
+}
+
+.el-select__selection .el-tag .el-tag__close,
+.el-select__wrapper .el-tag .el-tag__close {
+  color: var(--editorColor50);
+}
+
+.el-select__selection .el-tag .el-tag__close:hover,
+.el-select__wrapper .el-tag .el-tag__close:hover {
+  background-color: var(--itemBgColor);
+  color: var(--editorColor);
+}
+

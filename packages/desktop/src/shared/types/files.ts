@@ -101,6 +101,11 @@ export interface IFileState {
   // KDBX is rendered by the native Vue vault editor. Its decrypted contents
   // remain in the main-process session and are never treated as Markdown.
   isKdbx?: boolean
+  // Terminal tabs rendered by native Tabby xterm view.
+  isTerminal?: boolean
+  terminalSessionId?: string
+  terminalConfig?: any
+  terminalKdbxEntryId?: string
 }
 
 export type GeoGebraMode = 'graphing' | '3d' | 'geometry' | 'cas' | 'probability' | 'scientific'
