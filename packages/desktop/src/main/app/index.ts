@@ -22,6 +22,7 @@ import { watchers } from '../utils/imagePathAutoComplement'
 import { onInternalChannel } from '../utils/internalIpc'
 import { WindowType } from '../windows/base'
 import EditorWindow from '../windows/editor'
+import SettingWindow from '../windows/setting'
 import { isDrawioFile, openDrawioFile } from '../drawio'
 import { isGeoGebraFile, openGeoGebraFile } from '../geogebra'
 import { isMindMapFile, openMindMapFile } from '../mindmap'
@@ -915,7 +916,7 @@ class App {
       if (!win || !pathname) return
       const editor = this._windowManager.get(win.id) as EditorWindow | undefined
       if (editor) {
-        editor.openFolder(pathname, true)
+        editor.openFolder(pathname)
       }
     })
 

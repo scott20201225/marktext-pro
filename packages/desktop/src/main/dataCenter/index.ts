@@ -27,6 +27,10 @@ class DataCenter {
     this.init()
   }
 
+  getItem(key: string): Promise<unknown> {
+    return Promise.resolve(this.store.get(key))
+  }
+
   init(): void {
     if (this.hasDataCenterFile) {
       for (const key of [

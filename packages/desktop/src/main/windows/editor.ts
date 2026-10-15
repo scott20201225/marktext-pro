@@ -22,6 +22,7 @@ import { isGeoGebraFile, openGeoGebraFile } from '../geogebra'
 import { isMindMapFile, openMindMapFile } from '../mindmap'
 import { isKdbxFile, openKdbxFile } from '../kdbx'
 import { isPdfFile, openPdfFile } from '../pdf'
+import { switchLanguage } from '../spellchecker'
 import fs from 'fs'
 
 type RawMarkdownDocument = Awaited<ReturnType<typeof loadMarkdownFile>>
