@@ -12,8 +12,6 @@
           :key="index"
           :class="{ active: c.id === rightColumn }"
           :aria-label="c.name()"
-          @mouseenter="showSidebarTooltip($event, c.name(), c.id)"
-          @mouseleave="hideSidebarTooltip"
           @click="handleLeftIconClick(c.id)"
         >
           <component :is="c.icon" />
@@ -335,8 +333,8 @@ const handleLeftBottomClick = (name: string): void => {
   font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", "PingFang SC", "Hiragino Sans GB", "Microsoft YaHei", sans-serif;
   font-size: 12px;
   line-height: 1.25;
-  font-weight: 500;
-  color: #1f2328;
+  font-weight: 450;
+  color: #4b5563;
   background: rgba(255, 255, 255, 0.96);
   backdrop-filter: blur(8px);
   -webkit-backdrop-filter: blur(8px);
@@ -350,6 +348,7 @@ const handleLeftBottomClick = (name: string): void => {
 }
 
 body.dark .sidebar-instant-tooltip {
+  font-weight: 500;
   color: #f0f3f6;
   background: rgba(30, 35, 42, 0.96);
   border: 1px solid rgba(255, 255, 255, 0.15);
