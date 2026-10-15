@@ -300,7 +300,7 @@
       "headingNumbering": "Afficher la numérotation des titres",
       "headingNumberingIncludeTopLevel": "Numéroter le titre de niveau supérieur",
       "settings": "Paramètres",
-      "git": "Git"
+      "git": "Gestion Git"
     }
   },
   "commandPalette": {
@@ -1018,7 +1018,7 @@
   "githubDesktop": {
     "ui": {
       "actions": {
-        "note": "Editor",
+        "note": "Retourner à l'espace de travail",
         "setWorkspace": "Utiliser le depot actuel comme espace de notes"
       },
       "internalText": {

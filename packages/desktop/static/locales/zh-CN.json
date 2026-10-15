@@ -312,7 +312,7 @@
       "headingNumbering": "显示标题序号",
       "headingNumberingIncludeTopLevel": "最高级标题参与编号",
       "settings": "设置",
-      "git": "Git"
+      "git": "Git管理"
     }
   },
   "commandPalette": {
@@ -1030,7 +1030,7 @@
   "githubDesktop": {
     "ui": {
       "actions": {
-        "note": "编辑器",
+        "note": "返回工作区",
         "setWorkspace": "设为工作区"
       },
       "internalText": {

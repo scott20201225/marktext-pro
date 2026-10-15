@@ -19,7 +19,7 @@ interface GitHubDesktopLocaleData {
 }
 
 const DEFAULT_ACTIONS: GitHubDesktopActionTranslations = {
-  note: 'Editor',
+  note: 'Return to Workspace',
   setWorkspace: 'Set current repository as workspace'
 }
 

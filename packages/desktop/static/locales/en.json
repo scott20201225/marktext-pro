@@ -312,7 +312,7 @@
       "headingNumbering": "Show heading numbering",
       "headingNumberingIncludeTopLevel": "Number the top-level heading",
       "settings": "Settings",
-      "git": "Git"
+      "git": "Git Management"
     }
   },
   "commandPalette": {
@@ -1030,7 +1030,7 @@
   "githubDesktop": {
     "ui": {
       "actions": {
-        "note": "Editor",
+        "note": "Return to Workspace",
         "setWorkspace": "Set current repository as workspace"
       },
       "internalText": {

@@ -300,7 +300,7 @@
       "headingNumbering": "Başlık numaralarını göster",
       "headingNumberingIncludeTopLevel": "En üst düzey başlığı numaralandır",
       "settings": "Ayarlar",
-      "git": "Git"
+      "git": "Git Yönetimi"
     }
   },
   "commandPalette": {
@@ -1018,7 +1018,7 @@
   "githubDesktop": {
     "ui": {
       "actions": {
-        "note": "Notlar",
+        "note": "Çalışma Alanına Dön",
         "setWorkspace": "Gecerli depoyu not calisma alani yap"
       },
       "internalText": {
