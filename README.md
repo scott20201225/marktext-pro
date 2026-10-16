@@ -70,12 +70,12 @@ MarkTextPro 和 MarkNotePro 是两个相互独立、但能力互补的产品。�
   - 百度网盘下载（国内推荐）：[https://pan.baidu.com/s/1UVWciYMIAZmI6y-H9KUuNQ?pwd=ddun](https://pan.baidu.com/s/1UVWciYMIAZmI6y-H9KUuNQ?pwd=ddun)
   - GitHub Releases 官方下载：[https://github.com/scott20201225/marktext-pro/releases/latest](https://github.com/scott20201225/marktext-pro/releases/latest)
   - GitHub 仓库：[https://github.com/scott20201225/marktext-pro](https://github.com/scott20201225/marktext-pro)
-  - Gitee 镜像仓库（国内推荐）：[https://gitee.com/cmflovekm/marktext-pro](https://gitee.com/cmflovekm/marktext-pro)
+  - Gitee 镜像仓库：[https://gitee.com/cmflovekm/marktext-pro](https://gitee.com/cmflovekm/marktext-pro)
 - **MarkNotePro**（结构化本地笔记与多模态知识工作台）：
   - 百度网盘下载（国内推荐）：[https://pan.baidu.com/s/17s0JYmzCbqhq2AHpKa2YAA?pwd=dec2](https://pan.baidu.com/s/17s0JYmzCbqhq2AHpKa2YAA?pwd=dec2)
   - GitHub Releases 官方下载：[https://github.com/scott20201225/marknote-pro/releases/latest](https://github.com/scott20201225/marknote-pro/releases/latest)
   - GitHub 仓库：[https://github.com/scott20201225/marknote-pro](https://github.com/scott20201225/marknote-pro)
-  - Gitee 镜像仓库（国内推荐）：[https://gitee.com/cmflovekm/marknote-pro](https://gitee.com/cmflovekm/marknote-pro)
+  - Gitee 镜像仓库：[https://gitee.com/cmflovekm/marknote-pro](https://gitee.com/cmflovekm/marknote-pro)
 
 两者都集成 Git 工作区，都可以用于版本管理、远程同步和多设备协作；选择时更应该看你需要“自由文件编辑管理器”还是“结构化笔记工具”。
 

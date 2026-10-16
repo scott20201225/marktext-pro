@@ -70,12 +70,12 @@ Related Addresses:
   - Baidu Netdisk Download (Recommended in China): [https://pan.baidu.com/s/1UVWciYMIAZmI6y-H9KUuNQ?pwd=ddun](https://pan.baidu.com/s/1UVWciYMIAZmI6y-H9KUuNQ?pwd=ddun)
   - GitHub Official Releases: [https://github.com/scott20201225/marktext-pro/releases/latest](https://github.com/scott20201225/marktext-pro/releases/latest)
   - GitHub Repository: [https://github.com/scott20201225/marktext-pro](https://github.com/scott20201225/marktext-pro)
-  - Gitee Mirror (Recommended for China): [https://gitee.com/cmflovekm/marktext-pro](https://gitee.com/cmflovekm/marktext-pro)
+  - Gitee Mirror: [https://gitee.com/cmflovekm/marktext-pro](https://gitee.com/cmflovekm/marktext-pro)
 - **MarkNotePro** (Structured local notes & multimodal knowledge workbench):
   - Baidu Netdisk Download (Recommended in China): [https://pan.baidu.com/s/17s0JYmzCbqhq2AHpKa2YAA?pwd=dec2](https://pan.baidu.com/s/17s0JYmzCbqhq2AHpKa2YAA?pwd=dec2)
   - GitHub Official Releases: [https://github.com/scott20201225/marknote-pro/releases/latest](https://github.com/scott20201225/marknote-pro/releases/latest)
   - GitHub Repository: [https://github.com/scott20201225/marknote-pro](https://github.com/scott20201225/marknote-pro)
-  - Gitee Mirror (Recommended for China): [https://gitee.com/cmflovekm/marknote-pro](https://gitee.com/cmflovekm/marknote-pro)
+  - Gitee Mirror: [https://gitee.com/cmflovekm/marknote-pro](https://gitee.com/cmflovekm/marknote-pro)
 
 Both integrate a Git workspace for version management, remote synchronization, and multi-device collaboration. Your choice depends on whether you need a **"free file editor & manager"** or a **"structured note-taking tool"**.
 
