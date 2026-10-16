@@ -308,6 +308,17 @@ Package Formats:
 - Windows: `marktextpro-win-(x64|arm64)-%version%-setup.exe`
 - Linux: `deb`, `rpm`, `snap`, `tar.gz` packages (see Baidu Netdisk or Release page).
 
+## Community & Feedback
+
+MarkTextPro is under active development and rapid iteration. We have set up a community QQ group for early users to discuss workflows, report bugs, and suggest features:
+
+- **QQ Group**: `871505001`
+- **Scan QR Code**:
+
+<p align="left">
+  <img src="docs/assets/qq-group.jpg" alt="MarkTextPro QQ Group" width="220">
+</p>
+
 ## Development
 
 ```bash

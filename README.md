@@ -322,6 +322,22 @@ MarkTextPro 将 Git 作为自由文件工作区的核心版本控制底座。在
 - Windows：`marktextpro-win-(x64|arm64)-%version%-setup.exe`
 - Linux：提供 `deb`、`rpm`、`snap`、`tar.gz` 等构建，具体以网盘或 Release 页面为准。
 
+## 交流与反馈
+
+项目目前仍在持续打磨和快速迭代中。为了方便大家随手交流使用心得、反馈遇到的问题，建了一个小小的 QQ 交流群。
+
+群里目前人还不算多，气氛轻松、门槛极低：
+- 无论是在使用中遇到了 Bug、偶发卡顿，还是想提新功能需求与体验优化建议；
+- 或是想探讨 Markdown 写作、学术排版、思维导图与绘图技巧；
+- 随时都欢迎进群随手聊聊，作者常驻在线，倾听每一位早期用户的声音～
+
+- **QQ 交流群**：`871505001`
+- **扫码加入**：
+
+<p align="left">
+  <img src="docs/assets/qq-group.jpg" alt="MarkTextPro QQ 交流群" width="220">
+</p>
+
 ## 开发
 
 ```bash
