@@ -20,6 +20,9 @@
   <a href="https://github.com/scott20201225/marktext-pro/releases/latest">
     <img src="https://img.shields.io/github/downloads/scott20201225/marktext-pro/latest/total.svg" alt="latest download">
   </a>
+  <a href="https://gitee.com/cmflovekm/marktext-pro">
+    <img src="https://img.shields.io/badge/Gitee-国内镜像仓库-red.svg?logo=gitee" alt="Gitee 镜像">
+  </a>
 </div>
 
 <div align="center">
@@ -57,10 +60,16 @@ MarkTextPro 和 MarkNotePro 是两个相互独立、但能力互补的产品。�
 
 相关地址：
 
-- MarkTextPro GitHub：[https://github.com/scott20201225/marktext-pro](https://github.com/scott20201225/marktext-pro)
-- MarkTextPro Releases：[https://github.com/scott20201225/marktext-pro/releases/latest](https://github.com/scott20201225/marktext-pro/releases/latest)
-- MarkNotePro GitHub：[https://github.com/scott20201225/marknote-pro](https://github.com/scott20201225/marknote-pro)
-- MarkNotePro Releases：[https://github.com/scott20201225/marknote-pro/releases/latest](https://github.com/scott20201225/marknote-pro/releases/latest)
+- **MarkTextPro**（自由文件与项目多模态工作区）：
+  - GitHub 仓库：[https://github.com/scott20201225/marktext-pro](https://github.com/scott20201225/marktext-pro)
+  - Gitee 镜像仓库（国内推荐）：[https://gitee.com/cmflovekm/marktext-pro](https://gitee.com/cmflovekm/marktext-pro)
+  - GitHub Releases 下载：[https://github.com/scott20201225/marktext-pro/releases/latest](https://github.com/scott20201225/marktext-pro/releases/latest)
+  - Gitee 发行版下载（国内高速）：[https://gitee.com/cmflovekm/marktext-pro/releases](https://gitee.com/cmflovekm/marktext-pro/releases)
+- **MarkNotePro**（结构化本地笔记与多模态知识工作台）：
+  - GitHub 仓库：[https://github.com/scott20201225/marknote-pro](https://github.com/scott20201225/marknote-pro)
+  - Gitee 镜像仓库（国内推荐）：[https://gitee.com/cmflovekm/marknote-pro](https://gitee.com/cmflovekm/marknote-pro)
+  - GitHub Releases 下载：[https://github.com/scott20201225/marknote-pro/releases/latest](https://github.com/scott20201225/marknote-pro/releases/latest)
+  - Gitee 发行版下载（国内高速）：[https://gitee.com/cmflovekm/marknote-pro/releases](https://gitee.com/cmflovekm/marknote-pro/releases)
 
 两者都集成 Git 工作区，都可以用于版本管理、远程同步和多设备协作；选择时更应该看你需要“自由文件编辑管理器”还是“结构化笔记工具”。
 
@@ -293,7 +302,14 @@ MarkTextPro 将 Git 作为自由文件工作区的核心版本控制底座。在
 
 ![platform](https://img.shields.io/static/v1.svg?label=Platform&message=Linux%20x64%20|%20macOS%20x64%2Farm64%20|%20Windows%20x64%2Farm64&style=for-the-badge)
 
-请从 [Release 页面](https://github.com/scott20201225/marktext-pro/releases/latest) 下载对应系统版本：
+国内用户推荐使用 Gitee 发行版下载安装包，下载速度更快；海外用户可使用 GitHub Releases：
+
+- **Gitee 发行版下载（国内高速推荐）**：[https://gitee.com/cmflovekm/marktext-pro/releases](https://gitee.com/cmflovekm/marktext-pro/releases)
+- **GitHub 官方 Releases 下载**：[https://github.com/scott20201225/marktext-pro/releases/latest](https://github.com/scott20201225/marktext-pro/releases/latest)
+
+> 💡 **兄弟项目**：如果您需要结构化本地笔记、知识库管理与层级文档体系，请前往 [MarkNotePro Gitee 镜像](https://gitee.com/cmflovekm/marknote-pro) 或 [MarkNotePro Gitee 发行版下载](https://gitee.com/cmflovekm/marknote-pro/releases)（GitHub 对应页面：[MarkNotePro Releases](https://github.com/scott20201225/marknote-pro/releases/latest)）。
+
+安装包格式对应：
 
 - macOS：`marktextpro-mac-(arm64|x64)-%version%.dmg`
 - Windows：`marktextpro-win-(x64|arm64)-%version%-setup.exe`
