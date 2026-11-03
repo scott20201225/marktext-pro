@@ -15,6 +15,9 @@ import parseArgs from '../cli/parser'
 import { normalizeAndResolvePath } from '../filesystem'
 import { normalizeMarkdownPath } from '../filesystem/markdown'
 import { registerKeyboardListeners } from '../keyboard'
+import { registerGlobalShortcuts } from '../keyboard/globalShortcuts'
+import { getCaptureWindowManager } from '../windows/captureWindow'
+import { getPinWindowManager } from '../windows/pinWindow'
 import { selectTheme } from '../menu/actions/theme'
 import { dockMenu } from '../menu/templates'
 import registerSpellcheckerListeners from '../spellchecker'
@@ -189,6 +192,30 @@ class App {
     app.on('ready', this.ready)
 
     app.on('window-all-closed', () => {
+      // Guard 1: Never quit if active editor windows are still tracked or managed
+      if (this._windowManager.windowCount > 0) {
+        return
+      }
+      // Guard 2: Never quit if screen capture is currently in progress
+      try {
+        if (getCaptureWindowManager().isCapturing) {
+          return
+        }
+      } catch {}
+      // Guard 3: Never quit if any pin windows (贴图) are on screen
+      try {
+        if (getPinWindowManager().windows.size > 0) {
+          return
+        }
+      } catch {}
+      // Guard 4: Never quit if any BrowserWindow is still alive in Electron
+      try {
+        const liveWins = BrowserWindow.getAllWindows().filter((w) => !w.isDestroyed())
+        if (liveWins.length > 0) {
+          return
+        }
+      } catch {}
+
       // Close all the image path watcher
       for (const watcher of watchers.values()) {
         watcher.close()
@@ -474,6 +501,12 @@ class App {
     } else {
       // Create immediately on Windows/macOS
       createWindow()
+    }
+
+    try {
+      registerGlobalShortcuts()
+    } catch (err) {
+      log.error('[App] Failed to register global shortcuts:', err)
     }
 
     // this.shortcutCapture = new ShortcutCapture()
