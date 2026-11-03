@@ -8,25 +8,43 @@ export class ClipboardModalWindow {
   private _win: BrowserWindow | null = null
   private _isReady: boolean = false
   private _wasMarkNoteActive: boolean = false
+  private _activeDisplayId: number | null = null
 
   constructor() {
     // Pure lazy loading: do not eagerly create floating window at application startup,
     // which interferes with macOS keyWindow activation and text input context.
   }
 
-  private _createWindow(): void {
+  private _createWindow(initialBounds?: { x: number; y: number; width: number; height: number }): void {
     if (!app.isReady()) return
-    const primaryDisplay = screen.getPrimaryDisplay()
-    const { width: screenWidth, height: screenHeight } = primaryDisplay.workAreaSize
 
     const winWidth = 740
     const winHeight = 500
 
+    let initX: number
+    let initY: number
+
+    if (initialBounds) {
+      initX = initialBounds.x
+      initY = initialBounds.y
+    } else {
+      const cursorPoint = screen.getCursorScreenPoint()
+      const currentDisplay = screen.getDisplayNearestPoint(cursorPoint)
+      const { x: dispX, y: dispY, width: dispW, height: dispH } = currentDisplay.workArea
+      initX = Math.round(dispX + (dispW - winWidth) / 2)
+      initY = Math.round(dispY + (dispH - winHeight) / 2)
+    }
+
     this._win = new BrowserWindow({
       width: winWidth,
       height: winHeight,
-      x: Math.round((screenWidth - winWidth) / 2),
-      y: Math.round((screenHeight - winHeight) / 2),
+      minWidth: winWidth,
+      maxWidth: winWidth,
+      minHeight: winHeight,
+      maxHeight: winHeight,
+      fullscreen: false,
+      fullscreenable: false,
+      type: isOsx ? 'panel' : undefined,
       frame: false,
       resizable: false,
       movable: true,
@@ -50,7 +68,10 @@ export class ClipboardModalWindow {
 
     const topLevel = 'floating'
     this._win.setAlwaysOnTop(true, topLevel)
-    this._win.setVisibleOnAllWorkspaces(true, { visibleOnFullScreen: true })
+    this._win.setVisibleOnAllWorkspaces(true, {
+      visibleOnFullScreen: true,
+      skipTransformProcessType: true
+    })
 
     const baseUrl =
       process.env.NODE_ENV === 'development'
@@ -74,7 +95,7 @@ export class ClipboardModalWindow {
 
     this._win.on('blur', () => {
       if (this._win && !this._win.isDestroyed() && this._win.isVisible()) {
-        this.hide(this._wasMarkNoteActive)
+        this.hide()
       }
     })
 
@@ -85,24 +106,6 @@ export class ClipboardModalWindow {
   }
 
   public async show(): Promise<void> {
-    if (!this._win || this._win.isDestroyed()) {
-      this._createWindow()
-    }
-
-    if (!this._win) return
-
-    const currentFocused = BrowserWindow.getFocusedWindow()
-    this._wasMarkNoteActive = currentFocused !== null
-
-    // Immediately poll clipboard so latest system/Lark screenshot or copy is caught instantly!
-    const clipboardService = getClipboardService()
-    try {
-      await clipboardService.checkClipboardNow()
-    } catch (err) {
-      log.warn('[ClipboardModal] checkClipboardNow error:', err as Error)
-    }
-
-    // Center on the display where the cursor currently is
     const cursorPoint = screen.getCursorScreenPoint()
     const currentDisplay = screen.getDisplayNearestPoint(cursorPoint)
     const { x: dispX, y: dispY, width: dispW, height: dispH } = currentDisplay.workArea
@@ -112,12 +115,54 @@ export class ClipboardModalWindow {
     const posX = Math.round(dispX + (dispW - winWidth) / 2)
     const posY = Math.round(dispY + (dispH - winHeight) / 2)
 
-    this._win.setPosition(posX, posY)
+    if (!this._win || this._win.isDestroyed()) {
+      this._createWindow({ x: posX, y: posY, width: winWidth, height: winHeight })
+    }
+
+    if (!this._win) return
+
+    this._activeDisplayId = currentDisplay.id
+    const currentFocused = BrowserWindow.getFocusedWindow()
+    const activeDisplay =
+      currentFocused && !currentFocused.isDestroyed()
+        ? screen.getDisplayMatching(currentFocused.getBounds())
+        : null
+    this._wasMarkNoteActive = activeDisplay !== null && activeDisplay.id === currentDisplay.id
+
+    // Immediately poll clipboard so latest system/Lark screenshot or copy is caught instantly!
+    const clipboardService = getClipboardService()
+    try {
+      await clipboardService.checkClipboardNow()
+    } catch (err) {
+      log.warn('[ClipboardModal] checkClipboardNow error:', err as Error)
+    }
+
+    // Safety: ensure history modal never stays in full-screen state
+    if (this._win.isFullScreen()) {
+      this._win.setFullScreen(false)
+    }
+
+    // Set bounds accurately onto cursor display workArea
+    this._win.setBounds({ x: posX, y: posY, width: winWidth, height: winHeight })
     const topLevel = 'floating'
     this._win.setAlwaysOnTop(true, topLevel)
+    this._win.setVisibleOnAllWorkspaces(true, {
+      visibleOnFullScreen: true,
+      skipTransformProcessType: true
+    })
     this._win.moveTop()
-    this._win.show()
-    this._win.focus()
+
+    if (isOsx) {
+      // Crucial: showInactive() displays on top of native full-screen apps without triggering
+      // macOS application activation or space jumping!
+      this._win.showInactive()
+      this._win.focus()
+      this._win.webContents?.focus()
+    } else {
+      this._win.show()
+      this._win.focus()
+      this._win.webContents?.focus()
+    }
 
     this._win.webContents.send('mt::clipboard-modal-show', {
       history: clipboardService.history,
@@ -125,28 +170,14 @@ export class ClipboardModalWindow {
     })
   }
 
-  public hide(restoreFocusToEditor?: boolean): void {
-    const shouldRestore = restoreFocusToEditor ?? this._wasMarkNoteActive
+  public hide(): void {
     if (this._win && !this._win.isDestroyed() && this._win.isVisible()) {
       this._win.hide()
-    }
-    if (shouldRestore) {
-      this.restoreEditorFocus()
     }
   }
 
   public restoreEditorFocus(): void {
-    const allWindows = BrowserWindow.getAllWindows()
-    const editorWin = allWindows.find(
-      (w) => w !== this._win && !w.isDestroyed() && w.isVisible()
-    )
-    if (editorWin) {
-      if (isOsx) {
-        app.focus({ steal: true })
-      }
-      editorWin.focus()
-      editorWin.webContents?.focus()
-    }
+    // Intentionally no-op: auxiliary window close/hide must never steal focus or switch spaces to MarkNotePro!
   }
 
   public toggle(): void {

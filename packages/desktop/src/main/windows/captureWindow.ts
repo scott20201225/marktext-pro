@@ -37,12 +37,17 @@ export class CaptureWindowManager {
   }
 
   public async startCapture(): Promise<void> {
-    console.log('[CaptureWindowManager] startCapture called!')
+    log.info('[CaptureWindowManager] startCapture called!')
+    this._isClosing = false
     this._isCapturing = true
 
-    // Check whether MarkNotePro was the active window when shortcut was triggered
+    // Check whether MarkTextPro was the active window on this EXACT display when shortcut was triggered
     const activeWin = BrowserWindow.getFocusedWindow()
-    this._wasEditorActive = activeWin !== null && !activeWin.isDestroyed()
+    const cursorPoint = screen.getCursorScreenPoint()
+    const currentDisplay = screen.getDisplayNearestPoint(cursorPoint)
+    const activeDisplay =
+      activeWin && !activeWin.isDestroyed() ? screen.getDisplayMatching(activeWin.getBounds()) : null
+    this._wasEditorActive = activeDisplay !== null && activeDisplay.id === currentDisplay.id
 
     if (this._fallbackTimer) {
       clearTimeout(this._fallbackTimer)
@@ -50,13 +55,13 @@ export class CaptureWindowManager {
     }
 
     if (this._win && !this._win.isDestroyed()) {
-      this._win.destroy()
+      try {
+        this._win.destroy()
+      } catch {}
       this._win = null
     }
 
     try {
-      const cursorPoint = screen.getCursorScreenPoint()
-      const currentDisplay = screen.getDisplayNearestPoint(cursorPoint)
       const bounds = currentDisplay.bounds
       const scaleFactor = currentDisplay.scaleFactor || 1
 
@@ -120,6 +125,13 @@ export class CaptureWindowManager {
               s.id === `screen:${dispIdStr}` ||
               s.id.startsWith(`screen:${dispIdStr}:`)
           )
+          if (!targetSource) {
+            const allDisplays = screen.getAllDisplays()
+            const dispIndex = allDisplays.findIndex((d) => d.id === currentDisplay.id)
+            if (dispIndex >= 0 && sources[dispIndex]) {
+              targetSource = sources[dispIndex]
+            }
+          }
           if (!targetSource && sources.length > 0) {
             targetSource = sources[0]
           }
@@ -169,6 +181,7 @@ export class CaptureWindowManager {
             )
           }
         }
+        this.close()
         return
       }
 
@@ -177,6 +190,7 @@ export class CaptureWindowManager {
         y: bounds.y,
         width: bounds.width,
         height: bounds.height,
+        type: isOsx ? 'panel' : undefined,
         useContentSize: false,
         frame: false,
         resizable: false,
@@ -202,8 +216,16 @@ export class CaptureWindowManager {
         }
       })
 
-      // Zero-flicker: Avoid setting workspace flags on hidden windows,
-      // which causes WindowServer to clear layers and trigger flashes.
+      // Auxiliary full-screen behavior:
+      // Must set visibleOnFullScreen immediately upon creation so macOS attaches this overlay
+      // to the current Space (including full-screen spaces) without jumping to Desktop 1!
+      if (isOsx) {
+        this._win.setAlwaysOnTop(true, 'status', 1)
+        this._win.setVisibleOnAllWorkspaces(true, {
+          visibleOnFullScreen: true,
+          skipTransformProcessType: true
+        })
+      }
 
       try {
         globalShortcut.register('Escape', () => {
@@ -261,6 +283,8 @@ export class CaptureWindowManager {
         } catch {}
         this._win = null
         this._isCapturing = false
+        this._isClosing = false
+        this._currentPayload = null
       })
     } catch (err) {
       try {
@@ -280,35 +304,42 @@ export class CaptureWindowManager {
     }
     if (!this._win || this._win.isDestroyed() || this._win.isVisible()) return
 
-    // Apply alwaysOnTop and workspace visibility at the exact moment of display
+    // Apply bounds and window levels onto target display
     try {
+      if (this._currentPayload?.bounds) {
+        this._win.setBounds({
+          x: this._currentPayload.bounds.x,
+          y: this._currentPayload.bounds.y,
+          width: this._currentPayload.bounds.width,
+          height: this._currentPayload.bounds.height
+        })
+      }
+
       if (isOsx) {
         // macOS: Use 'status' (level 25) with relativeLevel 1 (level 26) to cover Menu Bar (24) and Dock (20),
         // while strictly staying BELOW IME candidate pop-up windows (level 101) so candidates are visible!
         this._win.setAlwaysOnTop(true, 'status', 1)
-        this._win.setVisibleOnAllWorkspaces(true, { visibleOnFullScreen: true })
-        app.focus({ steal: true })
+        this._win.setVisibleOnAllWorkspaces(true, {
+          visibleOnFullScreen: true,
+          skipTransformProcessType: true
+        })
+        // Crucial: showInactive() displays the overlay on the current Space (including full-screen spaces)
+        // WITHOUT activating the app, preventing macOS WindowServer from switching to Desktop 1!
+        this._win.showInactive()
+        this._win.focus()
+        this._win.webContents?.focus()
       } else {
         // Windows / Linux:
         // Position window onto target display exact bounds and place above Taskbar with 'screen-saver'
-        if (this._currentPayload?.bounds) {
-          this._win.setBounds({
-            x: this._currentPayload.bounds.x,
-            y: this._currentPayload.bounds.y,
-            width: this._currentPayload.bounds.width,
-            height: this._currentPayload.bounds.height
-          })
-        }
         this._win.setAlwaysOnTop(true, 'screen-saver')
         this._win.setVisibleOnAllWorkspaces(true)
+        this._win.show()
+        this._win.focus()
+        this._win.webContents?.focus()
       }
     } catch (e) {
       log.warn('[CaptureWindowManager] setAlwaysOnTop error:', e)
     }
-
-    this._win.show()
-    this._win.focus()
-    this._win.webContents?.focus()
   }
 
   public setTextEditingMode(active: boolean): void {
@@ -329,9 +360,6 @@ export class CaptureWindowManager {
         log.warn('[CaptureWindowManager] setAlwaysOnTop floating error:', e)
       }
 
-      if (isOsx) {
-        app.focus({ steal: true })
-      }
       this._win.focus()
       this._win.webContents?.focus()
     } else {
@@ -356,43 +384,33 @@ export class CaptureWindowManager {
     this._isClosing = true
     this._isCapturing = false
 
-    if (this._fallbackTimer) {
-      clearTimeout(this._fallbackTimer)
-      this._fallbackTimer = null
-    }
-
     try {
-      globalShortcut.unregister('Escape')
-      globalShortcut.unregister('CommandOrControl+Escape')
-    } catch {}
-
-    const wasEditorActive = this._wasEditorActive
-    this._wasEditorActive = false
-
-    if (this._win && !this._win.isDestroyed()) {
-      try {
-        this._win.setVisibleOnAllWorkspaces(false)
-      } catch {}
-      this._win.destroy()
-      this._win = null
-    }
-
-    this._isClosing = false
-
-    // Natural Focus Restoration:
-    // If MarkNotePro was the active application before capture started, gently return focus to editor.
-    // If the user was in an external third-party application (e.g. Lark, Chrome, Terminal),
-    // NEVER steal or hijack focus back to MarkNotePro. Let macOS return focus to the previous app naturally!
-    if (wasEditorActive) {
-      const allWins = BrowserWindow.getAllWindows()
-      const editorWin = allWins.find((w) => !w.isDestroyed() && w !== this._win && w.isVisible())
-      if (editorWin) {
-        if (isOsx) {
-          app.focus({ steal: true })
-        }
-        editorWin.focus()
-        editorWin.webContents?.focus()
+      if (this._fallbackTimer) {
+        clearTimeout(this._fallbackTimer)
+        this._fallbackTimer = null
       }
+
+      try {
+        globalShortcut.unregister('Escape')
+        globalShortcut.unregister('CommandOrControl+Escape')
+      } catch {}
+
+      this._wasEditorActive = false
+
+      if (this._win && !this._win.isDestroyed()) {
+        try {
+          this._win.setVisibleOnAllWorkspaces(false)
+        } catch {}
+        this._win.destroy()
+        this._win = null
+      }
+    } catch (e) {
+      log.error('[CaptureWindowManager] Error closing window:', e)
+    } finally {
+      // Completely release the large screenshot image data from memory
+      this._currentPayload = null
+      this._isClosing = false
+      this._isCapturing = false
     }
   }
 
