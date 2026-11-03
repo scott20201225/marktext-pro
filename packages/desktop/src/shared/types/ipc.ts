@@ -144,6 +144,10 @@ export interface IpcInvokeChannels {
     ret: void
   }
   'mt::pin-window-get-payload': { args: [pinId?: string]; ret: PinWindowPayload | null }
+  'mt::pin-window-get-bounds': {
+    args: [pinId?: string]
+    ret: { x: number; y: number; width: number; height: number } | null
+  }
   'mt::pin-window-copy': { args: [dataUrl: string]; ret: boolean }
   'mt::pin-window-save': { args: [dataUrl: string]; ret: string | null }
   'mt::ask-for-image-path': { args: []; ret: string[] }
@@ -332,6 +336,12 @@ export interface IpcSendChannels {
   'mt::capture-first-frame-ready': []
   'mt::pin-window-close': [pinId?: string]
   'mt::pin-window-drag': [payload: { dx: number; dy: number; pinId?: string }]
+  'mt::pin-window-resize': [
+    payload: {
+      bounds: { x: number; y: number; width: number; height: number }
+      pinId?: string
+    }
+  ]
   'mt::pin-window-set-always-on-top': [flag: boolean, pinId?: string]
   'app-create-editor-window': [config?: unknown]
   'app-create-settings-window': []

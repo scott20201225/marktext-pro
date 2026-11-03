@@ -555,11 +555,13 @@
             v-model="watermarkText"
             :placeholder="tr('watermarkCustomPlaceholder')"
             class="watermark-input"
+            @focus="onWatermarkInputFocus"
+            @blur="onWatermarkInputBlur"
             @input="renderAll"
             @mousedown.stop
             @mouseup.stop
             @click.stop
-            @keydown.stop
+            @keydown="onWatermarkInputKeydown"
             @keyup.stop
           />
         </template>
@@ -1176,6 +1178,24 @@ const watermarkPresets = computed(() => [
   tr('wmForReview'),
   'MarkTextPro'
 ])
+
+const onWatermarkInputFocus = (): void => {
+  window.electron.ipcRenderer.send('mt::capture-text-mode', true)
+}
+
+const onWatermarkInputBlur = (): void => {
+  window.electron.ipcRenderer.send('mt::capture-text-mode', false)
+}
+
+const onWatermarkInputKeydown = (e: KeyboardEvent): void => {
+  e.stopPropagation()
+  if (e.isComposing) return
+  if (e.key === 'Escape') {
+    ;(e.target as HTMLInputElement)?.blur()
+  } else if (e.key === 'Enter') {
+    ;(e.target as HTMLInputElement)?.blur()
+  }
+}
 
 let pixelMosaicCanvas: HTMLCanvasElement | null = null
 let blurMosaicCanvas: HTMLCanvasElement | null = null
@@ -3202,6 +3222,11 @@ onUnmounted(() => {
   font-size: 13px;
 }
 
+.lark-textarea::selection {
+  background: rgba(59, 130, 246, 0.45) !important;
+  color: #ffffff !important;
+}
+
 /* Lark-Style Two-Tier Toolbar Structure */
 .lark-toolbar-wrapper {
   position: absolute;
@@ -3441,22 +3466,56 @@ onUnmounted(() => {
 }
 
 .watermark-input {
-  background: #f5f6f7;
-  color: #1f2329;
-  border: 1px solid #dee0e3;
+  background: #ffffff;
+  color: #111827;
+  border: 1px solid #d1d5db;
   border-radius: 6px;
   padding: 0 10px;
   font-size: 13px;
+  font-weight: 500;
   height: 32px;
   outline: none;
   width: 140px;
   box-sizing: border-box;
+  caret-color: #336df4;
+  transition: all 0.15s ease;
+}
+
+.watermark-input:focus {
+  border-color: #336df4;
+  box-shadow: 0 0 0 2px rgba(51, 109, 244, 0.2);
+}
+
+.watermark-input::selection {
+  background: #336df4 !important;
+  color: #ffffff !important;
+}
+
+.watermark-input::placeholder {
+  color: rgba(31, 35, 41, 0.45);
 }
 
 .theme-dark .watermark-input {
-  background: #2b2e35;
-  color: #e2e8f0;
-  border-color: rgba(255, 255, 255, 0.15);
+  background: #1e2025;
+  color: #f8fafc;
+  border-color: rgba(255, 255, 255, 0.22);
+  caret-color: #3b82f6;
+}
+
+.theme-dark .watermark-input:focus {
+  background: #16181d;
+  border-color: #3b82f6;
+  box-shadow: 0 0 0 2px rgba(59, 130, 246, 0.35);
+  color: #ffffff;
+}
+
+.theme-dark .watermark-input::selection {
+  background: #3b82f6 !important;
+  color: #ffffff !important;
+}
+
+.theme-dark .watermark-input::placeholder {
+  color: rgba(255, 255, 255, 0.4);
 }
 
 .preset-pill {
@@ -3468,24 +3527,37 @@ onUnmounted(() => {
   cursor: pointer;
   color: #1f2329;
   white-space: nowrap;
+  transition: all 0.12s ease;
 }
 
-.theme-dark .preset-pill {
-  background: #2b2e35;
-  color: #e2e8f0;
-  border-color: rgba(255, 255, 255, 0.15);
+.preset-pill:hover {
+  background: #e5e7eb;
+  color: #111827;
 }
 
 .preset-pill.active {
   background: #eef3fe;
   border-color: #336df4;
   color: #336df4;
+  font-weight: 500;
+}
+
+.theme-dark .preset-pill {
+  background: #2b2e35;
+  color: #cbd5e1;
+  border-color: rgba(255, 255, 255, 0.15);
+}
+
+.theme-dark .preset-pill:hover {
+  background: #374151;
+  color: #f8fafc;
 }
 
 .theme-dark .preset-pill.active {
   background: rgba(51, 109, 244, 0.3);
   border-color: #60a5fa;
   color: #60a5fa;
+  font-weight: 500;
 }
 
 /* Lark Mosaic Intensity Slider */

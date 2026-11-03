@@ -38,8 +38,8 @@ export class PinWindowManager {
       h = Math.round(h * scale)
     }
 
-    const width = Math.min(Math.max(w, 80), currentDisplay.workArea.width)
-    const height = Math.min(Math.max(h, 40), currentDisplay.workArea.height)
+    const width = Math.min(Math.max(w, 20), currentDisplay.workArea.width)
+    const height = Math.min(Math.max(h, 20), currentDisplay.workArea.height)
 
     const posX =
       payload.x !== undefined
@@ -68,6 +68,8 @@ export class PinWindowManager {
       minimizable: false,
       maximizable: false,
       closable: true,
+      fullscreen: false,
+      fullscreenable: false,
       alwaysOnTop: true,
       skipTaskbar: true,
       enableLargerThanScreen: true,
@@ -81,15 +83,6 @@ export class PinWindowManager {
         nodeIntegration: false
       }
     })
-
-    // Lock aspect ratio so user manual resizing strictly preserves width-to-height proportion
-    if (width > 0 && height > 0) {
-      try {
-        win.setAspectRatio(width / height)
-      } catch (e) {
-        log.warn('[PinWindowManager] Failed to setAspectRatio:', e)
-      }
-    }
 
     // Pin windows stay above normal apps, but below the Clipboard History modal (which uses 'screen-saver')
     const topLevel = 'floating'
@@ -118,6 +111,15 @@ export class PinWindowManager {
 
     const showAndFocus = (): void => {
       if (win.isDestroyed()) return
+      try {
+        win.setFullScreen(false)
+      } catch {}
+      win.setBounds({
+        x: Math.round(posX),
+        y: Math.round(posY),
+        width: Math.round(width),
+        height: Math.round(height)
+      })
       if (!win.isVisible()) {
         if (isOsx) {
           win.showInactive()
@@ -128,6 +130,18 @@ export class PinWindowManager {
       win.focus()
       win.webContents.send('mt::pin-window-data', payload)
     }
+
+    win.webContents.on('before-input-event', (event, input) => {
+      if (input.type === 'keyDown') {
+        if (
+          input.key === 'Escape' ||
+          ((input.meta || input.control) && (input.key === 'w' || input.key === 'W'))
+        ) {
+          event.preventDefault()
+          this.closePin(pinId, win)
+        }
+      }
+    })
 
     win.webContents.once('did-finish-load', () => {
       showAndFocus()
@@ -199,6 +213,32 @@ export class PinWindowManager {
     win.setPosition(Math.round(currX + dx), Math.round(currY + dy))
   }
 
+  public getBounds(
+    pinId?: string,
+    sourceWindow?: BrowserWindow
+  ): { x: number; y: number; width: number; height: number } | null {
+    const win = (pinId ? this._windows.get(pinId) : sourceWindow) || sourceWindow
+    if (!win || win.isDestroyed()) return null
+    const [x, y] = win.getPosition()
+    const [width, height] = win.getSize()
+    return { x, y, width, height }
+  }
+
+  public resizeWindow(
+    bounds: { x: number; y: number; width: number; height: number },
+    pinId?: string,
+    sourceWindow?: BrowserWindow
+  ): void {
+    const win = (pinId ? this._windows.get(pinId) : sourceWindow) || sourceWindow
+    if (!win || win.isDestroyed()) return
+    win.setBounds({
+      x: Math.round(bounds.x),
+      y: Math.round(bounds.y),
+      width: Math.max(20, Math.round(bounds.width)),
+      height: Math.max(20, Math.round(bounds.height))
+    })
+  }
+
   public fitSize(
     pinId?: string,
     naturalWidth?: number,
@@ -215,15 +255,12 @@ export class PinWindowManager {
     const scaleFactor = currentDisplay.scaleFactor || 1
 
     const aspectRatio = naturalWidth / naturalHeight
-    try {
-      win.setAspectRatio(aspectRatio)
-    } catch {}
 
     const baseW = naturalWidth / scaleFactor
     let targetW = Math.round(baseW * zoom)
-    // Keep minimum 20px and maximum 10000px, without arbitrary 0.95 clamping
+    // Keep minimum 20px and maximum 10000px
     targetW = Math.max(Math.min(targetW, 10000), 20)
-    let targetH = Math.max(10, Math.round(targetW / aspectRatio))
+    let targetH = Math.max(20, Math.round(targetW / aspectRatio))
 
     const centerX = winX + winW / 2
     const centerY = winY + winH / 2

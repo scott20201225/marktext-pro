@@ -9,12 +9,15 @@
     @keydown="onKeydown"
     tabindex="0"
   >
-    <!-- Permanent Subtle Pin Badge (Disappears on hover to reveal full toolbar) -->
-    <div class="pin-badge-permanent" title="MarkTextPro 贴图">
-      <svg viewBox="0 0 24 24" width="11" height="11" fill="currentColor">
-        <path d="M16 12V4h1V2H7v2h1v8l-2 2v2h5.2v6h1.6v-6H18v-2l-2-2z"></path>
-      </svg>
-    </div>
+    <!-- 8 Directional Resize Handles for Manual Sizing -->
+    <div class="resize-handle handle-t" @mousedown.stop="onResizeStart('t', $event)"></div>
+    <div class="resize-handle handle-b" @mousedown.stop="onResizeStart('b', $event)"></div>
+    <div class="resize-handle handle-l" @mousedown.stop="onResizeStart('l', $event)"></div>
+    <div class="resize-handle handle-r" @mousedown.stop="onResizeStart('r', $event)"></div>
+    <div class="resize-handle handle-tl" @mousedown.stop="onResizeStart('tl', $event)"></div>
+    <div class="resize-handle handle-tr" @mousedown.stop="onResizeStart('tr', $event)"></div>
+    <div class="resize-handle handle-bl" @mousedown.stop="onResizeStart('bl', $event)"></div>
+    <div class="resize-handle handle-br" @mousedown.stop="onResizeStart('br', $event)"></div>
 
     <!-- Hover Action Bar -->
     <div class="hover-toolbar" @mousedown.stop>
@@ -337,12 +340,132 @@ const onMouseUp = (): void => {
   window.removeEventListener('mouseup', onMouseUp)
 }
 
+// -------------------------------------------------------------
+// Manual 8-Directional Window Resizing
+// -------------------------------------------------------------
+let isResizing = false
+let resizeDir = ''
+let resizeStartMouseX = 0
+let resizeStartMouseY = 0
+let resizeInitBounds = { x: 0, y: 0, width: 0, height: 0 }
+let resizeAspectRatio = 1
+
+const onResizeStart = async (dir: string, e: MouseEvent): Promise<void> => {
+  if (e.button !== 0) return
+  contextMenuVisible.value = false
+  isResizing = true
+  resizeDir = dir
+  resizeStartMouseX = e.screenX
+  resizeStartMouseY = e.screenY
+
+  try {
+    const bounds = await window.electron.ipcRenderer.invoke(
+      'mt::pin-window-get-bounds',
+      pinId.value
+    )
+    if (bounds) {
+      resizeInitBounds = bounds
+    } else {
+      resizeInitBounds = {
+        x: window.screenX,
+        y: window.screenY,
+        width: window.innerWidth,
+        height: window.innerHeight
+      }
+    }
+  } catch {
+    resizeInitBounds = {
+      x: window.screenX,
+      y: window.screenY,
+      width: window.innerWidth,
+      height: window.innerHeight
+    }
+  }
+
+  resizeAspectRatio =
+    currentNaturalWidth && currentNaturalHeight
+      ? currentNaturalWidth / currentNaturalHeight
+      : resizeInitBounds.width / Math.max(1, resizeInitBounds.height)
+
+  window.addEventListener('mousemove', onResizeMove)
+  window.addEventListener('mouseup', onResizeEnd)
+}
+
+const onResizeMove = (e: MouseEvent): void => {
+  if (!isResizing) return
+  const dx = e.screenX - resizeStartMouseX
+  const dy = e.screenY - resizeStartMouseY
+
+  const init = resizeInitBounds
+  const ar = resizeAspectRatio || 1
+  let newW = init.width
+  let newH = init.height
+  let newX = init.x
+  let newY = init.y
+
+  if (resizeDir === 'r') {
+    newW = Math.max(20, init.width + dx)
+    newH = Math.max(20, Math.round(newW / ar))
+  } else if (resizeDir === 'l') {
+    newW = Math.max(20, init.width - dx)
+    newH = Math.max(20, Math.round(newW / ar))
+    newX = init.x + (init.width - newW)
+  } else if (resizeDir === 'b') {
+    newH = Math.max(20, init.height + dy)
+    newW = Math.max(20, Math.round(newH * ar))
+  } else if (resizeDir === 't') {
+    newH = Math.max(20, init.height - dy)
+    newW = Math.max(20, Math.round(newH * ar))
+    newY = init.y + (init.height - newH)
+  } else if (resizeDir === 'br') {
+    const scale = Math.max(0.05, (init.width + dx) / Math.max(1, init.width))
+    newW = Math.max(20, Math.round(init.width * scale))
+    newH = Math.max(20, Math.round(init.height * scale))
+  } else if (resizeDir === 'bl') {
+    const scale = Math.max(0.05, (init.width - dx) / Math.max(1, init.width))
+    newW = Math.max(20, Math.round(init.width * scale))
+    newH = Math.max(20, Math.round(init.height * scale))
+    newX = init.x + (init.width - newW)
+  } else if (resizeDir === 'tr') {
+    const scale = Math.max(0.05, (init.width + dx) / Math.max(1, init.width))
+    newW = Math.max(20, Math.round(init.width * scale))
+    newH = Math.max(20, Math.round(init.height * scale))
+    newY = init.y + (init.height - newH)
+  } else if (resizeDir === 'tl') {
+    const scale = Math.max(0.05, (init.width - dx) / Math.max(1, init.width))
+    newW = Math.max(20, Math.round(init.width * scale))
+    newH = Math.max(20, Math.round(init.height * scale))
+    newX = init.x + (init.width - newW)
+    newY = init.y + (init.height - newH)
+  }
+
+  window.electron.ipcRenderer.send('mt::pin-window-resize', {
+    pinId: pinId.value,
+    bounds: { x: newX, y: newY, width: newW, height: newH }
+  })
+
+  // Update zoom badge
+  if (currentNaturalWidth) {
+    const dpr = window.devicePixelRatio || 1
+    const baseW = currentNaturalWidth / dpr
+    if (baseW > 0) {
+      zoomLevel.value = Math.max(0.01, Math.round((newW / baseW) * 100) / 100)
+    }
+  }
+}
+
+const onResizeEnd = (): void => {
+  isResizing = false
+  window.removeEventListener('mousemove', onResizeMove)
+  window.removeEventListener('mouseup', onResizeEnd)
+}
+
 let currentNaturalWidth = 0
 let currentNaturalHeight = 0
 let isProgrammaticResize = false
 
 const onWindowResize = (): void => {
-  if (isProgrammaticResize) return
+  if (isProgrammaticResize || isResizing) return
   if (!currentNaturalWidth || !currentNaturalHeight) return
   const dpr = window.devicePixelRatio || 1
   const baseW = currentNaturalWidth / dpr
@@ -557,6 +680,10 @@ onMounted(async () => {
 onUnmounted(() => {
   if (removeDataSub) removeDataSub()
   if (copiedTimer) clearTimeout(copiedTimer)
+  window.removeEventListener('mousemove', onMouseMove)
+  window.removeEventListener('mouseup', onMouseUp)
+  window.removeEventListener('mousemove', onResizeMove)
+  window.removeEventListener('mouseup', onResizeEnd)
   window.removeEventListener('resize', onWindowResize)
   window.removeEventListener('keydown', onKeydown)
 })
@@ -721,41 +848,6 @@ onUnmounted(() => {
   font-size: 11px;
   padding: 3px 6px;
   font-family: -apple-system, BlinkMacSystemFont, 'SF Pro Text', sans-serif;
-}
-
-/* Permanent Subtle Pin Badge */
-.pin-badge-permanent {
-  position: absolute;
-  top: 6px;
-  left: 6px;
-  width: 20px;
-  height: 20px;
-  border-radius: 4px;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  z-index: 999;
-  opacity: 0.55;
-  transition: opacity 0.2s ease;
-  pointer-events: none;
-}
-
-.theme-light .pin-badge-permanent {
-  background: rgba(255, 255, 255, 0.85);
-  color: #4b5563;
-  box-shadow: 0 1px 4px rgba(0, 0, 0, 0.15);
-  border: 1px solid rgba(0, 0, 0, 0.08);
-}
-
-.theme-dark .pin-badge-permanent {
-  background: rgba(30, 32, 40, 0.85);
-  color: #94a3b8;
-  box-shadow: 0 1px 4px rgba(0, 0, 0, 0.4);
-  border: 1px solid rgba(255, 255, 255, 0.12);
-}
-
-.pin-window-container:hover .pin-badge-permanent {
-  opacity: 0;
 }
 
 /* Pinned Image View with Crisp Borders and Subtle Shadows across All Platforms */
@@ -1073,5 +1165,76 @@ onUnmounted(() => {
   to {
     transform: rotate(360deg);
   }
+}
+
+/* 8 Directional Resize Handles */
+.resize-handle {
+  position: absolute;
+  z-index: 1500;
+  box-sizing: border-box;
+}
+
+.handle-t {
+  top: 0;
+  left: 8px;
+  right: 8px;
+  height: 6px;
+  cursor: ns-resize;
+}
+
+.handle-b {
+  bottom: 0;
+  left: 8px;
+  right: 8px;
+  height: 6px;
+  cursor: ns-resize;
+}
+
+.handle-l {
+  left: 0;
+  top: 8px;
+  bottom: 8px;
+  width: 6px;
+  cursor: ew-resize;
+}
+
+.handle-r {
+  right: 0;
+  top: 8px;
+  bottom: 8px;
+  width: 6px;
+  cursor: ew-resize;
+}
+
+.handle-tl {
+  top: 0;
+  left: 0;
+  width: 10px;
+  height: 10px;
+  cursor: nwse-resize;
+}
+
+.handle-tr {
+  top: 0;
+  right: 0;
+  width: 10px;
+  height: 10px;
+  cursor: nesw-resize;
+}
+
+.handle-bl {
+  bottom: 0;
+  left: 0;
+  width: 10px;
+  height: 10px;
+  cursor: nesw-resize;
+}
+
+.handle-br {
+  bottom: 0;
+  right: 0;
+  width: 10px;
+  height: 10px;
+  cursor: nwse-resize;
 }
 </style>

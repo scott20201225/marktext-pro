@@ -217,6 +217,25 @@ export const registerClipboardIpcHandlers = (): void => {
     pinManager.closePin(pinId, senderWin)
   })
 
+  ipcMain.handle('mt::pin-window-get-bounds', (event, pinId?: string) => {
+    const senderWin = BrowserWindow.fromWebContents(event.sender) || undefined
+    return pinManager.getBounds(pinId, senderWin)
+  })
+
+  ipcMain.on(
+    'mt::pin-window-resize',
+    (
+      event,
+      payload: {
+        bounds: { x: number; y: number; width: number; height: number }
+        pinId?: string
+      }
+    ) => {
+      const senderWin = BrowserWindow.fromWebContents(event.sender) || undefined
+      pinManager.resizeWindow(payload.bounds, payload.pinId, senderWin)
+    }
+  )
+
   ipcMain.on(
     'mt::pin-window-drag',
     (event, payload: { dx: number; dy: number; pinId?: string }) => {
