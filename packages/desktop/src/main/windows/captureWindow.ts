@@ -26,6 +26,7 @@ export class CaptureWindowManager {
   private _isClosing = false
   private _wasEditorActive = false
   private _fallbackTimer: NodeJS.Timeout | null = null
+  private _hasPromptedSystemPermission = false
 
   public get currentPayload(): ScreenCaptureDisplayInfo | null {
     return this._currentPayload
@@ -135,8 +136,19 @@ export class CaptureWindowManager {
         const accessStatus = isOsx ? systemPreferences.getMediaAccessStatus('screen') : 'unknown'
         log.error('[CaptureWindowManager] Both screencapture and desktopCapturer failed. accessStatus:', accessStatus)
 
+        if (isOsx) {
+          // On macOS, desktopCapturer.getSources() triggers macOS's native system permission prompt:
+          // '"MarkTextPro" wants to record this computer\'s screen and audio. [Open System Settings] [Deny]'
+          // On the first attempt, do NOT show a redundant blocking modal dialog that collides with the system prompt!
+          if (!this._hasPromptedSystemPermission) {
+            this._hasPromptedSystemPermission = true
+            log.info('[CaptureWindowManager] First macOS permission attempt: letting system prompt handle user interaction.')
+            return
+          }
+        }
+
         // Only prompt modal warning if permission was explicitly denied or not available
-        if (accessStatus === 'denied') {
+        if (accessStatus === 'denied' || !isOsx) {
           const res = await dialog.showMessageBox({
             type: 'warning',
             title: 'MarkTextPro 截图权限提示',
