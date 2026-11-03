@@ -133,6 +133,7 @@ export class CaptureWindowManager {
       }
 
       if (!dataUrl) {
+        this._isCapturing = false
         const accessStatus = isOsx ? systemPreferences.getMediaAccessStatus('screen') : 'unknown'
         log.error('[CaptureWindowManager] Both screencapture and desktopCapturer failed. accessStatus:', accessStatus)
 
@@ -157,7 +158,7 @@ export class CaptureWindowManager {
               'MarkTextPro 需要屏幕录制权限以捕获屏幕画面：\n\n' +
               '1. 请前往「系统设置 -> 隐私与安全 -> 屏幕与系统音频录制」；\n' +
               '2. 开启 MarkTextPro 的访问开关；\n' +
-              '3. 重新打开应用即可正常截图。',
+              '3. ⚠️ 重要：macOS 机制要求开启后必须完全退出并重新启动 MarkTextPro 才能生效。',
             buttons: ['打开系统设置', '稍后再说'],
             defaultId: 0,
             cancelId: 1
