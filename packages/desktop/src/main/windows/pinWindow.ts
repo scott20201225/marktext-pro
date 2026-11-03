@@ -103,7 +103,7 @@ export class PinWindowManager {
     const url = new URL(baseUrl)
     url.searchParams.set('type', 'pin')
     url.searchParams.set('pinId', pinId)
-    url.searchParams.set('wid', '1')
+    url.searchParams.set('wid', String(win.id))
     url.searchParams.set('theme', nativeTheme.shouldUseDarkColors ? 'dark' : 'light')
     try {
       url.searchParams.set('udp', app.getPath('userData'))

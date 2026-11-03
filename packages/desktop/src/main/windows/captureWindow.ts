@@ -211,7 +211,11 @@ export class CaptureWindowManager {
           : `file://${path.join(__dirname, '../renderer/index.html')}`
 
       const url = new URL(baseUrl)
+      url.searchParams.set('wid', String(this._win.id))
       url.searchParams.set('type', 'capture')
+      try {
+        url.searchParams.set('udp', app.getPath('userData'))
+      } catch {}
       url.hash = '/capture'
 
       const payload: ScreenCaptureDisplayInfo = {

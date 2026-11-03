@@ -32,11 +32,26 @@ const parseUrlArgs = (): UrlArgs => {
   const hideScrollbar = params.get('hsb') === '1'
   const theme = params.get('theme')
   const titleBarStyle = params.get('tbs')
-  const userDataPath =
-    params.get('udp') || (isStandalone ? '/tmp/marktextpro-standalone' : null)
   const widParam = params.get('wid')
-  const windowId = widParam == null ? (isStandalone ? 1 : Number.NaN) : Number(widParam)
-  const type = params.get('type') || (isStandalone ? 'editor' : null)
+  const rawType = params.get('type')
+  const hash = window.location.hash || ''
+  const isSpecialWindow =
+    rawType === 'clipboard' ||
+    rawType === 'capture' ||
+    rawType === 'pin' ||
+    hash.startsWith('#/capture') ||
+    hash.startsWith('#/clipboard') ||
+    hash.startsWith('#/pin')
+  const type =
+    rawType ||
+    (isSpecialWindow
+      ? hash.replace(/^#\/?/, '').split('?')[0]
+      : isStandalone
+        ? 'editor'
+        : null)
+  const windowId = widParam == null ? (isStandalone || isSpecialWindow ? 1 : Number.NaN) : Number(widParam)
+  const userDataPath =
+    params.get('udp') || (isStandalone || isSpecialWindow ? '/tmp/marktextpro-standalone' : null)
 
   if (Number.isNaN(windowId)) {
     throw new Error('Error while parsing URL arguments: windowId!')

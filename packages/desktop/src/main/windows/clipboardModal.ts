@@ -58,7 +58,11 @@ export class ClipboardModalWindow {
         : `file://${path.join(__dirname, '../renderer/index.html')}`
 
     const url = new URL(baseUrl)
+    url.searchParams.set('wid', String(this._win.id))
     url.searchParams.set('type', 'clipboard')
+    try {
+      url.searchParams.set('udp', app.getPath('userData'))
+    } catch {}
     url.searchParams.set('theme', nativeTheme.shouldUseDarkColors ? 'dark' : 'light')
     url.hash = '/clipboard'
 
