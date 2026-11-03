@@ -227,11 +227,23 @@ class App {
     })
 
     app.on('activate', () => {
-      // macOS only
-      // On OS X it's common to re-create a window in the app when the
-      // dock icon is clicked and there are no other windows open.
+      // macOS only: re-create an editor window when dock icon is clicked and no windows exist,
+      // or bring the existing active window to front with full keyboard/IME focus.
       if (this._windowManager.windowCount === 0) {
-        this.ready()
+        this._createEditorWindow()
+      } else {
+        const activeWindow =
+          this._windowManager.getActiveEditor() ?? this._windowManager.getActiveWindow()
+        if (activeWindow) {
+          activeWindow.bringToFront()
+        } else {
+          const firstEditor = this._windowManager.getWindowsByType(WindowType.EDITOR)[0]
+          if (firstEditor && firstEditor.win) {
+            firstEditor.win.bringToFront()
+          } else {
+            this._createEditorWindow()
+          }
+        }
       }
     })
 

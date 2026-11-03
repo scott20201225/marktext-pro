@@ -387,7 +387,11 @@ export class CaptureWindowManager {
       const allWins = BrowserWindow.getAllWindows()
       const editorWin = allWins.find((w) => !w.isDestroyed() && w !== this._win && w.isVisible())
       if (editorWin) {
+        if (isOsx) {
+          app.focus({ steal: true })
+        }
         editorWin.focus()
+        editorWin.webContents?.focus()
       }
     }
   }

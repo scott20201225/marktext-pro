@@ -23,6 +23,7 @@ import { isMindMapFile, openMindMapFile } from '../mindmap'
 import { isKdbxFile, openKdbxFile } from '../kdbx'
 import { isPdfFile, openPdfFile } from '../pdf'
 import { switchLanguage } from '../spellchecker'
+import { getCaptureWindowManager } from './captureWindow'
 import fs from 'fs'
 
 type RawMarkdownDocument = Awaited<ReturnType<typeof loadMarkdownFile>>
@@ -257,6 +258,13 @@ class EditorWindow extends BaseWindow {
     // Lost focus
     win.on('blur', () => {
       this.emit('window-blur')
+      try {
+        const captureManager = getCaptureWindowManager()
+        if (captureManager && captureManager.isCapturing) {
+          // While capturing, keep editor visually active without disturbing titlebar/tab colors
+          return
+        }
+      } catch {}
       win!.webContents.send('mt::window-active-status', { status: false })
     })
     ;(['maximize', 'unmaximize', 'enter-full-screen', 'leave-full-screen'] as const).forEach(
