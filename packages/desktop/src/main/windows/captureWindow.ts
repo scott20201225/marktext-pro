@@ -41,7 +41,7 @@ export class CaptureWindowManager {
     this._isClosing = false
     this._isCapturing = true
 
-    // Check whether MarkTextPro was the active window on this EXACT display when shortcut was triggered
+    // Check whether MarkNotePro was the active window on this EXACT display when shortcut was triggered
     const activeWin = BrowserWindow.getFocusedWindow()
     const cursorPoint = screen.getCursorScreenPoint()
     const currentDisplay = screen.getDisplayNearestPoint(cursorPoint)
@@ -72,7 +72,7 @@ export class CaptureWindowManager {
         const accessStatus = systemPreferences.getMediaAccessStatus('screen')
         log.info('[CaptureWindowManager] macOS screen mediaAccessStatus:', accessStatus)
 
-        const tmpCapturePath = path.join('/tmp', `marktextpro_cap_${Date.now()}.png`)
+        const tmpCapturePath = path.join('/tmp', `marknotepro_cap_${Date.now()}.png`)
         const staticDir = path.join(app.isPackaged ? process.resourcesPath : app.getAppPath(), 'static')
         const macScrollBin = path.join(staticDir, 'bin', 'mac-scroll')
 
@@ -151,7 +151,7 @@ export class CaptureWindowManager {
 
         if (isOsx) {
           // On macOS, desktopCapturer.getSources() triggers macOS's native system permission prompt:
-          // '"MarkTextPro" wants to record this computer\'s screen and audio. [Open System Settings] [Deny]'
+          // '"MarkNotePro" wants to record this computer\'s screen and audio. [Open System Settings] [Deny]'
           // On the first attempt, do NOT show a redundant blocking modal dialog that collides with the system prompt!
           if (!this._hasPromptedSystemPermission) {
             this._hasPromptedSystemPermission = true
@@ -164,13 +164,13 @@ export class CaptureWindowManager {
         if (accessStatus === 'denied' || !isOsx) {
           const res = await dialog.showMessageBox({
             type: 'warning',
-            title: 'MarkTextPro 截图权限提示',
+            title: 'MarkNotePro 截图权限提示',
             message: '未获得系统屏幕录制权限，无法截取屏幕。',
             detail:
-              'MarkTextPro 需要屏幕录制权限以捕获屏幕画面：\n\n' +
+              'MarkNotePro 需要屏幕录制权限以捕获屏幕画面：\n\n' +
               '1. 请前往「系统设置 -> 隐私与安全 -> 屏幕与系统音频录制」；\n' +
-              '2. 开启 MarkTextPro 的访问开关；\n' +
-              '3. ⚠️ 重要：macOS 机制要求开启后必须完全退出并重新启动 MarkTextPro 才能生效。',
+              '2. 开启 MarkNotePro 的访问开关；\n' +
+              '3. ⚠️ 重要：macOS 机制要求开启后必须完全退出并重新启动 MarkNotePro 才能生效。',
             buttons: ['打开系统设置', '稍后再说'],
             defaultId: 0,
             cancelId: 1
@@ -375,6 +375,12 @@ export class CaptureWindowManager {
 
       try {
         this._win.setAlwaysOnTop(true, isOsx ? 'status' : 'screen-saver', isOsx ? 1 : 0)
+        if (isOsx) {
+          this._win.setVisibleOnAllWorkspaces(true, {
+            visibleOnFullScreen: true,
+            skipTransformProcessType: true
+          })
+        }
       } catch {}
     }
   }

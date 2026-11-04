@@ -16,6 +16,7 @@ export type OrderListDelimiter = '.' | ')'
 export type PreferHeadingStyle = 'atx' | 'setext'
 export type FrontmatterType = '-' | ';' | '{' | '+'
 export type SequenceTheme = 'hand' | 'simple'
+export type ScreenshotSaveMethod = 'attachment' | 'base64'
 export type FileSortBy = 'created' | 'modified' | 'title'
 export type FileSortOrder = 'asc' | 'desc'
 
@@ -61,6 +62,7 @@ export interface PreferencesState {
   trimTrailingNewline: number
   textDirection: TextDirection | string
   hideQuickInsertHint: boolean
+  screenshotSaveMethod: ScreenshotSaveMethod | string
   hideLinkPopup: boolean
   autoCheck: boolean
 
@@ -160,6 +162,7 @@ export const usePreferencesStore = defineStore('preferences', {
     trimTrailingNewline: 2,
     textDirection: 'ltr',
     hideQuickInsertHint: false,
+    screenshotSaveMethod: 'attachment',
     hideLinkPopup: false,
     autoCheck: false,
 

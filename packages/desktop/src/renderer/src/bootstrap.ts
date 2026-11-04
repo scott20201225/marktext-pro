@@ -39,9 +39,11 @@ const parseUrlArgs = (): UrlArgs => {
     rawType === 'clipboard' ||
     rawType === 'capture' ||
     rawType === 'pin' ||
+    rawType === 'pin-toolbar' ||
     hash.startsWith('#/capture') ||
     hash.startsWith('#/clipboard') ||
-    hash.startsWith('#/pin')
+    hash.startsWith('#/pin') ||
+    hash.startsWith('#/pin-toolbar')
   const type =
     rawType ||
     (isSpecialWindow

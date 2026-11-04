@@ -4,18 +4,9 @@
     :class="[{ typewriter: typewriter, focus: focus, source: sourceCode }]"
     :dir="textDirection"
   >
-    <div
-      ref="editorRef"
-      class="editor-component"
-    />
-    <div
-      v-show="imageViewerVisible"
-      class="image-viewer"
-    >
-      <span
-        class="icon-close"
-        @click="setImageViewerVisible(false)"
-      >
+    <div ref="editorRef" class="editor-component" />
+    <div v-show="imageViewerVisible" class="image-viewer">
+      <span class="icon-close" @click="setImageViewerVisible(false)">
         <CloseIcon />
       </span>
       <div ref="imageViewerRef" />
@@ -34,10 +25,7 @@
           {{ t('editor.insertTable.title') }}
         </div>
       </template>
-      <el-form
-        :model="tableChecker"
-        :inline="true"
-      >
+      <el-form :model="tableChecker" :inline="true">
         <el-form-item :label="t('editor.insertTable.rows')">
           <el-input-number
             ref="rowInput"
@@ -63,10 +51,7 @@
           <el-button @click="dialogTableVisible = false">
             {{ t('common.cancel') }}
           </el-button>
-          <el-button
-            type="primary"
-            @click="handleDialogTableConfirm"
-          >
+          <el-button type="primary" @click="handleDialogTableConfirm">
             {{ t('common.ok') }}
           </el-button>
         </div>
@@ -99,10 +84,7 @@
           <el-button @click="tableBatchEditVisible = false">
             {{ t('common.cancel') }}
           </el-button>
-          <el-button
-            type="primary"
-            @click="handleTableBatchEditConfirm"
-          >
+          <el-button type="primary" @click="handleTableBatchEditConfirm">
             {{ t('common.ok') }}
           </el-button>
         </div>
@@ -151,7 +133,6 @@ import {
 } from '@muyajs/core'
 import { exportStyledHTML, type HeaderFooterPart } from '@/util/exportHtml'
 import { applyCursor, isIndexCursor } from '@/util/cursor'
-import EditorSearch from '../search/index.vue'
 import bus from '@/bus'
 import { DEFAULT_EDITOR_FONT_FAMILY, DEFAULT_CODE_FONT_FAMILY } from '@/config'
 import notice from '@/services/notification'
@@ -159,13 +140,14 @@ import Printer from '@/services/printService'
 import { SpellcheckerLanguageCommand } from '@/commands'
 import { SpellChecker } from '@/spellchecker'
 import { isOsx, animatedScrollTo } from '@/util'
-import { copyImageToFolder, NOTE_ATTACHMENTS_DIRECTORY } from '@/util/fileSystem'
+import { copyImageToFolder, dataUriToImageFile, imagePathToDataUri } from '@/util/fileSystem'
 import { guessClipboardFilePath } from '@/util/clipboard'
 import { getCssForOptions, getHtmlToc, type PdfCssOptions, type HtmlTocOptions } from '@/util/pdf'
 import { patchMuyaSoftBreakIme } from '@/util/softBreakIme'
 import { resolveTocHeadingElement, TOP_LEVEL_HEADINGS_SELECTOR } from '@/util/tocNavigation'
 import { computeHeadingNumbers } from '@/util/titleNumbering'
 import { addCommonStyle, setEditorWidth } from '@/util/theme'
+import { NOTE_ATTACHMENTS_DIRECTORY } from '@/util/fileSystem'
 import { usePreferencesStore } from '@/store/preferences'
 import { useEditorStore } from '@/store/editor'
 import { useProjectStore } from '@/store/project'
@@ -244,9 +226,9 @@ interface EditorLinkContext {
   dirname: string
 }
 
-interface MarkTextProWindow extends Window {
-  __MARKTEXTPRO_GET_EDITOR_CONTEXT_STATE__?: () => EditorContextState
-  __MARKTEXTPRO_GET_LINK_CONTEXT__?: (x: number, y: number) => EditorLinkContext | null
+interface MarkNoteProWindow extends Window {
+  __MARKNOTEPRO_GET_EDITOR_CONTEXT_STATE__?: () => EditorContextState
+  __MARKNOTEPRO_GET_LINK_CONTEXT__?: (x: number, y: number) => EditorLinkContext | null
 }
 
 const props = defineProps<{
@@ -289,6 +271,7 @@ const {
   autoCheck,
   editorLineWidth,
   wrapCodeBlocks,
+  screenshotSaveMethod,
   theme,
   sequenceTheme,
   hideScrollbar,
@@ -385,39 +368,6 @@ const resetSyntheticHistory = (id: string, baselineContent: string): void => {
 const makeSyntheticHistory = (id: string, content: string): IFileHistoryLike => {
   return getSyntheticHistory(id, content).build(content)
 }
-
-const syncHeadingNumbers = (): void => {
-  const root = (editor.value?.domNode ?? editorRef.value) as HTMLElement | null
-  if (!root) return
-
-  const headings = Array.from(root.querySelectorAll(TOP_LEVEL_HEADINGS_SELECTOR)) as HTMLElement[]
-  const numbers = computeHeadingNumbers(headings.map((heading) => Number(heading.tagName.slice(1))), {
-    includeTopLevel: currentFile.value?.headingNumberingIncludesTopLevel === true
-  })
-
-  headings.forEach((heading, index) => {
-    const number = currentFile.value?.showHeadingNumbers ? numbers[index] : ''
-    if (number) {
-      heading.dataset.marktextTitleNumber = number
-    } else {
-      delete heading.dataset.marktextTitleNumber
-    }
-  })
-}
-
-const queueHeadingNumbersSync = (): void => {
-  if (headingNumberSyncFrame != null) return
-
-  headingNumberSyncFrame = window.requestAnimationFrame(() => {
-    headingNumberSyncFrame = null
-    syncHeadingNumbers()
-  })
-}
-
-const handleHeadingNumberingDisplayChanged = (): void => {
-  queueHeadingNumbersSync()
-  if (editor.value) editorStore.UPDATE_TOC(editor.value.getTOC())
-}
 // Drop per-tab bookkeeping for tabs that no longer exist. Tab ids are unique
 // over the session, so without pruning these maps (and the content -> id map
 // each `SyntheticHistory` holds) would grow unbounded as tabs are opened and
@@ -485,13 +435,9 @@ const adaptSelectionChange = (changes: MuyaChange) => {
   const anchorBlock = changes.anchorBlock as { text?: string } | null | undefined
   const focusBlock = changes.focusBlock as { text?: string } | null | undefined
   const anchorInfo = changes.anchorBlockInfo as
-    | { type?: string; functionType?: string }
-    | null
-    | undefined
+    { type?: string; functionType?: string } | null | undefined
   const focusInfo = changes.focusBlockInfo as
-    | { type?: string; functionType?: string }
-    | null
-    | undefined
+    { type?: string; functionType?: string } | null | undefined
   const rawAffiliation = (changes.affiliation ?? []) as EngineAffiliationEntry[]
   const affiliation = rawAffiliation.map((entry) => {
     const functionType =
@@ -549,7 +495,7 @@ class SimpleImageViewer {
   _onMousemove!: (e: MouseEvent) => void
   _onMouseup!: () => void
 
-  constructor (container: HTMLElement, { url }: { url: string }) {
+  constructor(container: HTMLElement, { url }: { url: string }) {
     this.container = container
     this.scale = 1
     this.translateX = 0
@@ -560,7 +506,7 @@ class SimpleImageViewer {
     this._init(url)
   }
 
-  _init (url: string) {
+  _init(url: string) {
     this.container.innerHTML = ''
     this.img = document.createElement('img')
     this.img.src = url
@@ -571,11 +517,11 @@ class SimpleImageViewer {
     this._bindEvents()
   }
 
-  _updateTransform () {
+  _updateTransform() {
     this.img.style.transform = `translate(${this.translateX}px,${this.translateY}px) scale(${this.scale})`
   }
 
-  _bindEvents () {
+  _bindEvents() {
     this._onWheel = (e: WheelEvent) => {
       e.preventDefault()
       const factor = e.deltaY < 0 ? 1.1 : 0.9
@@ -606,7 +552,7 @@ class SimpleImageViewer {
     document.addEventListener('mouseup', this._onMouseup)
   }
 
-  destroy () {
+  destroy() {
     this.container.removeEventListener('wheel', this._onWheel)
     this.container.removeEventListener('mousedown', this._onMousedown)
     document.removeEventListener('mousemove', this._onMousemove)
@@ -638,12 +584,50 @@ watch(focus, (value) => {
   }
 })
 
+const syncHeadingNumbers = (): void => {
+  // Muya replaces the Vue-owned host node during construction, so the template
+  // ref points at the detached original element. Read the live Muya root to
+  // update the headings the user actually sees.
+  const root = editor.value?.domNode ?? editorRef.value
+  if (!root) return
+
+  const headings = Array.from(root.querySelectorAll<HTMLElement>(TOP_LEVEL_HEADINGS_SELECTOR))
+  const numbers = computeHeadingNumbers(headings.map((heading) => Number(heading.tagName.slice(1))), {
+    includeTopLevel: currentFile.value?.headingNumberingIncludesTopLevel === true
+  })
+
+  headings.forEach((heading, index) => {
+    const number = currentFile.value?.showHeadingNumbers ? numbers[index] : ''
+    if (number) {
+      heading.dataset.marknoteTitleNumber = number
+    } else {
+      delete heading.dataset.marknoteTitleNumber
+    }
+  })
+}
+
+const queueHeadingNumbersSync = (): void => {
+  if (headingNumberSyncFrame != null) return
+
+  // Muya commits heading DOM replacements asynchronously. Waiting for the next
+  // frame means undo/redo and state restoration target the live heading nodes.
+  headingNumberSyncFrame = window.requestAnimationFrame(() => {
+    headingNumberSyncFrame = null
+    syncHeadingNumbers()
+  })
+}
+
+const handleHeadingNumberingDisplayChanged = (): void => {
+  queueHeadingNumbersSync()
+  if (editor.value) editorStore.UPDATE_TOC(editor.value.getTOC())
+}
+
 // In source-code mode the Paragraph and Format menus operate on the hidden
 // WYSIWYG engine, so grey them out. On return to WYSIWYG, re-apply the menu
 // state for the CURRENT cursor context (a code block/table still disables some
 // items) rather than blanket-enabling everything (#3531).
 watch(sourceCode, (isSource) => {
-  const windowId = window.marktextpro?.env?.windowId ?? -1
+  const windowId = window.marknotepro?.env?.windowId ?? -1
   if (isSource) {
     window.electron.ipcRenderer.send('mt::set-editor-format-menus-enabled', windowId, false)
     return
@@ -718,11 +702,14 @@ watch(sequenceTheme, (value, oldValue) => {
   }
 })
 
-watch(() => preferencesStore.plantumlServer, (value, oldValue) => {
-  if (value !== oldValue && editor.value) {
-    editor.value.setOptions({ plantumlServer: value }, true)
+watch(
+  () => preferencesStore.plantumlServer,
+  (value, oldValue) => {
+    if (value !== oldValue && editor.value) {
+      editor.value.setOptions({ plantumlServer: value }, true)
+    }
   }
-})
+)
 
 watch(listIndentation, (value, oldValue) => {
   if (value !== oldValue && editor.value) {
@@ -1009,63 +996,58 @@ const imagePathAutoComplete = async (src: string) => {
   })
 }
 
-const dataUriToImageFile = (value: string): File | null => {
-  const match = /^data:(image\/[\w.+-]+);base64,([a-zA-Z0-9+/]+={0,2})$/.exec(value)
-  if (!match) return null
-
-  try {
-    const mimeType = match[1]
-    const binary = window.atob(match[2])
-    const bytes = new Uint8Array(binary.length)
-    for (let index = 0; index < binary.length; index++) bytes[index] = binary.charCodeAt(index)
-    const extension = mimeType === 'image/jpeg' ? 'jpg' : mimeType.split('/')[1] || 'png'
-    return new File([bytes], `screenshot.${extension}`, { type: mimeType })
-  } catch {
-    return null
-  }
-}
-
-const isCurrentFileInWorkspace = (): boolean => {
-  const currentPathname = currentFile.value?.pathname
-  const workspaceRootPath = projectTree.value?.pathname
-  if (!currentPathname || !workspaceRootPath) return false
-  const relativePath = window.path.relative(
-    window.path.resolve(workspaceRootPath),
-    window.path.resolve(currentPathname)
-  )
-  return !relativePath || (!relativePath.startsWith('..') && !window.path.isAbsolute(relativePath))
-}
-
 const imageAction = async (
   image: string | File,
   id: string | null,
   alt: string = ''
 ): Promise<string> => {
+  // TODO(Refactor): Refactor this method.
   if (!currentFile.value) return ''
   const { pathname: currentPathname } = currentFile.value
+
   const workspaceRootPath = projectTree.value?.pathname ?? null
   const attachmentDirectoryPath = workspaceRootPath
     ? window.path.join(workspaceRootPath, NOTE_ATTACHMENTS_DIRECTORY)
-    : null
-  const embeddedImage = typeof image === 'string' ? dataUriToImageFile(image) : null
-  const attachmentImage = embeddedImage ?? image
-  const isAbsoluteLocalImage = typeof attachmentImage === 'string' && window.path.isAbsolute(attachmentImage)
-  const shouldUseWorkspaceAttachments = isCurrentFileInWorkspace() && !!attachmentDirectoryPath &&
-    (attachmentImage instanceof File || isAbsoluteLocalImage)
+    : (currentPathname ? window.path.join(window.path.dirname(currentPathname), NOTE_ATTACHMENTS_DIRECTORY) : null)
+  const clipboardScreenshot = typeof image === 'string' ? dataUriToImageFile(image) : null
+  if (clipboardScreenshot && !workspaceRootPath && screenshotSaveMethod.value === 'base64') return image
 
-  const destImagePath = shouldUseWorkspaceAttachments
-    ? await copyImageToFolder(
+  const isAppScreenshot =
+    typeof image === 'string' &&
+    /^\d{4}-\d{2}-\d{2}-\d{2}-\d{2}-\d{2}-screenshot\.png$/i.test(window.path.basename(image))
+  if (isAppScreenshot && !workspaceRootPath && screenshotSaveMethod.value === 'base64') {
+    const dataUri = await imagePathToDataUri(image)
+    if (dataUri) return dataUri
+  }
+
+  const attachmentImage = clipboardScreenshot ?? image
+  const isAbsoluteLocalImage =
+    typeof attachmentImage === 'string' && window.path.isAbsolute(attachmentImage)
+  const shouldPersistToAttachments = attachmentImage instanceof File || isAbsoluteLocalImage
+  let destImagePath = ''
+
+  if (currentPathname && attachmentDirectoryPath && shouldPersistToAttachments) {
+    destImagePath = await copyImageToFolder(
       currentPathname,
       attachmentImage,
       attachmentDirectoryPath,
       true,
       currentPathname
-    ) as string
-    : image instanceof File
-      ? window.electron.webUtils.getPathForFile(image)
-      : image
+    )
 
-  if (!destImagePath) return ''
+    if (id && sourceCode.value) {
+      bus.emit('image-action', {
+        id,
+        result: destImagePath,
+        alt
+      })
+    }
+    return destImagePath
+  }
+
+  // Existing Markdown links remain links. New local image data is handled by
+  // the attachment branch above instead of the retired folder/upload settings.
+  destImagePath = typeof image === 'string' ? image : ''
 
   if (id && sourceCode.value) {
     bus.emit('image-action', {
@@ -1166,6 +1148,7 @@ const handleUndo = () => {
 
   if (editor.value) {
     editor.value.undo()
+    queueHeadingNumbersSync()
   }
 }
 
@@ -1176,6 +1159,7 @@ const handleRedo = () => {
 
   if (editor.value) {
     editor.value.redo()
+    queueHeadingNumbersSync()
   }
 }
 
@@ -1202,7 +1186,10 @@ const handleSelectAll = () => {
 // `copyAsRich` writes the rendered HTML to `text/html` AND the plain text to
 // `text/plain`, so pasting into Word/email yields formatted rich text (whereas
 // `copyAsHtml` blanks `text/html` and puts the HTML source into `text/plain`).
-const COPY_PASTE_METHOD_MAP: Record<string, 'copyAsRich' | 'copyAsHtml' | 'copyAsExcel' | 'pasteAsPlainText'> = {
+const COPY_PASTE_METHOD_MAP: Record<
+  string,
+  'copyAsRich' | 'copyAsHtml' | 'copyAsExcel' | 'pasteAsPlainText'
+> = {
   copyAsRich: 'copyAsRich',
   copyAsHtml: 'copyAsHtml',
   copyAsExcel: 'copyAsExcel',
@@ -1396,7 +1383,7 @@ const handleExport = async (options: unknown) => {
   const opts = options as ExportOptions
   const { type, headerFooterStyled, htmlTitle } = opts
 
-  if (!/^(pdf|print|styledHtml|docx|png|jpeg)$/.test(type)) {
+  if (!/^(pdf|print|styledHtml|docx|png|jpeg|md)$/.test(type)) {
     throw new Error(`Invalid type to export: "${type}".`)
   }
 
@@ -1407,6 +1394,10 @@ const handleExport = async (options: unknown) => {
   const footer = (opts.footer ?? null) as HeaderFooterPart | null
 
   switch (type) {
+    case 'md': {
+      editorStore.EXPORT({ type, markdown })
+      break
+    }
     case 'styledHtml':
     case 'docx':
     case 'png':
@@ -1811,10 +1802,9 @@ const handleModalOpening = () => {
   }
 }
 
-// macOS Edit → Screenshot. The main process captures the region, saves it to a
-// PNG, and hands us the path. `document.execCommand('paste')` no longer fires in
-// Electron 42 Chromium, so insert the saved image at the cursor through the
-// engine (routing via `imageAction` → upload/folder/path).
+// macOS Edit → Screenshot. The main process captures the region and hands the
+// temporary PNG path to the engine. imageAction applies the screenshot save
+// method, either embedding Base64 or copying it to the workspace attachments.
 const handleScreenShot = (filePath?: unknown) => {
   if (editor.value && typeof filePath === 'string' && filePath) {
     editor.value.pasteImage(filePath)
@@ -1844,8 +1834,8 @@ const handleLanguageChanged = (newLocale?: unknown) => {
 const resizeObserverForEditor = new ResizeObserver(handleResetPaddingBottom)
 
 onMounted(() => {
-  ;(window as MarkTextProWindow).__MARKTEXTPRO_GET_EDITOR_CONTEXT_STATE__ = getEditorContextState
-  ;(window as MarkTextProWindow).__MARKTEXTPRO_GET_LINK_CONTEXT__ = getLinkContextAtPoint
+  ;(window as MarkNoteProWindow).__MARKNOTEPRO_GET_EDITOR_CONTEXT_STATE__ = getEditorContextState
+  ;(window as MarkNoteProWindow).__MARKNOTEPRO_GET_LINK_CONTEXT__ = getLinkContextAtPoint
 
   printer = new Printer()
   const ele = editorRef.value
@@ -2134,15 +2124,64 @@ onMounted(() => {
   document.addEventListener('keyup', keyup)
 
   setEditorWidth(editorLineWidth.value)
+
+  unlistenPinUpdate = window.electron.ipcRenderer.on(
+    'mt::pin-image-updated-in-markdown',
+    (_event, payload: any) => {
+      const { markdownMeta, newContent, localFilePath } = payload || {}
+      if (!editor.value) return
+
+      try {
+        if (typeof (editor.value as any).invalidateImageCache === 'function') {
+          ;(editor.value as any).invalidateImageCache()
+        }
+        if ((editor.value as any).renderer?.loadImageMap) {
+          ;(editor.value as any).renderer.loadImageMap.clear()
+        }
+      } catch {}
+
+      if (markdownMeta?.blockId) {
+        try {
+          const block = (editor.value as any).find(markdownMeta.blockId)
+          if (block) {
+            if (!localFilePath && newContent) {
+              const oldText = block.text || ''
+              const raw = markdownMeta.raw || ''
+              const idx = oldText.indexOf(raw)
+              if (idx !== -1) {
+                const alt = markdownMeta.alt || ''
+                const title = markdownMeta.title ? ` "${markdownMeta.title}"` : ''
+                const newRaw = `![${alt}](${newContent}${title})`
+                block.text = oldText.substring(0, idx) + newRaw + oldText.substring(idx + raw.length)
+              }
+            }
+            block.update()
+          }
+        } catch (bErr) {
+          console.warn('[Editor] Failed to update block for pinned image:', bErr)
+        }
+      } else {
+        try {
+          ;(editor.value as any).renderer?.forceRender?.()
+        } catch {}
+      }
+    }
+  )
 })
 
+let unlistenPinUpdate: (() => void) | null = null
+
 onBeforeUnmount(() => {
-  const appWindow = window as MarkTextProWindow
-  if (appWindow.__MARKTEXTPRO_GET_EDITOR_CONTEXT_STATE__ === getEditorContextState) {
-    delete appWindow.__MARKTEXTPRO_GET_EDITOR_CONTEXT_STATE__
+  if (unlistenPinUpdate) {
+    unlistenPinUpdate()
+    unlistenPinUpdate = null
   }
-  if (appWindow.__MARKTEXTPRO_GET_LINK_CONTEXT__ === getLinkContextAtPoint) {
-    delete appWindow.__MARKTEXTPRO_GET_LINK_CONTEXT__
+  const appWindow = window as MarkNoteProWindow
+  if (appWindow.__MARKNOTEPRO_GET_EDITOR_CONTEXT_STATE__ === getEditorContextState) {
+    delete appWindow.__MARKNOTEPRO_GET_EDITOR_CONTEXT_STATE__
+  }
+  if (appWindow.__MARKNOTEPRO_GET_LINK_CONTEXT__ === getLinkContextAtPoint) {
+    delete appWindow.__MARKNOTEPRO_GET_LINK_CONTEXT__
   }
 
   bus.off('file-loaded', setMarkdownToEditor)
@@ -2284,6 +2323,27 @@ onBeforeUnmount(() => {
   pointer-events: none;
 }
 
+body:has(.editor-wrapper.source) .mu-front-button-wrapper,
+body:has(.editor-wrapper.source) .mu-front-button,
+body:has(.editor-wrapper.source) .mu-front-menu,
+body:has(.editor-wrapper.source) .mu-float-wrapper,
+body:has(.source-code) .mu-front-button-wrapper,
+body:has(.source-code) .mu-front-button,
+body:has(.source-code) .mu-front-menu,
+body:has(.source-code) .mu-float-wrapper,
+body:has(.normal-code-editor) .mu-front-button-wrapper,
+body:has(.normal-code-editor) .mu-front-button,
+body:has(.normal-code-editor) .mu-front-menu,
+body:has(.normal-code-editor) .mu-float-wrapper,
+body:has(.code-file-open) .mu-front-button-wrapper,
+body:has(.code-file-open) .mu-front-button,
+body:has(.code-file-open) .mu-front-menu,
+body:has(.code-file-open) .mu-float-wrapper {
+  display: none !important;
+  visibility: hidden !important;
+  pointer-events: none !important;
+}
+
 .editor-component {
   height: 100%;
   overflow: auto;
@@ -2297,14 +2357,14 @@ onBeforeUnmount(() => {
   padding-bottom: 100vh;
 }
 
-.editor-component .mu-container > [data-marktext-title-number]::before {
-  content: attr(data-marktext-title-number);
+.editor-component .mu-container > [data-marknote-title-number]::before {
+  content: attr(data-marknote-title-number);
   color: var(--list-marker-color, inherit);
   font-weight: normal;
   margin-right: 6px;
 }
 
-.editor-component .mu-container > [data-marktext-title-number] > .mu-content {
+.editor-component .mu-container > [data-marknote-title-number] > .mu-content {
   display: inline;
 }
 

@@ -32,8 +32,9 @@ import type {
   UnsavedFile,
   UnsavedDrawioFile,
   UnsavedKdbxFile,
-  GeoGebraMode
+  UnsavedMindMapFile
 } from './files'
+import type { GeoGebraMode, MindMapStructure } from './files'
 import type { KdbxEntryDetail, KdbxEntryInput, KdbxEntryRevision, KdbxVaultSnapshot } from './kdbx'
 import type {
   ITerminalConnectionConfig,
@@ -150,12 +151,12 @@ export interface IpcInvokeChannels {
   }
   'mt::pin-window-copy': { args: [dataUrl: string]; ret: boolean }
   'mt::pin-window-save': { args: [dataUrl: string]; ret: string | null }
+  'mt::pin-markdown-update': { args: [payload: any]; ret: any }
   'mt::ask-for-image-path': { args: []; ret: string[] }
   'mt::boot-info-async': { args: []; ret: BootInfo }
   'mt::clipboard::guess-file-path': { args: []; ret: string | null }
   'mt::clipboard::read-text': { args: []; ret: string }
   'mt::cmd::exists': { args: [name: string]; ret: boolean }
-  'mt::drawio::capture-snapshot': { args: []; ret: string | null }
   'mt::drawio::close': { args: []; ret: void }
   'mt::drawio::configure': { args: [configuration: DrawioConfiguration]; ret: void }
   'mt::drawio::export': { args: [payload: DrawioExportPayload]; ret: void }
@@ -170,7 +171,7 @@ export interface IpcInvokeChannels {
   'mt::drawio::save-request': { args: [filePath: string]; ret: void }
   'mt::drawio::close-file': { args: [filePath: string]; ret: void }
   'mt::drawio::show': { args: [bounds: DrawioBounds]; ret: void }
-  'mt::geogebra::capture-snapshot': { args: []; ret: string | null }
+  'mt::drawio::capture-snapshot': { args: []; ret: string | null }
   'mt::geogebra::open': {
     args: [pathname: string, mode?: GeoGebraMode, configuration?: GeoGebraConfiguration]
     ret: void
@@ -179,8 +180,9 @@ export interface IpcInvokeChannels {
   'mt::geogebra::save-request': { args: [filePath: string]; ret: void }
   'mt::geogebra::close-file': { args: [filePath: string]; ret: void }
   'mt::geogebra::show': { args: [bounds: DrawioBounds]; ret: void }
+  'mt::geogebra::capture-snapshot': { args: []; ret: string | null }
   'mt::mindmap::open': {
-    args: [pathname: string, configuration?: MindMapConfiguration]
+    args: [pathname: string, configuration?: MindMapConfiguration, structure?: MindMapStructure]
     ret: void
   }
   'mt::mindmap::configure': { args: [configuration: MindMapConfiguration]; ret: void }
@@ -204,13 +206,14 @@ export interface IpcInvokeChannels {
     ret: {
       filePath: string
       data?: unknown
-      isDark?: boolean
+      isDark: boolean
+      language: string
       theme?: string
       mindMapTheme?: string
       backgroundColor?: string
       themeConfig?: Record<string, unknown>
       colors?: Record<string, string>
-    }
+    } | null
   }
   'mt::kdbx::open': { args: [pathname: string]; ret: void }
   'mt::kdbx::create': { args: [pathname: string, password: string]; ret: void }
@@ -226,7 +229,10 @@ export interface IpcInvokeChannels {
   'mt::kdbx::delete-group': { args: [pathname: string, groupId: string]; ret: KdbxVaultSnapshot }
   'mt::kdbx::empty-recycle-bin': { args: [pathname: string]; ret: KdbxVaultSnapshot }
   'mt::kdbx::create-entry': { args: [pathname: string, input: KdbxEntryInput]; ret: KdbxEntryDetail }
-  'mt::kdbx::commit-entry': { args: [pathname: string, entryId: string, input: KdbxEntryInput]; ret: KdbxEntryDetail }
+  'mt::kdbx::commit-entry': {
+    args: [pathname: string, entryId: string, input: KdbxEntryInput]
+    ret: KdbxEntryDetail
+  }
   'mt::kdbx::update-entry': { args: [pathname: string, entryId: string, input: KdbxEntryInput]; ret: KdbxEntryDetail }
   'mt::kdbx::delete-entry': { args: [pathname: string, entryId: string]; ret: KdbxVaultSnapshot }
   'mt::kdbx::move-entries': { args: [pathname: string, entryIds: string[], targetGroupId: string]; ret: KdbxVaultSnapshot }
@@ -251,10 +257,7 @@ export interface IpcInvokeChannels {
     args: [defaultPath: string]
     ret: string | null
   }
-  'mt::github-desktop::choose-workspace-from-current-repository': {
-    args: []
-    ret: string | null
-  }
+  'mt::github-desktop::choose-workspace-from-current-repository': { args: []; ret: string | null }
   'mt::github-desktop::keytar-delete-password': {
     args: [service: string, account: string]
     ret: boolean
@@ -302,18 +305,17 @@ export interface IpcInvokeChannels {
   'mt::spellchecker-remove-word': { args: [word: string]; ret: boolean }
   'mt::spellchecker-set-enabled': { args: [enabled: boolean]; ret: void }
   'mt::spellchecker-switch-language': { args: [language: string]; ret: void }
+  'mt::uploader::upload': { args: [req: unknown]; ret: unknown }
   'mt::win::is-fullscreen': { args: []; ret: boolean }
   'mt::win::is-maximized': { args: []; ret: boolean }
-  'mt::terminal:connect': { args: [config: ITerminalConnectionConfig, cols?: number, rows?: number, existingSessionId?: string]; ret: ITerminalSessionInfo }
+  'mt::terminal:connect': { args: [config: ITerminalConnectionConfig, cols?: number, rows?: number]; ret: ITerminalSessionInfo }
   'mt::terminal:disconnect': { args: [sessionId: string]; ret: boolean }
   'mt::terminal:sftp-list': { args: [sessionId: string, dirPath: string]; ret: ISftpItem[] }
   'mt::terminal:sftp-upload': { args: [sessionId: string, localPath: string, remotePath: string]; ret: boolean }
-  'mt::terminal:sftp-download': { args: [sessionId: string, remotePath: string, localPath?: string]; ret: any }
+  'mt::terminal:sftp-download': { args: [sessionId: string, remotePath: string, localPath: string]; ret: boolean }
   'mt::terminal:sftp-mkdir': { args: [sessionId: string, remotePath: string]; ret: boolean }
   'mt::terminal:sftp-delete': { args: [sessionId: string, remotePath: string, isDirectory: boolean]; ret: boolean }
   'mt::terminal:sftp-rename': { args: [sessionId: string, oldPath: string, newPath: string]; ret: boolean }
-  'mt::terminal:sftp-read': { args: [sessionId: string, remotePath: string]; ret: string }
-  'mt::terminal:sftp-write': { args: [sessionId: string, remotePath: string, content: string]; ret: boolean }
   'mt::terminal:list-serial-ports': { args: []; ret: Array<{ path: string; manufacturer?: string }> }
   'mt::terminal:get-stored-servers': { args: []; ret: ITerminalConnectionConfig[] }
   'mt::terminal:save-stored-server': { args: [config: ITerminalConnectionConfig]; ret: ITerminalConnectionConfig }
@@ -329,23 +331,14 @@ export interface IpcInvokeChannels {
 // =================================================================
 
 export interface IpcSendChannels {
-  'mt::trigger-screen-capture': []
-  'mt::trigger-clipboard-history': []
-  'mt::clipboard-hide-modal': []
-  'mt::capture-close': []
-  'mt::capture-first-frame-ready': []
-  'mt::pin-window-close': [pinId?: string]
-  'mt::pin-window-drag': [payload: { dx: number; dy: number; pinId?: string }]
-  'mt::pin-window-resize': [
-    payload: {
-      bounds: { x: number; y: number; width: number; height: number }
-      pinId?: string
-    }
-  ]
-  'mt::pin-window-set-always-on-top': [flag: boolean, pinId?: string]
   'app-create-editor-window': [config?: unknown]
   'app-create-settings-window': []
-  'app-open-directory-by-id': [windowId: number, dirPath: string, openInSameWindow?: boolean]
+  'app-open-directory-by-id': [
+    windowId: number,
+    dirPath: string,
+    openInSameWindow?: boolean,
+    forceReload?: boolean
+  ]
   'app-open-file-by-id': [windowId: number, filePath: string, options?: unknown]
   'app-open-files-by-id': [windowId: number, filePaths: string[], options?: unknown]
   'app-open-markdown-by-id': [windowId: number, markdown: string, options?: unknown]
@@ -353,10 +346,11 @@ export interface IpcSendChannels {
   'menu-add-recently-used': [filePath: string]
   'menu-clear-recently-used': []
   'mt::NEED_UPDATE': [payload?: unknown]
+  'mt::reload-workspace': [pathname: string]
   'mt::add-recently-used-document': [filePath: string]
   'mt::app-try-quit': []
   'mt::ask-for-image-auto-path': [payload: unknown]
-  'mt::ask-for-open-project-in-sidebar': []
+  'mt::ask-for-open-project-in-sidebar': [payload?: { defaultPath?: string }]
   'mt::ask-for-user-preference': []
   'mt::check-for-update': []
   'mt::clipboard::write-text': [text: string]
@@ -364,7 +358,7 @@ export interface IpcSendChannels {
   'mt::close-window-confirm': [
     unsavedFiles: UnsavedFile[],
     unsavedDrawioFiles?: UnsavedDrawioFile[],
-    unsavedMindMapFiles?: import('./files').UnsavedMindMapFile[],
+    unsavedMindMapFiles?: UnsavedMindMapFile[],
     unsavedKdbxFiles?: UnsavedKdbxFile[]
   ]
   'mt::cmd-close-window': []
@@ -381,7 +375,7 @@ export interface IpcSendChannels {
   'mt::github-desktop::set-bounds': [
     bounds: { x: number; y: number; width: number; height: number }
   ]
-  'mt::github-desktop::switch-to-editor': []
+  'mt::github-desktop::switch-to-note': []
   'mt::github-desktop::workspace-selected': [workspacePath: string]
   'mt::github-desktop::workspace-selected-silent': [workspacePath: string]
   'mt::github-desktop::workspace-path-renamed': [payload: { src: string; dest: string }]
@@ -392,11 +386,12 @@ export interface IpcSendChannels {
   'mt::menu::popup': [template: MenuTemplate, position?: MenuPopupPosition]
   'mt::menu::popup-application': [position?: MenuPopupPosition]
   'mt::open-file': [filePath: string, options?: unknown]
-  'mt::open-directory-in-window': [windowId: number, pathname: string]
   'mt::open-file-by-window-id': [windowId: number, filePath: string, options?: unknown]
   'mt::open-keybindings-config': []
   'mt::open-setting-window': []
-  'mt::rename': [payload: { id: string; pathname: string; newPathname: string; currentFile?: unknown }]
+  'mt::rename': [
+    payload: { id: string; pathname: string; newPathname: string; currentFile?: unknown }
+  ]
   'mt::request-keybindings': []
   'mt::set-editor-format-menus-enabled': [windowId: number, enabled: boolean]
   'mt::response-export': [
@@ -431,6 +426,7 @@ export interface IpcSendChannels {
   'mt::rg::cancel': [searchId: string]
   'mt::save-and-close-tabs': [tabs: unknown[]]
   'mt::save-tabs': [tabs: unknown[]]
+  'mt::sidebar-path-renamed': [payload: { src: string; dest: string }]
   'mt::select-default-directory-to-open': []
   'mt::set-user-preference': [partial: unknown]
   'mt::shell::open-external': [url: string]
@@ -446,10 +442,7 @@ export interface IpcSendChannels {
   'mt::win::toggle-maximize': []
   'mt::win::unmaximize': []
   'mt::window-add-file-path': [windowId: number, filePath: string]
-  'mt::window-change-file-path': [windowId: number, pathname: string, oldPathname: string]
   'mt::window-initialized': []
-  'mt::workspace-path-renamed': [payload: { src: string; dest: string }]
-  'mt::sidebar-path-renamed': [payload: { src: string; dest: string }]
   'mt::window-tab-closed': [pathname: string]
   'mt::window-toggle-always-on-top': []
   'mt::window-zoom-delta': [direction: 'in' | 'out']
@@ -464,15 +457,42 @@ export interface IpcSendChannels {
   'mt::kdbx-menu-mode': [enabled: boolean]
   'mt::terminal-menu-mode': [enabled: boolean]
   'mt::pdf-menu-mode': [enabled: boolean]
+  'mt::pdf::hide': []
+  'mt::pdf::set-bounds': [bounds: DrawioBounds]
   'mt::mindmap::hide': []
   'mt::mindmap::set-bounds': [bounds: DrawioBounds]
   'mt::mindmap::state': [payload: { modified?: boolean; data?: unknown }]
-  'mt::pdf::hide': []
-  'mt::pdf::set-bounds': [bounds: DrawioBounds]
   'mt::drawio::set-bounds': [bounds: DrawioBounds]
+  'mt::trigger-screen-capture': []
+  'mt::trigger-clipboard-history': []
+  'mt::clipboard-hide-modal': []
+  'mt::capture-close': []
+  'mt::capture-first-frame-ready': []
+  'mt::capture-text-mode': [active: boolean]
+  'mt::pin-text-mode': [active: boolean, pinId?: string]
+  'mt::pin-edit-toolbar-open': [payload: { pinId: string; bounds?: { x: number; y: number; width: number; height: number } }]
+  'mt::pin-edit-toolbar-close': [pinId: string]
+  'mt::pin-edit-action': [payload: any]
+  'mt::pin-edit-state-sync': [payload: any]
+  'mt::pin-toolbar-drag': [payload: { pinId: string; dx: number; dy: number }]
+  'mt::pin-toolbar-focus': [pinId?: string]
+  'mt::pin-window-focus': [pinId?: string]
+  'mt::pin-window-close': [pinId?: string]
+  'mt::pin-window-drag': [payload: { dx: number; dy: number; pinId?: string }]
+  'mt::pin-window-resize': [
+    payload: {
+      bounds: { x: number; y: number; width: number; height: number }
+      pinId?: string
+    }
+  ]
+  'mt::pin-window-set-always-on-top': [flag: boolean, pinId?: string]
+  'mt::pin-window-fit-size': [
+    payload: { pinId?: string; naturalWidth: number; naturalHeight: number; zoom?: number }
+  ]
   'mt::drawio-autosave-changed': [enabled: boolean]
   'mt::window::drop': [payload: unknown]
   'screen-capture': [payload: unknown]
+  'set-image-folder-path': [path: string]
   'set-user-preference': [partial: unknown]
   'watcher-unwatch-all-by-id': [windowId: number]
   'watcher-unwatch-directory': [windowId: number, path: string]
@@ -508,7 +528,10 @@ export interface IpcMainEventChannels {
   'mt::clipboard-history-updated': [history: ClipboardItemRecord[]]
   'mt::capture-data-ready': [info: ScreenCaptureDisplayInfo]
   'mt::pin-window-data': [payload: PinWindowPayload]
+  'mt::pin-edit-action': [payload: any]
+  'mt::pin-edit-state-sync': [payload: any]
   'language-changed': [language: string]
+  'mt::CHECKING_FOR_UPDATE': []
   'mt::UPDATE_AVAILABLE': [info?: unknown]
   'mt::UPDATE_DOWNLOADED': [info?: unknown]
   'mt::UPDATE_ERROR': [error: unknown]
@@ -516,6 +539,7 @@ export interface IpcMainEventChannels {
   'mt::about-dialog': []
   'mt::ask-for-close': []
   'mt::bootstrap-editor': [config: BootstrapEditorConfig]
+  'mt::cm-copy-as-excel': []
   'mt::drawio::init': [
     payload: { filePath: string; frameUrl: string; xml: string; title: string; autoSave: boolean }
   ]
@@ -561,6 +585,18 @@ export interface IpcMainEventChannels {
       lastSavedHash?: string
     }
   ]
+  'mt::kdbx::opened': [payload: { filePath: string; title: string }]
+  'mt::kdbx::state': [
+    payload: {
+      filePath: string
+      locked?: boolean
+      modified: boolean
+      isSaved: boolean
+      isSaving: boolean
+      saveError?: string
+    }
+  ]
+  'mt::kdbx-lock': []
   'mt::mindmap::init': [
     payload: {
       filePath?: string
@@ -600,22 +636,11 @@ export interface IpcMainEventChannels {
       saveError?: string
     }
   ]
-  'mt::kdbx::opened': [payload: { filePath: string; title: string }]
-  'mt::kdbx::state': [
-    payload: {
-      filePath: string
-      locked?: boolean
-      modified: boolean
-      isSaved: boolean
-      isSaving: boolean
-      saveError?: string
-    }
-  ]
-  'mt::kdbx-lock': []
   'mt::cm-copy-as-html': []
   'mt::cm-copy-as-rich': []
   'mt::cm-insert-paragraph': [direction: 'before' | 'after']
   'mt::cm-paste-as-plain-text': []
+  'mt::cm-table-batch-edit': []
   'mt::current-language': [language: string]
   'mt::editor-ask-file-save': []
   'mt::editor-ask-file-save-as': []
@@ -629,6 +654,9 @@ export interface IpcMainEventChannels {
   'mt::export-success': [payload: { type: string; filePath: string }]
   'mt::file-saved': [tabId: string]
   'mt::force-close-tabs-by-id': [tabIds: string[]]
+  'mt::github-desktop::switch-to-note': []
+  'mt::github-desktop::workspace-selected': [workspacePath: string]
+  'mt::github-desktop::workspace-selected-silent': [workspacePath: string]
   'mt::invalidate-image-cache': []
   'mt::keybindings-response': [bindings: unknown]
   'mt::load-state': [state: BufferedStateType]
@@ -657,7 +685,6 @@ export interface IpcMainEventChannels {
   'mt::show-notification': [payload: unknown]
   'mt::spelling-replace-misspelling': [payload: unknown]
   'mt::spelling-show-switch-language': []
-  'mt::github-desktop::selected-repository-path': [repositoryPath: string | null]
   'mt::switch-tab-by-file_path': [filePath: string]
   'mt::switch-tab-by-index': [index: number]
   'mt::tab-save-failure': [tabId: string, message: string]
@@ -669,6 +696,7 @@ export interface IpcMainEventChannels {
   'mt::update-file': [payload: { type: 'add' | 'change' | 'unlink'; change: FileChangeDetail }]
   'mt::update-object-tree': [payload: unknown]
   'mt::user-preference': [partial: unknown]
+  'mt::github-desktop::selected-repository-path': [repositoryPath: string | null]
   'mt::window-active-status': [active: boolean]
   'mt::window-enter-full-screen': []
   'mt::window-leave-full-screen': []
