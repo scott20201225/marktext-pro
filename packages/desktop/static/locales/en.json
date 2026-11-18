@@ -212,6 +212,7 @@
     "cut": "Cut",
     "copy": "Copy",
     "paste": "Paste",
+    "selectAll": "Select All",
     "copyAsRich": "Copy As Rich Text",
     "copyAsHtml": "Copy As HTML",
     "pasteAsPlainText": "Paste as Plain Text",

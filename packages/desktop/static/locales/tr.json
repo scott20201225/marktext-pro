@@ -212,6 +212,7 @@
     "cut": "Kes",
     "copy": "Kopyala",
     "paste": "Yapıştır",
+    "selectAll": "Tümünü seç",
     "copyAsRich": "Zengin Metin Olarak Kopyala",
     "copyAsHtml": "HTML Olarak Kopyala",
     "pasteAsPlainText": "Düz Metin Olarak Yapıştır",
@@ -288,7 +289,9 @@
       "mindMapOrganizationStructure": "Organizasyon yapısı",
       "mindMapCatalogOrganization": "Katalog organizasyonu",
       "mindMapTimeline": "Zaman çizelgesi",
-      "mindMapFishbone": "Balık kılçığı"
+      "mindMapFishbone": "Balık kılçığı",
+      "selectWorkspaceFirst": "Lütfen önce bir çalışma alanı seçin",
+      "selectWorkspaceFirstDetail": "İçe aktarmadan önce kenar çubuğunda bir çalışma alanı seçin."
     },
     "toc": {
       "title": "İçindekiler"

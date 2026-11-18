@@ -212,6 +212,7 @@
     "cut": "Ausschneiden",
     "copy": "Kopieren",
     "paste": "Einfügen",
+    "selectAll": "Alles auswählen",
     "copyAsRich": "Als Rich Text kopieren",
     "copyAsHtml": "Als HTML kopieren",
     "pasteAsPlainText": "Als reinen Text einfügen",
@@ -288,7 +289,9 @@
       "mindMapOrganizationStructure": "Organisationsstruktur",
       "mindMapCatalogOrganization": "Katalogorganisation",
       "mindMapTimeline": "Zeitleiste",
-      "mindMapFishbone": "Fischgrätendiagramm"
+      "mindMapFishbone": "Fischgrätendiagramm",
+      "selectWorkspaceFirst": "Bitte wählen Sie zuerst einen Arbeitsbereich aus",
+      "selectWorkspaceFirstDetail": "Bitte wählen Sie vor dem Import einen Arbeitsbereich in der Seitenleiste aus."
     },
     "toc": {
       "title": "Inhaltsverzeichnis"

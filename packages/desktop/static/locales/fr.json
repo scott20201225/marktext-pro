@@ -212,6 +212,7 @@
     "cut": "Couper",
     "copy": "Copier",
     "paste": "Coller",
+    "selectAll": "Tout sélectionner",
     "copyAsRich": "Copier en texte riche",
     "copyAsHtml": "Copier en HTML",
     "pasteAsPlainText": "Coller en texte brut",
@@ -288,7 +289,9 @@
       "mindMapOrganizationStructure": "Structure d'organisation",
       "mindMapCatalogOrganization": "Organisation de catalogue",
       "mindMapTimeline": "Chronologie",
-      "mindMapFishbone": "Diagramme en arête de poisson"
+      "mindMapFishbone": "Diagramme en arête de poisson",
+      "selectWorkspaceFirst": "Veuillez d'abord sélectionner un espace de travail",
+      "selectWorkspaceFirstDetail": "Veuillez sélectionner un espace de travail dans la barre latérale avant d'importer."
     },
     "toc": {
       "title": "Table des matières"

@@ -212,6 +212,7 @@
     "cut": "Cortar",
     "copy": "Copiar",
     "paste": "Pegar",
+    "selectAll": "Seleccionar todo",
     "copyAsRich": "Copiar Como Texto Enriquecido",
     "copyAsHtml": "Copiar Como HTML",
     "pasteAsPlainText": "Pegar como Texto Plano",
@@ -288,7 +289,9 @@
       "mindMapOrganizationStructure": "Estructura organizacional",
       "mindMapCatalogOrganization": "Organización del catálogo",
       "mindMapTimeline": "Línea de tiempo",
-      "mindMapFishbone": "Diagrama de espina de pescado"
+      "mindMapFishbone": "Diagrama de espina de pescado",
+      "selectWorkspaceFirst": "Selecciona primero un espacio de trabajo",
+      "selectWorkspaceFirstDetail": "Selecciona un espacio de trabajo en la barra lateral antes de importar."
     },
     "toc": {
       "title": "Tabla de Contenidos"
