@@ -13,20 +13,14 @@ const toggleTypeMode = (win: Win, type: string): void => {
   }
 }
 
-const setLayout = (win: Win, type: string, value: unknown): void => {
-  if (win && win.webContents) {
-    win.webContents.send('mt::set-view-layout', { [type]: value })
-  }
-}
-
 export const debugToggleDevTools = (win: Win): void => {
-  if (win && global.MARKTEXTPRO_DEBUG) {
+  if (win && global.MARKNOTEPRO_DEBUG) {
     win.webContents.toggleDevTools()
   }
 }
 
 export const debugReloadWindow = (win: Win): void => {
-  if (win && global.MARKTEXTPRO_DEBUG) {
+  if (win && global.MARKNOTEPRO_DEBUG) {
     ipcMain.emit('window-reload-by-id', win.id)
   }
 }
@@ -46,7 +40,12 @@ export const toggleSourceCodeMode = (win: Win): void => {
 }
 
 export const showTableOfContents = (win: Win): void => {
-  toggleLayout(win, 'toc')
+  // Kept inline instead of delegating to a local helper: the production bundle
+  // tree-shook the helper while keeping this call, which threw
+  // "ReferenceError: toggleLayout is not defined" on Command+K.
+  if (win && win.webContents) {
+    win.webContents.send('mt::toggle-view-layout-entry', 'toc')
+  }
 }
 
 export const toggleTypewriterMode = (win: Win): void => {
@@ -80,7 +79,7 @@ export const loadViewCommands = (commandManager: CommandManager): void => {
 
 /**
  * @param applicationMenu The application menu instance.
- * @param changes Array of changed view settings (e.g. [ {showSideBar: true} ]).
+ * @param changes Array of changed view settings.
  */
 export const viewLayoutChanged = (
   applicationMenu: Menu,
