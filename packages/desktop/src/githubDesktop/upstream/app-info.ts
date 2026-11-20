@@ -2,8 +2,8 @@ import { getSHA } from './git-info'
 import { getUpdatesURL, getChannel } from '../script/dist-info'
 import { version, productName } from './package.json'
 
-const devClientId = '3a723b10ac5575cc5bb9'
-const devClientSecret = '22c34d87789a365981ed921352a7b9a8c3f69d54'
+const devClientId = 'Ov23litUr9K01OEyjQg3'
+const devClientSecret = '352270fc1b27bf15896c44e30f094fa5ab9147bd'
 
 const channel = getChannel()
 
