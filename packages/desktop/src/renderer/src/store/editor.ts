@@ -1032,11 +1032,14 @@ export const useEditorStore = defineStore('editor', {
         const previous = this.kdbxStates[tab.id]
         const isLocked = payload.locked === true
         let unlockedAt = previous?.unlockedAt
+        let autoLockMinutes = previous?.autoLockMinutes
         if (isLocked) {
           unlockedAt = undefined
+          autoLockMinutes = undefined
           delete this.kdbxCountdowns[tab.id]
         } else if (!unlockedAt) {
           unlockedAt = Date.now()
+          autoLockMinutes = usePreferencesStore().kdbxAutoLockMinutes ?? 5
         }
         const state: IKdbxState = {
           id: tab.id,
@@ -1044,6 +1047,7 @@ export const useEditorStore = defineStore('editor', {
           filename: tab.filename,
           locked: isLocked,
           unlockedAt,
+          autoLockMinutes,
           modified: payload.modified === true,
           isSaved: payload.isSaved === true,
           isSaving: payload.isSaving === true,
@@ -1082,10 +1086,8 @@ export const useEditorStore = defineStore('editor', {
       }
     },
 
-    CHECK_KDBX_AUTO_LOCK(customMinutes?: number): void {
+    CHECK_KDBX_AUTO_LOCK(): void {
       const preferencesStore = usePreferencesStore()
-      const minutes = customMinutes ?? preferencesStore.kdbxAutoLockMinutes ?? 5
-      const timeoutSec = minutes * 60
       const now = Date.now()
 
       for (const tab of this.tabs) {
@@ -1098,12 +1100,15 @@ export const useEditorStore = defineStore('editor', {
           continue
         }
 
+        const lockMinutes = state.autoLockMinutes ?? preferencesStore.kdbxAutoLockMinutes ?? 5
+        const timeoutSec = lockMinutes * 60
         const elapsedSec = (now - state.unlockedAt) / 1000
         const remainingSec = Math.ceil(timeoutSec - elapsedSec)
 
         if (remainingSec <= 0) {
           delete this.kdbxCountdowns[tab.id]
           state.unlockedAt = undefined
+          state.autoLockMinutes = undefined
           state.locked = true
           if (tab.pathname) {
             void window.electron.ipcRenderer.invoke('mt::kdbx::lock', tab.pathname)
@@ -1124,6 +1129,7 @@ export const useEditorStore = defineStore('editor', {
         state.locked = false
         if (!state.unlockedAt) {
           state.unlockedAt = Date.now()
+          state.autoLockMinutes = usePreferencesStore().kdbxAutoLockMinutes ?? 5
         }
       }
       this.CHECK_KDBX_AUTO_LOCK()
@@ -1138,6 +1144,7 @@ export const useEditorStore = defineStore('editor', {
       if (state) {
         state.locked = true
         state.unlockedAt = undefined
+        state.autoLockMinutes = undefined
       }
       delete this.kdbxCountdowns[tab.id]
     },
