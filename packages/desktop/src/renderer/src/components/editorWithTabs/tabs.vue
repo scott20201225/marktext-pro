@@ -37,7 +37,7 @@
               <WarningFilled v-else />
             </el-icon>
           </el-tooltip>
-          <span class="tab-title">{{ file.isKdbx ? file.filename.replace(/\.kdbx$/i, '') : file.filename }}</span>
+          <span class="tab-title">{{ file.filename }}</span>
           <span v-if="kdbxCountdowns[file.id]" class="tab-kdbx-countdown">{{ kdbxCountdowns[file.id] }}</span>
           <el-icon class="close-icon" :size="12" @click.stop="removeFileInTab(file)">
             <Close />
