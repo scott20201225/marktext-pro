@@ -37,7 +37,8 @@
               <WarningFilled v-else />
             </el-icon>
           </el-tooltip>
-          <span>{{ file.filename }}</span>
+          <span class="tab-title">{{ file.isKdbx ? file.filename.replace(/\.kdbx$/i, '') : file.filename }}</span>
+          <span v-if="kdbxCountdowns[file.id]" class="tab-kdbx-countdown">{{ kdbxCountdowns[file.id] }}</span>
           <el-icon class="close-icon" :size="12" @click.stop="removeFileInTab(file)">
             <Close />
           </el-icon>
@@ -74,7 +75,7 @@ const editorStore = useEditorStore()
 const layoutStore = useLayoutStore()
 const { t, locale } = useI18n()
 
-const { currentFile, tabs } = storeToRefs(editorStore)
+const { currentFile, tabs, kdbxCountdowns } = storeToRefs(editorStore)
 
 const props = defineProps<{
   hideNewFile?: boolean
@@ -480,6 +481,16 @@ defineExpose({
       white-space: nowrap;
       margin-right: 3px;
       color: inherit;
+    }
+    & > span.tab-kdbx-countdown {
+      flex: 0 0 auto;
+      overflow: visible;
+      white-space: nowrap;
+      margin-right: 3px;
+      color: var(--deleteColor, #ff6969);
+      font-size: 11px;
+      font-weight: 600;
+      font-variant-numeric: tabular-nums;
     }
   }
   & > li.unsaved:not(.active) {
