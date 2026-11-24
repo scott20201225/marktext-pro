@@ -55,6 +55,7 @@
         :tabs="tabs"
       />
       <side-bar-search v-else-if="rightColumn === 'search'" />
+      <side-bar-lan-share v-else-if="rightColumn === 'lanShare'" />
     </div>
     <div
       v-show="rightColumn"
@@ -74,6 +75,7 @@ import { useEditorStore } from '@/store/editor'
 import { sideBarIcons, sideBarBottomIcons, type SideBarIconEntry } from './help'
 import Tree from './tree.vue'
 import SideBarSearch from './search.vue'
+import SideBarLanShare from './lanShare.vue'
 import { storeToRefs } from 'pinia'
 import type { TabDescriptor } from './types'
 
