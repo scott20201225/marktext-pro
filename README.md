@@ -67,12 +67,10 @@ MarkTextPro 和 MarkNotePro 是两个相互独立、但能力互补的产品。�
 相关地址：
 
 - **MarkTextPro**（自由文件与项目多模态工作区）：
-  - 百度网盘下载（国内推荐）：[https://pan.baidu.com/s/1UVWciYMIAZmI6y-H9KUuNQ?pwd=ddun](https://pan.baidu.com/s/1UVWciYMIAZmI6y-H9KUuNQ?pwd=ddun)
   - GitHub Releases 官方下载：[https://github.com/scott20201225/marktext-pro/releases/latest](https://github.com/scott20201225/marktext-pro/releases/latest)
   - GitHub 仓库：[https://github.com/scott20201225/marktext-pro](https://github.com/scott20201225/marktext-pro)
   - Gitee 镜像仓库：[https://gitee.com/cmflovekm/marktext-pro](https://gitee.com/cmflovekm/marktext-pro)
 - **MarkNotePro**（结构化本地笔记与多模态知识工作台）：
-  - 百度网盘下载（国内推荐）：[https://pan.baidu.com/s/17s0JYmzCbqhq2AHpKa2YAA?pwd=dec2](https://pan.baidu.com/s/17s0JYmzCbqhq2AHpKa2YAA?pwd=dec2)
   - GitHub Releases 官方下载：[https://github.com/scott20201225/marknote-pro/releases/latest](https://github.com/scott20201225/marknote-pro/releases/latest)
   - GitHub 仓库：[https://github.com/scott20201225/marknote-pro](https://github.com/scott20201225/marknote-pro)
   - Gitee 镜像仓库：[https://gitee.com/cmflovekm/marknote-pro](https://gitee.com/cmflovekm/marknote-pro)
@@ -308,19 +306,18 @@ MarkTextPro 将 Git 作为自由文件工作区的核心版本控制底座。在
 
 ![platform](https://img.shields.io/static/v1.svg?label=Platform&message=Linux%20x64%20|%20macOS%20x64%2Farm64%20|%20Windows%20x64%2Farm64&style=for-the-badge)
 
-国内用户推荐使用百度网盘下载安装包；海外用户可使用 GitHub Releases：
+可直接通过 GitHub Releases 或 Gitee 镜像获取安装包：
 
-- **百度网盘下载（国内推荐）**：[https://pan.baidu.com/s/1UVWciYMIAZmI6y-H9KUuNQ?pwd=ddun](https://pan.baidu.com/s/1UVWciYMIAZmI6y-H9KUuNQ?pwd=ddun)
 - **GitHub 官方 Releases 下载**：[https://github.com/scott20201225/marktext-pro/releases/latest](https://github.com/scott20201225/marktext-pro/releases/latest)
 - **Gitee 镜像仓库**：[https://gitee.com/cmflovekm/marktext-pro](https://gitee.com/cmflovekm/marktext-pro)
 
-> 💡 **兄弟项目**：如果您需要结构化本地笔记、知识库管理与层级文档体系，请前往 [MarkNotePro 百度网盘下载](https://pan.baidu.com/s/17s0JYmzCbqhq2AHpKa2YAA?pwd=dec2) 或 [MarkNotePro Gitee 镜像](https://gitee.com/cmflovekm/marknote-pro)（GitHub 对应页面：[MarkNotePro Releases](https://github.com/scott20201225/marknote-pro/releases/latest)）。
+> 💡 **兄弟项目**：如果您需要结构化本地笔记、知识库管理与层级文档体系，请前往 [MarkNotePro GitHub Releases](https://github.com/scott20201225/marknote-pro/releases/latest) 或 [MarkNotePro Gitee 镜像](https://gitee.com/cmflovekm/marknote-pro)。
 
 安装包格式对应：
 
 - macOS：`marktextpro-mac-(arm64|x64)-%version%.dmg`
 - Windows：`marktextpro-win-(x64|arm64)-%version%-setup.exe`
-- Linux：提供 `deb`、`rpm`、`snap`、`tar.gz` 等构建，具体以网盘或 Release 页面为准。
+- Linux：提供 `deb`、`rpm`、`snap`、`tar.gz` 等构建，具体以 Release 页面为准。
 
 ## 开发
 
