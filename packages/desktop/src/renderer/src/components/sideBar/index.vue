@@ -77,6 +77,7 @@ import Tree from './tree.vue'
 import SideBarSearch from './search.vue'
 import SideBarLanShare from './lanShare.vue'
 import { storeToRefs } from 'pinia'
+import bus from '@/bus'
 import type { TabDescriptor } from './types'
 
 const layoutStore = useLayoutStore()
@@ -224,6 +225,14 @@ onBeforeUnmount(() => {
 
 const handleLeftIconClick = (name: string): void => {
   hideSidebarTooltip()
+  if (name === 'switchGitWorkspace') {
+    bus.emit('WORKSPACE::open-switch-git-modal')
+    return
+  }
+  if (name === 'mergeWorkspace') {
+    bus.emit('WORKSPACE::open-merge-modal')
+    return
+  }
   if (name === 'screenCapture') {
     window.electron.ipcRenderer.send('mt::trigger-screen-capture')
     return

@@ -15,6 +15,7 @@ import { registerKdbxHandlers } from '../kdbx'
 import { registerTerminalHandlers } from '../terminal'
 import { registerClipboardIpcHandlers } from './clipboard'
 import { registerLanShareHandlers } from '../lanShare'
+import { registerWorkspaceMigrationHandlers } from '../workspaceMigration'
 
 export const registerSandboxIpcHandlers = (): void => {
   registerBootInfo()
@@ -34,4 +35,5 @@ export const registerSandboxIpcHandlers = (): void => {
   registerTerminalHandlers()
   registerClipboardIpcHandlers()
   registerLanShareHandlers('marktextpro')
+  registerWorkspaceMigrationHandlers('marktextpro')
 }
