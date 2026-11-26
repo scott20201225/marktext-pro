@@ -10,7 +10,10 @@
     :class="[
       { current: currentFile?.pathname === file.pathname, active: isFileActive }
     ]"
+    draggable="true"
     @click.stop="handleFileClick"
+    @dragstart="handleDragStart"
+    @dragend="handleDragEnd"
   >
     <file-icon :name="file.name" />
     <input
@@ -42,6 +45,7 @@ import { ref, onMounted, nextTick, computed } from 'vue'
 import { storeToRefs } from 'pinia'
 import { useProjectStore } from '@/store/project'
 import { useEditorStore } from '@/store/editor'
+import { useMarkShareStore } from '@/store/markShare'
 import { MoreFilled } from '@element-plus/icons-vue'
 import FileIcon from './icon.vue'
 import { showContextMenu } from '../../contextMenu/sideBar'
@@ -60,7 +64,22 @@ const props = defineProps<{
 
 const projectStore = useProjectStore()
 const editorStore = useEditorStore()
+const markShareStore = useMarkShareStore()
 const { t } = useI18n()
+
+const handleDragStart = (event: DragEvent): void => {
+  if (!props.file?.pathname || !event.dataTransfer) return
+  event.dataTransfer.effectAllowed = 'copy'
+  event.dataTransfer.setData(
+    'application/x-markshare-paths',
+    JSON.stringify([props.file.pathname])
+  )
+  markShareStore.showDragRadar([props.file.pathname], false)
+}
+
+const handleDragEnd = (): void => {
+  markShareStore.scheduleHideDragRadar(150)
+}
 
 const newName = ref('')
 const fileEl = ref<HTMLDivElement | null>(null)
