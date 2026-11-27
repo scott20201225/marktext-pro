@@ -246,6 +246,9 @@
                 </svg>
                 <span>{{ rec.direction === 'send' ? t('markShare.directionSend') : t('markShare.directionReceive') }}</span>
               </span>
+              <span class="ms-type-badge" :class="rec.rootType === 'file' ? 'file' : 'folder'">
+                {{ rec.rootType === 'file' ? `📄 ${t('markShare.typeFile')}` : `📁 ${t('markShare.typeFolder')}` }}
+              </span>
               <span class="ms-rec-title" :title="rec.rootLabel">{{ rec.rootLabel }}</span>
             </div>
             <span class="ms-rec-state" :class="rec.state">
@@ -260,21 +263,25 @@
             </span>
           </div>
           <div class="ms-rec-subline">
+            <template v-if="rec.rootType !== 'file' || rec.totalFiles > 1">
+              <span>{{ rec.totalFiles }} {{ t('markShare.filesUnit') }}</span>
+              <span>·</span>
+            </template>
             <span>{{ formatSize(rec.totalBytes) }}</span>
             <span>·</span>
             <span>{{ formatTime(rec.finishedAt) }}</span>
           </div>
           <div
-            v-if="rec.direction === 'receive' && rec.state === 'completed' && (rec.savedRootPath || rec.saveDir)"
+            v-if="getRecordOpenCandidates(rec).length > 0 && (rec.direction === 'send' || rec.state === 'completed')"
             class="ms-rec-actions"
           >
-            <span class="ms-rec-path" :title="rec.savedRootPath || rec.saveDir">
-              {{ rec.savedRootPath || rec.saveDir }}
+            <span class="ms-rec-path" :title="getRecordDisplayPath(rec)">
+              {{ getRecordDisplayPath(rec) }}
             </span>
             <button
               type="button"
               class="ms-rec-btn"
-              @click="markShareStore.openPath(rec.savedRootPath || rec.saveDir || '')"
+              @click="openRecordFolder(rec)"
             >
               {{ t('markShare.openFolder') }}
             </button>
@@ -326,6 +333,30 @@ const osLabel = (os: MarkShareOsType): string => {
 
 const stateLabel = (state: MarkShareHistoryRecord['state']): string => {
   return t(`markShare.state.${state}`)
+}
+
+const getRecordDisplayPath = (rec: MarkShareHistoryRecord): string => {
+  if (rec.direction === 'send') {
+    return rec.sourcePaths?.[0] || ''
+  }
+  return rec.savedRootPath || rec.savedPaths?.[0] || rec.saveDir || ''
+}
+
+const getRecordOpenCandidates = (rec: MarkShareHistoryRecord): string[] => {
+  if (rec.direction === 'send') {
+    return Array.isArray(rec.sourcePaths) ? rec.sourcePaths.filter(Boolean) : []
+  }
+  return [
+    rec.savedRootPath,
+    ...(Array.isArray(rec.savedPaths) ? rec.savedPaths : []),
+    rec.saveDir
+  ].filter((p): p is string => Boolean(p && p.trim()))
+}
+
+const openRecordFolder = (rec: MarkShareHistoryRecord): void => {
+  const candidates = getRecordOpenCandidates(rec)
+  if (candidates.length === 0) return
+  void markShareStore.openPath(candidates)
 }
 
 const formatSize = (bytes: number): string => {
@@ -818,6 +849,29 @@ const onDeviceDrop = async (peerKey: string, e: DragEvent): Promise<void> => {
   overflow: hidden;
   text-overflow: ellipsis;
   white-space: nowrap;
+}
+
+.ms-type-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 2px;
+  font-size: 10px;
+  font-weight: 600;
+  padding: 1px 5px;
+  border-radius: 4px;
+  flex-shrink: 0;
+  background: rgba(148, 163, 184, 0.16);
+  color: var(--sideBarColor);
+}
+
+.ms-type-badge.folder {
+  background: rgba(245, 158, 11, 0.14);
+  color: #f59e0b;
+}
+
+.ms-type-badge.file {
+  background: rgba(56, 189, 248, 0.14);
+  color: #38bdf8;
 }
 
 .ms-rec-state {
