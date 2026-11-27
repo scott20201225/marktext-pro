@@ -227,8 +227,6 @@
         </div>
       </div>
     </div>
-
-    <mark-share-devices-section />
   </div>
 </template>
 
@@ -238,7 +236,6 @@ import { ElMessage, ElMessageBox } from 'element-plus'
 import { useI18n } from 'vue-i18n'
 import bus from '@/bus'
 import { useProjectStore } from '@/store/project'
-import MarkShareDevicesSection from '../markShare/MarkShareDevicesSection.vue'
 import type { LanShareRecord, DiscoveredLanShare, LanShareFileItem } from '@shared/types/lanShare'
 
 const { t } = useI18n()
