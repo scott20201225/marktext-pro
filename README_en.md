@@ -3,8 +3,8 @@
 <h1 align="center">MarkTextPro</h1>
 
 <div align="center">
-  <strong>Local Open-Filesystem Documents & All-in-One Multimodal Workbench</strong><br>
-  Directly open, edit, and annotate authentic folders, code repositories, and standalone external files on disk, backed by a built-in productivity workbench: Markdown, Draw.io, GeoGebra, MindMap, PDF annotation, KDBX keystore (2FA & SSH/SFTP), LAN Share / MarkShare transfer, and Git version control.<br>
+  <strong>Local Open-Filesystem Document Editor (with Built-in Multimodal Workbench)</strong><br>
+  Preserve authentic free-folder organization and directly edit code repositories, real directory trees, and standalone external files on disk; natively open Markdown, Draw.io diagrams, GeoGebra math models, MindMaps, and PDF annotations on the right. Includes an encrypted KDBX vault with TOTP 2FA, vault-backed SSH/SFTP direct connect (auto-2FA login) & ZMODEM transfer, LAN Share / MarkShare local transfers, global screenshot pinning, clipboard history, and seamless Git version sync.<br>
   <sub>Linux · macOS · Windows (Core creation & encryption engines work 100% offline)</sub>
 </div>
 
@@ -61,7 +61,7 @@ A complete overview covering local open-filesystem docs, Markdown & enhanced tab
 
 ## Positioning & Product Comparison
 
-**MarkTextPro** is a **local open-filesystem document editor**: it preserves authentic directory trees without forcing notebook hierarchies, ideal for codebases, project docs, and opening standalone external files directly from disk—with multimodal creation, security workbench tools, and LAN sharing built in underneath.
+**MarkTextPro** is first and foremost a **local-first open-filesystem document editor**: without forcing notebook hierarchies, the left sidebar maps real disk folder trees and opens standalone external files directly—ideal for codebases and project documentation—while the right pane integrates the same multimodal editors, KDBX/SSH security workbench tools, LAN file sharing, and Git synchronization.
 
 Its sibling **[MarkNotePro](https://github.com/scott20201225/marknote-pro)** is a **local structured note-taking app** tailored for long-term hierarchical knowledge bases. Visual comparison of the same directory opened in both products:
 
