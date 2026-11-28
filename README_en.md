@@ -3,8 +3,8 @@
 <h1 align="center">MarkTextPro</h1>
 
 <div align="center">
-  <strong>Git-Integrated Open File & Multimodal Project Workspace Manager</strong><br>
-  Built for authentic folders, code repositories, and external standalone files with native Markdown, Draw.io, GeoGebra, MindMap, PDF annotation, KDBX keystore (2FA & SSH/SFTP), LAN sharing, and Git version control.<br>
+  <strong>Local Open-Filesystem Documents & All-in-One Multimodal Workbench</strong><br>
+  Directly open, edit, and annotate authentic folders, code repositories, and standalone external files on disk, backed by a built-in productivity workbench: Markdown, Draw.io, GeoGebra, MindMap, PDF annotation, KDBX keystore (2FA & SSH/SFTP), LAN Share / MarkShare transfer, and Git version control.<br>
   <sub>Linux · macOS · Windows (Core creation & encryption engines work 100% offline)</sub>
 </div>
 
@@ -53,7 +53,7 @@
 
 ## Feature Showcase
 
-A complete overview covering open file workspaces, Markdown & enhanced tables, Draw.io diagrams, MindMaps, Git workflows, GeoGebra modeling, KDBX keystores (2FA/SSH), multi-workspace switching & migration, screenshot pinning, clipboard history, LAN sharing, and in-place PDF annotation:
+A complete overview covering local open-filesystem docs, Markdown & enhanced tables, Draw.io diagrams, MindMaps, Git workflows, GeoGebra modeling, KDBX keystores (2FA/SSH), multi-workspace switching & migration, screenshot pinning, clipboard history, LAN Share / MarkShare P2P transfer, and in-place PDF annotation:
 
 <p align="center">
   <img src="docs/assets/screenshots/feature-showcase.gif" alt="MarkTextPro Feature Showcase" width="100%">
@@ -61,9 +61,9 @@ A complete overview covering open file workspaces, Markdown & enhanced tables, D
 
 ## Positioning & Product Comparison
 
-**MarkTextPro** preserves authentic file system trees without imposing notebook hierarchies, making it ideal for code repositories, project documentation, and quick standalone editing of external files.
+**MarkTextPro** is a **local open-filesystem document editor**: it preserves authentic directory trees without forcing notebook hierarchies, ideal for codebases, project docs, and opening standalone external files directly from disk—with multimodal creation, security workbench tools, and LAN sharing built in underneath.
 
-Visual comparison of the same directory opened in both sibling products:
+Its sibling **[MarkNotePro](https://github.com/scott20201225/marknote-pro)** is a **local structured note-taking app** tailored for long-term hierarchical knowledge bases. Visual comparison of the same directory opened in both products:
 
 <table>
   <tr>
@@ -82,9 +82,10 @@ Visual comparison of the same directory opened in both sibling products:
 
 | Dimension | MarkTextPro (This Repo) | [MarkNotePro](https://github.com/scott20201225/marknote-pro) (Sibling Project) |
 | --- | --- | --- |
+| **Core Positioning** | **Local Open-Filesystem Docs** (raw folders & external files) | **Local Structured Notes** (knowledge hierarchy & PKM) |
 | **Organization** | Open file system directory trees plus standalone external file editing | Structured Workspace / Section Groups / Sections / Docs (Tree & List modes) |
 | **Best For** | Code repositories, project READMEs, free folders & ad-hoc file editing | Personal PKM, structured technical notes, research assets & local vaults |
-| **Shared Stack** | Identical offline engines, KDBX/2FA/SSH workbench, Git integration & utilities | Same |
+| **Built-in Workbench** | Identical offline engines, KDBX/2FA/SSH workbench, Git integration & LAN transfer | Same |
 | **Links** | [GitHub Releases](https://github.com/scott20201225/marktext-pro/releases/latest) · [Gitee Mirror](https://gitee.com/cmflovekm/marktext-pro) | [GitHub Releases](https://github.com/scott20201225/marknote-pro/releases/latest) · [Gitee Mirror](https://gitee.com/cmflovekm/marknote-pro) |
 
 ## Core Capabilities
@@ -112,7 +113,8 @@ Powered by [KDBXWeb](https://github.com/keeweb/kdbxweb) and an integrated termin
 
 ### 3. LAN Sharing & Desktop Productivity Suite
 
-- **LAN File Sharing**: One-click local network sharing for folders or files with separated **"My Shares"** and **"Shared With Me"** views across devices on the same LAN.
+- **LAN Share Portal**: One-click LAN publishing with QR codes, passcode lock, **"My Shares / Shared With Me"** views, and configurable folder layout & conflict resolution.
+- **MarkShare P2P Direct Transfer**: Automatic LAN peer discovery with **drag-and-drop radar overlay** and multi-device context-menu push (X25519 + AES-256-GCM + SAS verification), interoperable between `MarkTextPro` and `MarkNotePro`.
 - **Multi-Workspace Switch & Migration**: Switch workspaces smoothly with built-in **auto-merge prompts** and **manual conflict resolution**.
 - **Screenshot, Screen Pinning & Clipboard History**: Global hotkey capture, always-on-top screen pins, and searchable local clipboard history.
 - **Standalone & Multi-Tab Editing**: Open external `.md / .drawio / .ggb / .smm / .kdbx / .pdf / .txt / .json` files directly and keep multiple heterogeneous editors alive across tabs.
